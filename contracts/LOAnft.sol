@@ -229,32 +229,4 @@ contract LOAnft is ERC1155, Ownable {
         emit NFTMinted(nextId, 0, msg.sender, _fusion_rule_price[ruleId]);
     }
 
-    // function rent(uint256 id, address to, uint256 tillTime) public {
-    //     require(tillTime > block.timestamp, "Lease end time must be greater than now");
-    //     require(_nft_owner[id] == msg.sender, "NFT id not found");
-
-    //     _nft_leased_to[id] = to;
-    //     _nft_leased_endtime[id] = tillTime;
-    //     uint256[] memory units = new uint256[](1);
-    //     units[0] = 1;
-    //     uint256[] memory ids = new uint256[](1);
-    //     ids[0] = id;
-    //     safeBatchTransferFrom(msg.sender, to, ids, units, "");
-    //     emit NFTLeased(id, msg.sender, tillTime);
-    // }
-
-    // function reacquire(uint256 id) public {
-    //     require(_nft_owner[id] == msg.sender, "NFT id not found");
-    //     require(_nft_leased_endtime[id] > block.timestamp, "Lease time is not expired.");
-        
-    //     uint256[] memory units = new uint256[](1);
-    //     units[0] = 1;
-    //     uint256[] memory ids = new uint256[](1);
-    //     ids[0] = id;
-        
-    //     safeBatchTransferFrom(_nft_leased_to[id], msg.sender, ids, units, "");
-    //     delete _nft_leased_to[id];
-    //     delete _nft_leased_endtime[id];
-    //     emit NFTLeasedEnded(id);
-    // }
 }

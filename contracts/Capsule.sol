@@ -34,14 +34,17 @@ contract Capsule is ERC1155, Ownable {
 
     IERC1155Contract public _raffleToken;
     address private _admin;
+    address private _capsuleVestingAddress;
     address private _loaNFTAddress;
 
     // 0 : unpublished
-    // 1 : ready to mint
-    // 2 : minted
-    // 3 : burned
+    // 1 : published
+    // 2 : owned
+    // 3 : staked
+    // 4 : unlocked
+    // 5 : minted
+    // 6 : burned
     mapping(uint256 => uint8) public _capsule_status;
-    // mapping(uint256 => uint8) public _capsule_owner;
     mapping(uint256 => uint8) private _capsule_types;
     mapping(uint256 => uint8) private _capsule_level;
     mapping(uint256 => uint256) private _capsule_start_time;
@@ -71,10 +74,19 @@ contract Capsule is ERC1155, Ownable {
         _loaNFTAddress = loaNFTAddress;
     }
 
+    function setCapsuleStakingAddress(address capsuleVestingAddress) public onlyAdmin{
+        _capsuleVestingAddress = capsuleVestingAddress;
+    }
+
     function burn(address owner, uint256 id) public payable {
         require(msg.sender == _loaNFTAddress, "You are not authorized to burn");
-        _capsule_status[id] = 3;
+        _capsule_status[id] = 6;
         _burn(owner, id, 1);
+    }
+
+    function getCapsuleType(uint256 id) public view returns (uint8) {
+        require(msg.sender == _capsuleVestingAddress, "You are not authorized to call this method");
+        return _capsule_types[id];
     }
 
     function getCapsuleLevel(uint256 id) public view returns (uint8) {
@@ -92,7 +104,7 @@ contract Capsule is ERC1155, Ownable {
         require(ids.length ==  levels.length && levels.length == types.length && types.length == startTimes.length, "Args length not matching");
         
         for (uint256 i = 0; i < ids.length; i++) {
-            require(_capsule_status[ids[i]] == 0, "Id is already consumed.");
+            require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
         }
 
         for (uint256 i = 0; i < ids.length; i++) {
@@ -108,7 +120,7 @@ contract Capsule is ERC1155, Ownable {
 
     function removeCapsules(uint256[] memory ids)public onlyAdmin {
         for (uint256 i = 0; i < ids.length; i++) {
-            require(_capsule_status[ids[i]] == 0 || _capsule_status[ids[i]] == 1, "Id is already consumed.");
+            require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
         }
 
         for (uint256 i = 0; i < ids.length; i++) {
@@ -164,5 +176,21 @@ contract Capsule is ERC1155, Ownable {
         
         _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
         emit CapsuleMinted(capsuleId, msg.sender, 0);
+    }
+
+    function markVested(uint256 capsuleId) public  {
+        require(_capsuleVestingAddress == msg.sender, "You are not authorized.");
+        require(_capsule_status[capsuleId] == 2, "Token is not allocated.");
+        _capsule_status[capsuleId] = 3;
+    }
+
+    function getCapsuleStatus(uint256 capsuleId) public view returns (uint8)  {
+        return _capsule_status[capsuleId];
+    }
+
+    function markUnlocked(uint256 capsuleId) public  {
+        require(_capsuleVestingAddress == msg.sender, "You are not authorized.");
+        require(_capsule_status[capsuleId] == 3, "Token is not vested.");
+        _capsule_status[capsuleId] = 4;
     }
 }

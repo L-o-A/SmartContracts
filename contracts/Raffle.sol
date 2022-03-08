@@ -151,7 +151,7 @@ contract Raffle is ERC1155, Ownable {
         delete _raffle_end_time[id];
     }
 
-    function buyTicket(uint256 raffleId, uint8 units) public payable {
+    function buyTicket(uint256 raffleId, uint32 units) public payable {
 
         require(_raffle_status[raffleId] == 1, "Raffle is not open." );
         require(_raffle_start_time[raffleId] < block.timestamp, "Raffle is not open." );
@@ -189,28 +189,18 @@ contract Raffle is ERC1155, Ownable {
                 "Raffle event is still open." );
 
         uint256[] storage ticketIds = _raffle_tickets[raffleId];
-
-        
-        
-        bool selectRandom = true;
-        if(ticketIds.length <= _raffle_capsule_count[raffleId]) {
-            selectRandom = false;
-        }
-
         uint256[] memory winners = new uint256[](_raffle_capsule_count[raffleId]);
 
         for(uint256 i = 0; i < _raffle_capsule_count[raffleId]; i++) {
-            uint256 selected = i;
-            if(selectRandom)
-                selected = random(ticketIds.length);
-
-            console.log("Seledted ", selected, " | ticketId = ", ticketIds[selected]);
+            if(ticketIds.length == 0) break;
+            uint256 selected = random(ticketIds.length);
 
             winners[i] = ticketIds[selected];
-            ticketIds[selected] = ticketIds[ticketIds.length - 1];
+            _refund_address_to_amount[_admin] += _ticket_price[ticketIds[selected]];
             _ticket_status[ticketIds[selected]] = 3;
-            // _burn(_ticket_owner[ticketIds[selected]], ticketIds[selected], 1);
-            _refund_address_to_amount[_admin] += _ticket_price[ticketIds[i]];
+
+            console.log("winner: " , winners[i]);
+            ticketIds[selected] = ticketIds[ticketIds.length - 1];
             ticketIds.pop();
         }
 
@@ -227,12 +217,6 @@ contract Raffle is ERC1155, Ownable {
     function random(uint256 limit) private view returns (uint16) {
         return uint16(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, limit)))% limit);
     }
-
-
-    // function airdrop(uint8 raffleId, address dropTo) public payable onlyAdmin {
-
-       
-    // }
 
     function withdraw() public {
         uint256 balance = _refund_address_to_amount[msg.sender];
