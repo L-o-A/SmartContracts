@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
+import "hardhat/console.sol"; //TODO remove
+
 interface IERC20Contract {
     function transfer(address recipient, uint256 amount)
         external
@@ -31,6 +33,7 @@ contract LOAnft is ERC1155, Ownable {
 
     IERC20Contract public _erc20Token;
     IERC1155Contract public _capsuleToken;
+    address public _nftMarketAddress;
     address private _admin;
 
     // 0 : unpublished
@@ -76,6 +79,10 @@ contract LOAnft is ERC1155, Ownable {
 
     function setCapsuleAddress(address capsuleContract) public onlyAdmin{
         _capsuleToken = IERC1155Contract(capsuleContract);
+    }
+
+    function setNFTMarketAddress(address nftMarketAddress) public onlyAdmin{
+        _nftMarketAddress = nftMarketAddress;
     }
 
     // Modifier
@@ -167,6 +174,41 @@ contract LOAnft is ERC1155, Ownable {
         emit NFTMinted(id, capsuleId, msg.sender, 0);
     }
 
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) public virtual override {
+        require(msg.sender == _admin ||
+            msg.sender == _nftMarketAddress ||
+            to == address(0) ||
+            msg.sender == address(this) || 
+            to == _nftMarketAddress ||
+            from == _nftMarketAddress, "Not authorized to transfer");
+
+        return super.safeTransferFrom(from, to, id, amount, data);
+    }
+
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) public virtual override {
+
+        require(msg.sender == _admin ||
+            msg.sender == _nftMarketAddress ||
+            to == address(0) ||
+            msg.sender == address(this) || 
+            to == _nftMarketAddress ||
+            from == _nftMarketAddress, "Not authorized to transfer");
+
+        return super.safeBatchTransferFrom(from, to, ids, amounts, data);
+    }
+
     function withdraw() public onlyAdmin {
         uint256 balance = _erc20Token.balanceOf(address(this));
         require(balance > 0, "Low balance");
@@ -203,6 +245,7 @@ contract LOAnft is ERC1155, Ownable {
         for (uint256 i = 0; i < ids.length; i++) {
             require(msg.sender == _nft_owner[ids[i]] && _nft_status[ids[i]] == 2, "Token doesnt belong to sender.");
             require(_nft_level[ids[i]] == _fusion_rule_levels[ruleId][i], "Level type not matching.");
+            require(balanceOf(msg.sender, ids[i]) > 0, "Balance not available.");
             if(i > 0) {
                 require(_nft_hero[ids[i-1]] == _nft_hero[ids[i]], "Hero type not matching.");
             }
