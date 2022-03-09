@@ -29,8 +29,12 @@ describe("LOA MarketPlace", function () {
     const nftMarket = await NFTMarket.deploy(loa.address,loaNFT.address);
     await nftMarket.deployed();
 
+    const LoANFTFusion = await ethers.getContractFactory("LoANFTFusion");
+    const loaNFTFusion = await LoANFTFusion.deploy(loa.address,loaNFT.address);
+    await loaNFTFusion.deployed();
+
     await capsule.setNFTAddress(loaNFT.address, nftMarket.address);
-    await loaNFT.updateAccessAddressAndFees(capsule.address, nftMarket.address, [1], [100]);
+    await loaNFT.updateAccessAddressAndFees(capsule.address, nftMarket.address, loaNFTFusion.address, [1], [100]);
 
     loa.connect(addr1).approve(loaNFT.address, 300);
     

@@ -2,9 +2,9 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 
-describe("LOA ", function () {
+describe("LOA-NFT-Fusion-Test", function () {
 
-  it("LOA NFT Test", async function () {
+  it("LOA-NFT-Fusion-Test", async function () {
 
     const [owner, addr1, addr2] = await ethers.getSigners();
     const LOA = await ethers.getContractFactory("LOA");
@@ -28,8 +28,13 @@ describe("LOA ", function () {
     const nftMarket = await NFTMarket.deploy(loa.address,loaNFT.address);
     await nftMarket.deployed();
 
+
+    const LoANFTFusion = await ethers.getContractFactory("LoANFTFusion");
+    const loaNFTFusion = await LoANFTFusion.deploy(loa.address,loaNFT.address);
+    await loaNFTFusion.deployed();
+
     await capsule.setNFTAddress(loaNFT.address, nftMarket.address);
-    await loaNFT.updateAccessAddressAndFees(capsule.address, capsule.address,capsule.address, [1], [100]);
+    await loaNFT.updateAccessAddressAndFees(capsule.address, capsule.address, loaNFTFusion.address, [1], [100]);
 
     loa.connect(addr1).approve(loaNFT.address, 300);
     
@@ -82,7 +87,27 @@ describe("LOA ", function () {
     expect(await capsule._capsule_status(3)).to.equal(6);//status burned
     expect(await loaNFT._nft_status(2)).to.equal(2); // status minted
     
+    
+    await loaNFTFusion.createFusionRule(1, 100, 2, [1,1]);
+    expect(await loaNFTFusion._fusion_rule_price(1)).to.equal(100);
+    
+    await loaNFTFusion.removeFusionRule(1);
+    expect(await loaNFTFusion._fusion_rule_price(1)).to.equal(0);
+    
+    await loaNFTFusion.createFusionRule(1, 250, 2, [1,1]);
+    expect(await loaNFTFusion._fusion_rule_price(1)).to.equal(250);
 
+    
+    
+    await loa.connect(addr1).approve(loaNFTFusion.address, 250);
+    await loaNFTFusion.connect(addr1).fusion(1, [2,3]);
+
+    expect(await loa.balanceOf(addr1.address)).to.equal(550);
+    expect(await loaNFT._nft_status(5)).to.equal(2);
+    
+    expect(await loaNFT.balanceOf(addr1.address, 5)).to.equal(1);
+
+    console.log(await loaNFT.getNFTDetail(5));
   });
 
 

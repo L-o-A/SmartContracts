@@ -30,6 +30,7 @@ contract LOAnft is ERC1155, Ownable {
     IERC20Contract public _erc20Token;
     IERC1155Contract public _capsuleToken;
     address public _nftMarketAddress;
+    address public _fusion_address;
     address private _admin;
 
     // 0 : unpublished
@@ -41,10 +42,6 @@ contract LOAnft is ERC1155, Ownable {
     mapping(uint256 => uint8) private _nft_hero;
     mapping(uint256 => address) private _nft_owner;
     mapping(uint8 => uint256[]) private _nft_level_to_ids;
-
-    mapping(uint256 => uint256) public _fusion_rule_price;
-    mapping(uint256 => uint8) public _fusion_rule_result;
-    mapping(uint256 => uint8[]) public _fusion_rule_levels;
 
     mapping(uint8 => uint256) public _minting_fee;
 
@@ -65,10 +62,12 @@ contract LOAnft is ERC1155, Ownable {
     function updateAccessAddressAndFees (
         address capsuleContract, 
         address nftMarketAddress,
+        address fusion_address,
         uint8[] memory capsuleTypes, 
         uint256[] memory fees) public onlyAdmin{
         _capsuleToken = IERC1155Contract(capsuleContract);
         _nftMarketAddress = nftMarketAddress;
+        _fusion_address = fusion_address;
 
         for(uint8 i = 0; i < capsuleTypes.length; i++) {
             _minting_fee[capsuleTypes[i]] = fees[i];
@@ -81,14 +80,14 @@ contract LOAnft is ERC1155, Ownable {
         _;
     }
 
-    function getNFTDetail(uint256 id) public view returns (uint256, uint8, uint8, address) {
+    function getNFTDetail(uint256 id) public view returns (uint8, uint8, address, uint8) {
         require(_nft_status[id] == 2, "Id is not minted");
 
         return (
-            id,
             _nft_hero[id],
             _nft_level[id],
-            _nft_owner[id]
+            _nft_owner[id],
+            _nft_status[id]
         );
     }
 
@@ -147,6 +146,7 @@ contract LOAnft is ERC1155, Ownable {
 
         uint256 id = _nft_level_to_ids[capsuleLevel][_nft_level_to_ids[capsuleLevel].length -1];
         require(_nft_status[id] == 1, "id is not available");
+
         uint256 fee = _minting_fee[_capsuleToken.getCapsuleLevel(capsuleId)];
         require(_erc20Token.balanceOf(msg.sender) >= fee, "Not enough minting fee available" );
 
@@ -204,58 +204,25 @@ contract LOAnft is ERC1155, Ownable {
         _erc20Token.transfer(msg.sender, balance);
     }
 
-    function createFusionRule(
-        uint256 id,
-        uint256 price,
-        uint8 resultLevel,
-        uint8[] memory levelValues
-    ) public onlyAdmin {
-        _fusion_rule_price[id]= price;
-        _fusion_rule_result[id]= resultLevel;
-        _fusion_rule_levels[id]= levelValues;
-    }
-
-    function removeFusionRule(uint256 id) public onlyAdmin {
-        delete _fusion_rule_price[id];
-        delete _fusion_rule_result[id];
-        delete _fusion_rule_levels[id];
-    }
-
-    function fusion(uint256 ruleId, uint256[] memory ids) public {
-        require(_fusion_rule_price[ruleId] > 0, "Rule not found");
-        require(
-            _erc20Token.balanceOf(msg.sender) >= _fusion_rule_price[ruleId],
-            "Required LOA balance is not available."
-        );
-
-        for (uint256 i = 0; i < ids.length; i++) {
-            require(msg.sender == _nft_owner[ids[i]] && _nft_status[ids[i]] == 2, "Token doesnt belong to sender.");
-            require(_nft_level[ids[i]] == _fusion_rule_levels[ruleId][i], "Level type not matching.");
-            require(balanceOf(msg.sender, ids[i]) > 0, "Balance not available.");
-            if(i > 0) {
-                require(_nft_hero[ids[i-1]] == _nft_hero[ids[i]], "Hero type not matching.");
-            }
-        }
-
-        _erc20Token.transferFrom(msg.sender, address(this), _fusion_rule_price[ruleId]);
+    function fusion(address owner, uint256[] memory ids, uint8 fusionLevel, uint256 price) public {
+        require(msg.sender == _fusion_address, "Rule not found");
 
         //Burn NFTs
         for (uint256 i = 0; i < ids.length; i++) {
-            _burn(msg.sender, ids[i], 1);
+            _burn(owner, ids[i], 1);
             _nft_status[ids[i]] = 3;
             delete _nft_owner[ids[i]];
         }
 
-        uint256 nextId = _nft_level_to_ids[_fusion_rule_result[ruleId]][_nft_level_to_ids[_fusion_rule_result[ruleId]].length - 1];
-        _nft_level_to_ids[_fusion_rule_result[ruleId]].pop();
+        uint256 nextId = _nft_level_to_ids[fusionLevel][_nft_level_to_ids[fusionLevel].length - 1];
+        _nft_level_to_ids[fusionLevel].pop();
 
-        _nft_hero[nextId] = _nft_hero[ids[0]];
-        _nft_level[nextId] = _fusion_rule_result[ruleId];
         _nft_status[nextId] = 2;
-        _nft_owner[nextId] = msg.sender;
-        _mint(msg.sender, nextId, 1, "");
-
-        emit NFTMinted(nextId, 0, msg.sender, _fusion_rule_price[ruleId]);
+        _nft_owner[nextId] = owner;
+        _mint(owner, nextId, 1, "");
+        emit NFTMinted(nextId, 0, owner, price);
     }
+
+
 
 }
