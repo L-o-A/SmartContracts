@@ -5,16 +5,12 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
-import "hardhat/console.sol"; //TODO remove
-
 interface IERC20Contract {
     function transfer(address recipient, uint256 amount)
         external
         returns (bool);
 
     function balanceOf(address tokenOwner) external view returns (uint256);
-
-    function approve(address spender, uint256 amount) external returns (bool);
 
     function transferFrom(
         address from,
@@ -44,30 +40,19 @@ contract LOAnft is ERC1155, Ownable {
     mapping(uint256 => uint8) private _nft_level;
     mapping(uint256 => uint8) private _nft_hero;
     mapping(uint256 => address) private _nft_owner;
-    mapping(uint256 => address) private _nft_leased_to;
-    mapping(uint256 => uint256) private _nft_leased_endtime;
-    mapping(uint256 => uint256) private _nft_start_time;
     mapping(uint8 => uint256[]) private _nft_level_to_ids;
 
     mapping(uint256 => uint256) public _fusion_rule_price;
     mapping(uint256 => uint8) public _fusion_rule_result;
     mapping(uint256 => uint8[]) public _fusion_rule_levels;
 
+    mapping(uint8 => uint256) public _minting_fee;
+
     event NFTMinted(
         uint256 indexed itemId,
         uint256 indexed capsuleId,
         address indexed buyer,
         uint256 price
-    );
-
-    event NFTLeased(
-        uint256 indexed itemId,
-        address indexed leassor,
-        uint256 tillTime
-    );
-
-    event NFTLeasedEnded(
-        uint256 indexed itemId
     );
 
     constructor(address erc20Contract)
@@ -77,12 +62,17 @@ contract LOAnft is ERC1155, Ownable {
         _admin = msg.sender;
     }
 
-    function setCapsuleAddress(address capsuleContract) public onlyAdmin{
+    function updateAccessAddressAndFees (
+        address capsuleContract, 
+        address nftMarketAddress,
+        uint8[] memory capsuleTypes, 
+        uint256[] memory fees) public onlyAdmin{
         _capsuleToken = IERC1155Contract(capsuleContract);
-    }
-
-    function setNFTMarketAddress(address nftMarketAddress) public onlyAdmin{
         _nftMarketAddress = nftMarketAddress;
+
+        for(uint8 i = 0; i < capsuleTypes.length; i++) {
+            _minting_fee[capsuleTypes[i]] = fees[i];
+        }
     }
 
     // Modifier
@@ -91,16 +81,14 @@ contract LOAnft is ERC1155, Ownable {
         _;
     }
 
-    function getNFTDetail(uint256 id) public view returns (uint256, uint8, uint8, address, address, uint256) {
+    function getNFTDetail(uint256 id) public view returns (uint256, uint8, uint8, address) {
         require(_nft_status[id] == 2, "Id is not minted");
 
         return (
             id,
             _nft_hero[id],
             _nft_level[id],
-            _nft_owner[id],
-            _nft_leased_to[id],
-            _nft_leased_endtime[id]
+            _nft_owner[id]
         );
     }
 
@@ -127,8 +115,6 @@ contract LOAnft is ERC1155, Ownable {
             _nft_status[ids[i]] = 1;
             _nft_level[ids[i]] = levels[i];
             _nft_hero[ids[i]] = heroes[i];
-            _nft_start_time[ids[i]] = startTimes[i];
-            // _nft_end_time[ids[i]] = endTimes[i];
         }
     }
 
@@ -151,7 +137,6 @@ contract LOAnft is ERC1155, Ownable {
             delete _nft_status[ids[i]];
             delete _nft_level[ids[i]];
             delete _nft_hero[ids[i]];
-            delete _nft_start_time[ids[i]];
         }
     }
 
@@ -162,7 +147,9 @@ contract LOAnft is ERC1155, Ownable {
 
         uint256 id = _nft_level_to_ids[capsuleLevel][_nft_level_to_ids[capsuleLevel].length -1];
         require(_nft_status[id] == 1, "id is not available");
-        require(_nft_start_time[id] < block.timestamp, "Minting hasn't started yet");
+        uint256 fee = _minting_fee[_capsuleToken.getCapsuleLevel(capsuleId)];
+        require(_erc20Token.balanceOf(msg.sender) >= fee, "Not enough minting fee available" );
+
         _nft_owner[id] = msg.sender;
         _nft_status[id] = 2;
 
@@ -171,6 +158,8 @@ contract LOAnft is ERC1155, Ownable {
         _capsuleToken.burn(msg.sender, capsuleId);
         
         _nft_level_to_ids[_nft_level[id]].pop();
+
+        _erc20Token.transferFrom(msg.sender, address(this), fee);
         emit NFTMinted(id, capsuleId, msg.sender, 0);
     }
 
@@ -221,9 +210,6 @@ contract LOAnft is ERC1155, Ownable {
         uint8 resultLevel,
         uint8[] memory levelValues
     ) public onlyAdmin {
-        // require(price > 0, "Price cant be Zero");
-        // require(resultLevel > 0, "Result Type Id not provided");
-
         _fusion_rule_price[id]= price;
         _fusion_rule_result[id]= resultLevel;
         _fusion_rule_levels[id]= levelValues;
