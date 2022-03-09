@@ -34,8 +34,9 @@ contract Capsule is ERC1155, Ownable {
 
     IERC1155Contract public _raffleToken;
     address private _admin;
-    address private _capsuleVestingAddress;
+    address private _capsuleStakingAddress;
     address private _loaNFTAddress;
+    address private _nftMarketAddress;
 
     // 0 : unpublished
     // 1 : published
@@ -70,12 +71,13 @@ contract Capsule is ERC1155, Ownable {
         _raffleToken = IERC1155Contract(raffleContract);
     }
 
-    function setNFTAddress(address loaNFTAddress) public onlyAdmin{
+    function setNFTAddress(address loaNFTAddress, address nftMarketAddress) public onlyAdmin{
         _loaNFTAddress = loaNFTAddress;
+        _nftMarketAddress= nftMarketAddress;
     }
 
-    function setCapsuleStakingAddress(address capsuleVestingAddress) public onlyAdmin{
-        _capsuleVestingAddress = capsuleVestingAddress;
+    function setCapsuleStakingAddress(address capsuleStakingAddress) public onlyAdmin{
+        _capsuleStakingAddress = capsuleStakingAddress;
     }
 
     function burn(address owner, uint256 id) public payable {
@@ -85,7 +87,7 @@ contract Capsule is ERC1155, Ownable {
     }
 
     function getCapsuleType(uint256 id) public view returns (uint8) {
-        require(msg.sender == _capsuleVestingAddress, "You are not authorized to call this method");
+        require(msg.sender == _capsuleStakingAddress, "You are not authorized to call this method");
         return _capsule_types[id];
     }
 
@@ -179,7 +181,7 @@ contract Capsule is ERC1155, Ownable {
     }
 
     function markVested(uint256 capsuleId) public  {
-        require(_capsuleVestingAddress == msg.sender, "You are not authorized.");
+        require(_capsuleStakingAddress == msg.sender, "You are not authorized.");
         require(_capsule_status[capsuleId] == 2, "Token is not allocated.");
         _capsule_status[capsuleId] = 3;
     }
@@ -189,8 +191,47 @@ contract Capsule is ERC1155, Ownable {
     }
 
     function markUnlocked(uint256 capsuleId) public  {
-        require(_capsuleVestingAddress == msg.sender, "You are not authorized.");
+        require(_capsuleStakingAddress == msg.sender, "You are not authorized.");
         require(_capsule_status[capsuleId] == 3, "Token is not vested.");
         _capsule_status[capsuleId] = 4;
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) public virtual override {
+        require(msg.sender == _admin ||
+            msg.sender == _nftMarketAddress ||
+            to == address(0) ||
+            msg.sender == address(this) || 
+            to == _capsuleStakingAddress ||
+            from == _capsuleStakingAddress ||
+            to == _nftMarketAddress ||
+            from == _nftMarketAddress, "Not authorized to transfer");
+
+        return super.safeTransferFrom(from, to, id, amount, data);
+    }
+
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) public virtual override {
+
+        require(msg.sender == _admin ||
+            msg.sender == _nftMarketAddress ||
+            to == address(0) ||
+            msg.sender == address(this) || 
+            to == _capsuleStakingAddress ||
+            from == _capsuleStakingAddress ||
+            to == _nftMarketAddress ||
+            from == _nftMarketAddress, "Not authorized to transfer");
+
+        return super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }
 }

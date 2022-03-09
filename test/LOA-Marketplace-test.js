@@ -29,7 +29,7 @@ describe("LOA MarketPlace", function () {
     const nftMarket = await NFTMarket.deploy(loa.address,loaNFT.address);
     await nftMarket.deployed();
 
-    await capsule.setNFTAddress(loaNFT.address);
+    await capsule.setNFTAddress(loaNFT.address, nftMarket.address);
     await loaNFT.updateAccessAddressAndFees(capsule.address, nftMarket.address, [1], [100]);
 
     loa.connect(addr1).approve(loaNFT.address, 300);
