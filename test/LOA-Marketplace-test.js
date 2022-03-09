@@ -4,7 +4,7 @@ const { ethers } = require("hardhat");
 
 describe("LOA MarketPlace", function () {
 
-  it("LOA NFT Test", async function () {
+  it("LOA MarketPlace Test", async function () {
 
     const [owner, addr1, addr2] = await ethers.getSigners();
     const LOA = await ethers.getContractFactory("LOA");
@@ -12,8 +12,9 @@ describe("LOA MarketPlace", function () {
     await loa.deployed();
 
 
-    loa.transfer(addr1.address, 1000);
-    expect(await loa.balanceOf(addr1.address)).to.equal(1000);
+    loa.transfer(addr1.address, 6000);
+    loa.transfer(addr2.address, 3000);
+    expect(await loa.balanceOf(addr1.address)).to.equal(6000);
 
     
     const Capsule = await ethers.getContractFactory("Capsule");
@@ -24,8 +25,12 @@ describe("LOA MarketPlace", function () {
     const loaNFT = await LOAnft.deploy(loa.address);
     await loaNFT.deployed();
 
+    const NFTMarket = await ethers.getContractFactory("NFTMarket");
+    const nftMarket = await NFTMarket.deploy(loa.address);
+    await nftMarket.deployed(loa.address);
+
     await capsule.setNFTAddress(loaNFT.address);
-    await loaNFT.updateAccessAddressAndFees(capsule.address, capsule.address, [1], [100]);
+    await loaNFT.updateAccessAddressAndFees(capsule.address, nftMarket.address, [1], [100]);
 
     loa.connect(addr1).approve(loaNFT.address, 300);
     
@@ -37,31 +42,7 @@ describe("LOA MarketPlace", function () {
         uint256[] memory startTimes
      */
     await capsule.putCapsules([1,2, 3, 4],  [1,1,1,1], [1,1,1,1], [1644589943, 1644589943, 1644589943, 1644589943]);
-  
     await loaNFT.putNFTs([1,2,3,4,5],[1,1,1,2,2], [1,1,1,1,1], [1644589943, 1644589943, 1644589943, 1644589943, 1644589943]);
-
-    expect(await loaNFT._nft_status(1)).to.equal(1);
-    expect(await loaNFT._nft_status(2)).to.equal(1);
-    expect(await loaNFT._nft_status(3)).to.equal(1);
-    expect(await loaNFT._nft_status(4)).to.equal(1);
-    expect(await loaNFT._nft_status(5)).to.equal(1);
-
-    await loaNFT.removeNFTs([1,2,3,4,5]);
-
-    expect(await loaNFT._nft_status(1)).to.equal(0); // status unpublished
-    expect(await loaNFT._nft_status(2)).to.equal(0);
-    expect(await loaNFT._nft_status(3)).to.equal(0);
-    expect(await loaNFT._nft_status(4)).to.equal(0);
-    expect(await loaNFT._nft_status(5)).to.equal(0);
-
-    await loaNFT.putNFTs([1,2,3,4,5],[1,1,1,2,2], [1,1,1,1,1], [1644589943, 1644589943, 1644589943, 1644589943, 1644589943]);
-
-
-    expect(await loaNFT._nft_status(1)).to.equal(1); // status ready to mint
-    expect(await loaNFT._nft_status(2)).to.equal(1); // status ready to mint
-    expect(await loaNFT._nft_status(3)).to.equal(1); // status ready to mint
-    expect(await loaNFT._nft_status(4)).to.equal(1); // status ready to mint
-    expect(await loaNFT._nft_status(5)).to.equal(1); // status ready to mint
 
     await capsule.airdrop(1, addr1.address);
     await capsule.airdrop(1, addr1.address);
@@ -72,30 +53,54 @@ describe("LOA MarketPlace", function () {
     await loaNFT.connect(addr1).mint(3);
     await loaNFT.connect(addr1).mint(4);
 
-    expect(await capsule._capsule_status(4)).to.equal(6);//status burned
     expect(await loaNFT._nft_status(3)).to.equal(2); // status minted
-    
-    expect(await capsule._capsule_status(3)).to.equal(6);//status burned
     expect(await loaNFT._nft_status(2)).to.equal(2); // status minted
-    
-    
-    await loaNFT.createFusionRule(1, 100, 2, [1,1]);
-    expect(await loaNFT._fusion_rule_price(1)).to.equal(100);
-    
-    await loaNFT.removeFusionRule(1);
-    expect(await loaNFT._fusion_rule_price(1)).to.equal(0);
-    
-    await loaNFT.createFusionRule(1, 250, 2, [1,1]);
-    expect(await loaNFT._fusion_rule_price(1)).to.equal(250);
 
-    await loa.connect(addr1).approve(loaNFT.address, 250);
 
-    await loaNFT.connect(addr1).fusion(1, [2,3]);
-    expect(await loa.balanceOf(addr1.address)).to.equal(550);
-    expect(await loaNFT._nft_status(5)).to.equal(2);
     
-    expect(await loaNFT.balanceOf(addr1.address, 5)).to.equal(1);
 
+    nftMarket.updateFees([capsule.address, loaNFT.address], [500, 1000]);
+    
+    await loa.connect(addr1).approve(nftMarket.address, 1000);
+
+    await loaNFT.connect(addr1).setApprovalForAll(nftMarket.address, true);
+    await nftMarket.connect(addr1).list(loaNFT.address, 3, 2000);
+
+    await loa.connect(addr1).approve(nftMarket.address, 1000);
+    await loaNFT.connect(addr1).setApprovalForAll(nftMarket.address, true);
+    await nftMarket.connect(addr1).list(loaNFT.address, 2, 2500);
+
+    expect(await loaNFT.balanceOf(addr1.address, 3)).to.equal(0);
+    expect(await loa.balanceOf(addr1.address)).to.equal(3800);
+    
+    let marketItem = await nftMarket.getMarketItem(1);
+    console.log(marketItem);
+    
+    await nftMarket.connect(addr1).updatePrice(1, 3000);
+
+    marketItem = await nftMarket.getMarketItem(1);
+    console.log(marketItem);
+
+    marketItem = await nftMarket.connect(addr1).fetchMyListings();
+    console.log(marketItem);
+
+    await nftMarket.connect(addr1).unlist(1);
+    
+    marketItem = await nftMarket.getMarketItem(1);
+    console.log(marketItem);
+
+    marketItem = await nftMarket.getMarketItem(2);
+    console.log(marketItem);
+    
+    
+    
+    await loa.connect(addr2).approve(nftMarket.address, 2500);
+    expect(await loa.balanceOf(addr2.address)).to.equal(3000);
+
+    await nftMarket.connect(addr2).buy(2);
+    expect(await loa.balanceOf(addr2.address)).to.equal(500);
+
+    
 
 
   });
