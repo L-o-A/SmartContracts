@@ -67,6 +67,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
     Counters.Counter private _itemIds;
     Counters.Counter private _itemsSold;
     IERC20Contract public _erc20Token; // External BUSD contract
+    IERC1155 _loaNFT;
     address private _admin;
 
     mapping(uint256 => MarketItem) public _id_to_listed_item;
@@ -92,9 +93,16 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         uint256 price;
     }
 
-    constructor(address erc20Contract) payable {
+    event NFTTransferred(
+        uint256 indexed itemId,
+        address from,
+        address to
+    );
+
+    constructor(address erc20Contract, address loaNFT) payable {
         _admin = msg.sender;
         _erc20Token = IERC20Contract(erc20Contract);
+        _loaNFT = IERC1155(loaNFT);
     }
 
     function updateFees (
@@ -182,7 +190,16 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         MarketItem storage marketItem = _id_to_listed_item[itemId];
         require(marketItem.seller == msg.sender, "You are not authorized");
         marketItem.price = price;
-    } 
+    }
+
+    function giftNFT(address to, uint256 id) public {
+        require(_loaNFT.balanceOf(msg.sender, id) == 1, "NFT doest belong to you");
+
+        _loaNFT.safeTransferFrom(msg.sender, address(this), id, 1, "");
+        _loaNFT.safeTransferFrom(address(this), to, id, 1, "");
+
+        emit NFTTransferred(id, msg.sender, to);
+    }
     
 
     function buy(uint256 itemId)
@@ -202,8 +219,6 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         );
         console.log("LOA balance available");
         
-
-
         //Remove sender listed item ids
         uint256[] storage itemIds = _adddress_to_listed_item_ids[msg.sender];
 
