@@ -24,6 +24,6 @@ module.exports = {
         url: "https://eth-ropsten.alchemyapi.io/v2/2a7LlBSMIgf9YSaKtVcBWmyy5xHCNzr0"
       },
       allowUnlimitedContractSize:true
-    }
+    },
   }
 };

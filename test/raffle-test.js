@@ -122,7 +122,7 @@ describe("RAFFLE ", function () {
     await raffle.pickWinner(1);
     
     await raffle.connect(addr1).withdraw();
-    expect(await raffle.balanceOf(addr1.address, 1)).to.equal(1);
+    expect(await raffle.balanceOf(addr1.address, 1)).to.equal(0);
 
     expect(await loa.balanceOf(addr1.address)).to.equal(19000);
 

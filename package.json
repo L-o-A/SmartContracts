@@ -17,6 +17,8 @@
     "hardhat": "^2.8.4"
   },
   "dependencies": {
+    "@pancakeswap/pancake-swap-lib": "^0.0.4",
+    "@uniswap/lib": "^4.0.1-alpha",
     "openzeppelin-solidity": "^4.5.0"
   }
 }
