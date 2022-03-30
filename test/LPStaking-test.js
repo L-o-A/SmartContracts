@@ -28,7 +28,8 @@ describe("LP-Staking ", function () {
     await lpStaking.deployed();
 
 
-    await lpStaking.update(1000000000);
+    loa.transfer(lpStaking.address, 100000);
+    await lpStaking.update(100);
     await lpStaking.updateWithdrawalFee([180, 90, 30, 14, 7], [0, 100, 200, 300, 400, 500]);
 
     // console.log(await lpStaking._withdrawDays());
@@ -42,7 +43,14 @@ describe("LP-Staking ", function () {
     expect(await lpToken.balanceOf(owner.address)).to.equal(50000);
 
 
-    // expect(await capsule._capsule_status(4)).to.equal(2);
+    expect(await loa.balanceOf(owner.address)).to.equal(0);
+    await lpToken.approve(lpStaking.address, 50000);
+    await lpStaking.stake(50000);
+    expect(await lpToken.balanceOf(owner.address)).to.equal(0);
+    await lpStaking.distributeRewards();
+    await lpStaking.unstake();
+
+    expect(await loa.balanceOf(owner.address)).to.equal(100);
 
   });
 
