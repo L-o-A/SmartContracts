@@ -342,17 +342,17 @@ contract ZapLOA {
             address maticAdddress, 
             address pancakeRouterAddress
         ) {
-        _admin = msg.sender;
-
-        setNotFlip(BUSD);
-        setRoutePairAddress(LOA, BUSD);
-
         ROUTER_ADDRESS = pancakeRouterAddress;
-        ROUTER = IPancakeRouter02(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
+        ROUTER = IPancakeRouter02(ROUTER_ADDRESS);
 
         LOA = loaAdddress;
         BUSD = busdAddress;
         WMATIC = maticAdddress;
+
+         _admin = msg.sender;
+
+        setNotFlip(BUSD);
+        setRoutePairAddress(LOA, BUSD);
     }
 
     // Modifier
