@@ -113,8 +113,6 @@ contract LPStaking is ReentrancyGuard {
 
         uint256 daysElapsed = SafeMath.div(block.timestamp - _tokenStakedAt[msg.sender] , 86400);
 
-        console.log('daysElapsed:', daysElapsed);
-
         uint256 deduction = _withdrawFee[_withdrawFee.length - 1];
         for(uint256 i = 0; i < _withdrawDays.length; i++) {
             if(daysElapsed >= _withdrawDays[i]) {
@@ -122,8 +120,6 @@ contract LPStaking is ReentrancyGuard {
                 break;
             }
         }
-
-        console.log('deduction:', deduction);
 
         if(deduction > 0) {
             amount -= SafeMath.div(SafeMath.mul(deduction, amount), 1000);
@@ -165,9 +161,14 @@ contract LPStaking is ReentrancyGuard {
 
         for(uint256 i = 0; i < _stakers.length; i++) {
             uint256 rewards = SafeMath.div (SafeMath.mul(_rewardPerDay, _tokenStaked[msg.sender]), _totalLPStaked);
+            console.log('rewards :' , rewards);
             _tokenRewards[msg.sender] += rewards;
         }
-        _rewardDistributedLast = block.timestamp;
+        
+        if(_rewardDistributedLast == 0)
+            _rewardDistributedLast = block.timestamp;
+        else
+            _rewardDistributedLast += 86400 ;
     }
 
 }
