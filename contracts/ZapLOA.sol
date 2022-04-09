@@ -400,13 +400,13 @@ contract ZapLOA {
             anyToken.safeTransferFrom(msg.sender, address(this), amount);
             _approveTokenIfNeeded(token, amount);
 
-            uint256 amountBUSD = _swap(token, amount, BUSD, address(this));
+            uint256 amountBUSD = _swap(token, amount, BUSD, 0, address(this), block.timestamp);
 
             halfBUSDAmount = SafeMath.div(amountBUSD, 2);
 
             _approveTokenIfNeeded(BUSD, amountBUSD);
 
-             loaAmount = _swap(BUSD, halfBUSDAmount, LOA, address(this));
+             loaAmount = _swap(BUSD, halfBUSDAmount, LOA, 0, address(this), block.timestamp);
             _approveTokenIfNeeded(LOA, loaAmount);
             
         }
@@ -419,7 +419,7 @@ contract ZapLOA {
             busdToken.safeTransferFrom(msg.sender, address(this), amount);
             _approveTokenIfNeeded(token, amount);
 
-            loaAmount = _swap(BUSD, halfBUSDAmount, LOA, address(this));
+            loaAmount = _swap(BUSD, halfBUSDAmount, LOA, 0, address(this), block.timestamp);
             _approveTokenIfNeeded(LOA, loaAmount);
         }
 
@@ -436,6 +436,26 @@ contract ZapLOA {
     }
 
 
+    function swapTokens (
+        address _from,
+        uint amount,
+        address _to,
+        uint amountOutMin,
+        address receiver,
+        uint deadline
+    ) public returns (uint) {
+
+        require(_from != _to, "From and To tokens cant be same");
+        require(_from != address(0) && _to != address(0), "From and To token address cant be zero address.");
+
+        IBEP20 fromToken = IBEP20(_from);
+        require(fromToken.balanceOf(msg.sender) >= amount, "Amount not available" );
+
+        fromToken.approve(ROUTER_ADDRESS, amount);
+        return _swap(_from, amount, _to, amountOutMin, receiver, deadline);
+    }
+
+
     /* ========== Private Functions ========== */
 
     function _approveTokenIfNeeded(address token, uint amount) private {
@@ -448,7 +468,9 @@ contract ZapLOA {
         address _from,
         uint amount,
         address _to,
-        address receiver
+        uint amountOutMin,
+        address receiver,
+        uint deadline
     ) private returns (uint) {
         address intermediate = routePairAddresses[_from];
         if (intermediate == address(0)) {
@@ -513,7 +535,7 @@ contract ZapLOA {
             path[2] = _to;
         }
 
-        uint[] memory amounts = ROUTER.swapExactTokensForTokens(amount, 0, path, receiver, block.timestamp);
+        uint[] memory amounts = ROUTER.swapExactTokensForTokens(amount, amountOutMin, path, receiver, deadline);
         return amounts[amounts.length - 1];
     }
 
@@ -544,7 +566,7 @@ contract ZapLOA {
             if (token == address(0)) continue;
             uint amount = IBEP20(token).balanceOf(address(this));
             if (amount > 0) {
-                _swap(token, amount, BUSD, _admin);
+                _swap(token, amount, BUSD, 0, _admin, block.timestamp);
             }
         }
     }

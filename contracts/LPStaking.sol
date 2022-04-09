@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 
 interface IERC20Contract {
@@ -161,7 +161,7 @@ contract LPStaking is ReentrancyGuard {
 
         for(uint256 i = 0; i < _stakers.length; i++) {
             uint256 rewards = SafeMath.div (SafeMath.mul(_rewardPerDay, _tokenStaked[msg.sender]), _totalLPStaked);
-            console.log('rewards :' , rewards);
+            // console.log('rewards :' , rewards);
             _tokenRewards[msg.sender] += rewards;
         }
         
