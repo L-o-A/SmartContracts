@@ -39,7 +39,7 @@ describe("LP-Staking ", function () {
     await lpToken.approve(lpStaking.address, 100000);
     await lpStaking.stake(100000);
     expect(await lpToken.balanceOf(owner.address)).to.equal(0);
-    await lpStaking.unstake();
+    await lpStaking.unstake(100000);
     expect(await lpToken.balanceOf(owner.address)).to.equal(50000);
 
 
@@ -48,7 +48,7 @@ describe("LP-Staking ", function () {
     await lpStaking.stake(50000);
     expect(await lpToken.balanceOf(owner.address)).to.equal(0);
     await lpStaking.distributeRewards();
-    await lpStaking.unstake();
+    await lpStaking.unstake(50000);
 
     expect(await loa.balanceOf(owner.address)).to.equal(100);
 

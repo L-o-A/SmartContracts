@@ -107,9 +107,8 @@ contract LPStaking is ReentrancyGuard {
     }
 
 
-     function unstake() public {
-        require(_tokenStaked[msg.sender] >= 0, "User has not staked.");
-        uint256 amount = _tokenStaked[msg.sender];
+     function unstake(uint256 amount) public {
+        require(_tokenStaked[msg.sender] >= amount, "User has not staked given amount.");
 
         uint256 daysElapsed = SafeMath.div(block.timestamp - _tokenStakedAt[msg.sender] , 86400);
 
@@ -129,18 +128,22 @@ contract LPStaking is ReentrancyGuard {
         if(_tokenRewards[msg.sender] > 0)
             _loaToken.transfer(msg.sender, _tokenRewards[msg.sender]);
 
-        _totalLPStaked -= _tokenStaked[msg.sender];
+        _totalLPStaked -= amount;
 
-        delete _tokenStaked[msg.sender];
+        _tokenStaked[msg.sender] = _tokenStaked[msg.sender] - amount;
         delete _tokenRewards[msg.sender];
-        delete _tokenStakedAt[msg.sender];
-
-        for(uint256 i = 0; i < _stakers.length; i++) {
-            if(_stakers[i] == msg.sender) {
-                _stakers[i] = _stakers[_stakers.length -1];
-                _stakers.pop();
-                break;
+        _tokenStakedAt[msg.sender] = block.timestamp;
+        
+        if(_tokenStaked[msg.sender] == 0) {
+            for(uint256 i = 0; i < _stakers.length; i++) {
+                if(_stakers[i] == msg.sender) {
+                    _stakers[i] = _stakers[_stakers.length -1];
+                    _stakers.pop();
+                    break;
+                }
             }
+            delete _tokenStakedAt[msg.sender];
+            delete _tokenStakedAt[msg.sender];
         }
 
         emit Withdrawn(msg.sender, amount);
