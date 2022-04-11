@@ -29,13 +29,18 @@ interface IERC20Contract {
 contract LPStaking is ReentrancyGuard {
 
     IERC20Contract public _loaToken;
-    IERC20Contract public _loaLPToken;
+    IERC20Contract public _lpToken;
     address private _admin;
 
     constructor(address loaContract, address lpContract) payable {
         _admin = msg.sender;
         _loaToken = IERC20Contract(loaContract);
-        _loaLPToken = IERC20Contract(lpContract);
+        if(loaContract == lpContract)
+            _lpToken = _loaToken;
+        else 
+            _lpToken = IERC20Contract(lpContract);
+
+        _rewardDistributedLast = block.timestamp;
     }
 
     address[] public _stakers;
@@ -56,7 +61,8 @@ contract LPStaking is ReentrancyGuard {
 
     event Withdrawn(
         address owner,
-        uint256 amount
+        uint256 amount,
+        uint256 fees
     );
 
     event RewardClaimed(
@@ -93,9 +99,11 @@ contract LPStaking is ReentrancyGuard {
     }
 
     function stake(uint256 amount) public {
-        require(_loaLPToken.balanceOf(msg.sender) >= amount, "Unavailable balance.");
+        require(_lpToken.balanceOf(msg.sender) >= amount, "Unavailable balance.");
 
-        _loaLPToken.transferFrom(msg.sender, address(this), amount);
+        _lpToken.transferFrom(msg.sender, address(this), amount);
+
+        distributeRewards();
 
         _totalLPStaked += amount;
 
@@ -107,8 +115,11 @@ contract LPStaking is ReentrancyGuard {
     }
 
 
-     function unstake(uint256 amount) public {
-        require(_tokenStaked[msg.sender] >= amount, "User has not staked given amount.");
+     function unstake(uint256 withdrawAmount) public {
+        require(_tokenStaked[msg.sender] >= withdrawAmount, "User has not staked given amount.");
+        require(withdrawAmount > 0, "Withdraw amount.");
+
+        distributeRewards();
 
         uint256 daysElapsed = SafeMath.div(block.timestamp - _tokenStakedAt[msg.sender] , 86400);
 
@@ -120,17 +131,19 @@ contract LPStaking is ReentrancyGuard {
             }
         }
 
+        uint256 amount = withdrawAmount;
+
         if(deduction > 0) {
-            amount -= SafeMath.div(SafeMath.mul(deduction, amount), 1000);
+            amount -= SafeMath.div(SafeMath.mul(deduction, withdrawAmount), 1000);
         }
 
-        _loaLPToken.transfer(msg.sender, amount);
+        _lpToken.transfer(msg.sender, amount);
         if(_tokenRewards[msg.sender] > 0)
             _loaToken.transfer(msg.sender, _tokenRewards[msg.sender]);
 
-        _totalLPStaked -= amount;
+        _totalLPStaked -= withdrawAmount;
 
-        _tokenStaked[msg.sender] = _tokenStaked[msg.sender] - amount;
+        _tokenStaked[msg.sender] = _tokenStaked[msg.sender] - withdrawAmount;
         delete _tokenRewards[msg.sender];
         _tokenStakedAt[msg.sender] = block.timestamp;
         
@@ -146,10 +159,11 @@ contract LPStaking is ReentrancyGuard {
             delete _tokenStakedAt[msg.sender];
         }
 
-        emit Withdrawn(msg.sender, amount);
+        emit Withdrawn(msg.sender, withdrawAmount, withdrawAmount - amount);
     }
 
     function claimRewards() public {
+        distributeRewards();
         uint256 amount = _tokenRewards[msg.sender];
         require(amount >= 0, "User has no rewards.");
         _loaToken.transfer(msg.sender, amount);
@@ -159,19 +173,30 @@ contract LPStaking is ReentrancyGuard {
     }
 
     function distributeRewards() public {
-        require(_rewardPerDay > 0, "No rewards planned.");
-        require(block.timestamp - _rewardDistributedLast > 86400, "Rewards already distibuted for currect staking duration.");
-
-        for(uint256 i = 0; i < _stakers.length; i++) {
-            uint256 rewards = SafeMath.div (SafeMath.mul(_rewardPerDay, _tokenStaked[msg.sender]), _totalLPStaked);
-            // console.log('rewards :' , rewards);
-            _tokenRewards[msg.sender] += rewards;
+        uint256 currentTime = block.timestamp;
+        if(_rewardPerDay > 0 && currentTime - _rewardDistributedLast > 10) {
+            if(_stakers.length > 0) {
+                uint256 secs = SafeMath.sub(currentTime, _rewardDistributedLast);
+                uint256 rewards_to_be_distributed = SafeMath.div(SafeMath.mul(_rewardPerDay, secs), 86400);
+                
+                uint256 perUnitReward = SafeMath.div (rewards_to_be_distributed, _totalLPStaked);
+                for(uint256 i = 0; i < _stakers.length; i++) {
+                    uint256 user_rewards = SafeMath.mul(perUnitReward, _tokenStaked[_stakers[i]]);
+                    _tokenRewards[_stakers[i]] += user_rewards;
+                }
+                _rewardDistributedLast = _rewardDistributedLast + secs;
+            } else {
+                _rewardDistributedLast = currentTime;
+            }
         }
-        
-        if(_rewardDistributedLast == 0)
-            _rewardDistributedLast = block.timestamp;
-        else
-            _rewardDistributedLast += 86400 ;
     }
+
+    function myRewards() public view returns(uint256, uint256, uint256) {
+        if(_tokenStaked[msg.sender] == 0) {
+            return (0, _rewardDistributedLast, 0);
+        }
+        return (_tokenRewards[msg.sender], _rewardDistributedLast, SafeMath.mul(_tokenStaked[msg.sender], SafeMath.div (_rewardPerDay, _totalLPStaked)));
+    }
+
 
 }
