@@ -308,7 +308,7 @@ contract ZapLOA {
     // address private constant LOA = 0x94b69263FCA20119Ae817b6f783Fc0F13B02ad50;
 
     // address private constant BUNNY = 0x4C16f69302CcB511c5Fac682c7626B9eF0Dc126a;
-    // address private constant WMATIC = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
+    // address private constant WBNB = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
 
     // address private constant DAI = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
     // address private constant USDT = 0xc2132D05D31c914a87C6611C10748AEb04B58e8F;
@@ -322,7 +322,7 @@ contract ZapLOA {
     //TESTNET
     address private LOA; // 0x6eC9aE46b4a4ce6Be27448C5ca65c063A2b217Ea;
     address private BUSD; // 0x3037c0161d3E2Fa8a5FE0bd7C254b1fDD151395a;
-    address private WMATIC; // 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
+    address private WBNB; // 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
 
     address private ROUTER_ADDRESS;
     IPancakeRouter02 private ROUTER; // LIVE 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff , Test 0xD99D1c33F9fC3444f8101754aBC46c52416550D1
@@ -347,7 +347,7 @@ contract ZapLOA {
 
         LOA = loaAdddress;
         BUSD = busdAddress;
-        WMATIC = maticAdddress;
+        WBNB = maticAdddress;
 
          _admin = msg.sender;
 
@@ -436,6 +436,45 @@ contract ZapLOA {
     }
 
 
+
+
+    function zapEth () external payable {
+
+        uint256 halfBUSDAmount = 0;
+        uint256 loaAmount = 0;
+
+        require(msg.value > 0 , "Value not provided" );
+        payable(address(this)).transfer(msg.value);
+
+
+        address[] memory path = new address[](2);
+        path[0] = WBNB;
+        path[1] = BUSD;
+
+        uint[] memory amounts = ROUTER.swapExactETHForTokens{ value: msg.value }(0, path, address(this), block.timestamp);
+        uint amountBUSD = amounts[amounts.length - 1];
+
+        halfBUSDAmount = SafeMath.div(amountBUSD, 2); //100000000000000000
+        _approveTokenIfNeeded(BUSD, amountBUSD);
+
+        loaAmount = _swap(BUSD, halfBUSDAmount, LOA, 0, address(this), block.timestamp);
+        _approveTokenIfNeeded(LOA, loaAmount);
+            
+
+        ROUTER.addLiquidity(
+                BUSD,
+                LOA,
+                halfBUSDAmount,
+                loaAmount,
+                0,
+                0,
+                msg.sender,
+                block.timestamp
+            );
+    }
+
+
+
     function swapTokens (
         address _from,
         uint amount,
@@ -478,8 +517,8 @@ contract ZapLOA {
         }
 
         address[] memory path;
-        if (intermediate != address(0) && (_from == WMATIC || _to == WMATIC)) {
-            // [WMATIC, QUICK, X] or [X, QUICK, WMATIC]
+        if (intermediate != address(0) && (_from == WBNB || _to == WBNB)) {
+            // [WBNB, QUICK, X] or [X, QUICK, WBNB]
             path = new address[](3);
             path[0] = _from;
             path[1] = intermediate;
@@ -505,33 +544,33 @@ contract ZapLOA {
             path = new address[](5);
             path[0] = _from;
             path[1] = routePairAddresses[_from];
-            path[2] = WMATIC;
+            path[2] = WBNB;
             path[3] = routePairAddresses[_to];
             path[4] = _to;
         } else if (intermediate != address(0) && routePairAddresses[_from] != address(0)) {
-            // [BTC, ETH, WMATIC, QUICK]
+            // [BTC, ETH, WBNB, QUICK]
             path = new address[](4);
             path[0] = _from;
             path[1] = intermediate;
-            path[2] = WMATIC;
+            path[2] = WBNB;
             path[3] = _to;
         } else if (intermediate != address(0) && routePairAddresses[_to] != address(0)) {
-            // [QUICK, WMATIC, ETH, BTC]
+            // [QUICK, WBNB, ETH, BTC]
             path = new address[](4);
             path[0] = _from;
-            path[1] = WMATIC;
+            path[1] = WBNB;
             path[2] = intermediate;
             path[3] = _to;
-        } else if (_from == WMATIC || _to == WMATIC) {
-            // [WMATIC, QUICK] or [QUICK, WMATIC]
+        } else if (_from == WBNB || _to == WBNB) {
+            // [WBNB, QUICK] or [QUICK, WBNB]
             path = new address[](2);
             path[0] = _from;
             path[1] = _to;
         } else {
-            // [QUICK, WMATIC, X] or [X, WMATIC, QUICK]
+            // [QUICK, WBNB, X] or [X, WBNB, QUICK]
             path = new address[](3);
             path[0] = _from;
-            path[1] = WMATIC;
+            path[1] = WBNB;
             path[2] = _to;
         }
 
