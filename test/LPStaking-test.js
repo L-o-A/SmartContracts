@@ -202,11 +202,18 @@ describe("LP-Staking ", function () {
     const loa = await LOA.deploy();
     await loa.deployed();
     expect(await loa.balanceOf(addr1.address)).to.equal(0);
-    
+
+
+    const LP = await ethers.getContractFactory("LOA");
+    const lp = await LOA.deploy();
+    await lp.deployed();
+    expect(await lp.balanceOf(addr1.address)).to.equal(0);
+    await lp.transfer(addr1.address, 5000);
+    await lp.transfer(addr2.address, 3000);
     
     
     const LPStaking = await ethers.getContractFactory("LPStaking");
-    const lpStaking = await LPStaking.deploy(loa.address, loa.address);
+    const lpStaking = await LPStaking.deploy(loa.address, lp.address);
     await lpStaking.deployed();
     
 
@@ -218,8 +225,8 @@ describe("LP-Staking ", function () {
     await lpStaking.setRewardsPerSecond(100);
     await lpStaking.updateWithdrawalFee([180, 90, 30, 14, 7], [0, 100, 200, 300, 400, 500]);
     
-    await loa.connect(addr1).approve(lpStaking.address, 5000);
-    await loa.connect(addr2).approve(lpStaking.address, 3000);
+    await lp.connect(addr1).approve(lpStaking.address, 5000);
+    await lp.connect(addr2).approve(lpStaking.address, 3000);
     await lpStaking.connect(addr1).stake(1000);
     console.log('addr1', await loa.balanceOf(addr1.address));
     console.log('lpStaking', await loa.balanceOf(lpStaking.address));
@@ -245,8 +252,17 @@ describe("LP-Staking ", function () {
     console.log('_rewardPerTokenCumulative', await lpStaking._rewardPerTokenCumulative());
 
     console.log('_tokenStaked', await lpStaking._tokenStaked(addr1.address));
+
+
+    expect(await lpStaking._tokenStaked(addr1.address)).to.equal(2000);
+    expect(await lpStaking._tokenStaked(addr2.address)).to.equal(1000);
     
     await lpStaking.connect(addr1).unstake(2000);
+    await lpStaking.connect(addr2).unstake(1000);
+
+    expect(await lpStaking._tokenStaked(addr2.address)).to.equal(0);
+    expect(await lpStaking._tokenStaked(addr1.address)).to.equal(0);
+
     console.log('addr1', await loa.balanceOf(addr1.address));
     console.log('lpStaking', await loa.balanceOf(lpStaking.address));
     console.log('_rewardPerTokenCumulative', await lpStaking._rewardPerTokenCumulative());

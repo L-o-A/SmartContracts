@@ -44,7 +44,7 @@ contract LPStaking is ReentrancyGuard {
         else 
             _stakeToken = IERC20Contract(stakeContract);
 
-        _rewardDistributedLast = 0; //block.timestamp;
+        _rewardDistributedLast = block.timestamp;
     }
 
     address[] public _stakers;
@@ -59,7 +59,6 @@ contract LPStaking is ReentrancyGuard {
     uint256 public _rewardDistributedLast;
     uint256 public _rewardPerSec;
     uint256 public _totalStakes;
-
 
     event Staked(
         address owner,
@@ -190,8 +189,8 @@ contract LPStaking is ReentrancyGuard {
 
         require(_stakeToken.transfer(msg.sender, amount), "Transfer failed");
 
-        _totalStakes = SafeMath.sub(_totalStakes, amount);
-        _tokenStaked[msg.sender] = _tokenStaked[msg.sender] - amount;
+        _totalStakes = SafeMath.sub(_totalStakes, withdrawAmount);
+        _tokenStaked[msg.sender] = _tokenStaked[msg.sender] - withdrawAmount;
         _rewardPerTokenCumulative = _totalStakes > 0 ? _rewardPerTokenCumulative + SafeMath.div(_rewardPerSec * secs, _totalStakes) : 0;
         _rewardDistributedLast = currentTime;
 
