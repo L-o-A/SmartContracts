@@ -6,7 +6,13 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
+
+/**
+ * This contract is for Capsule Staking
+ * Logic: LOA casules needs to be staked along with LOA tokens to be eligible for revelaing the underneath NFT.
+ * User in order to have an NFT, needs to have a capusule. Stake the capsule. Then he can open the capsule via NFT contract to get NFT.
+ */
 
 interface IERC1155 {
     
@@ -58,6 +64,9 @@ interface IERC20Contract {
     ) external returns (bool);
 }
 
+/**
+ * Smart contract for capsule staking
+ */
 contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
     IERC20Contract public _loaToken;
@@ -69,12 +78,12 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
         _loaToken = IERC20Contract(erc20Contract);
     }
 
-    mapping(uint256 => uint256) public _capsuleStakedOn;
-    mapping(uint256 => uint256) public _capsuleStakedAmount;
-    mapping(uint256 => address) public _capsuleOwner;
+    mapping(uint256 => uint256) public _capsuleStakedOn; // mapping of a capsule staked on time
+    mapping(uint256 => uint256) public _capsuleStakedAmount; // mapping of a capsule staked amount
+    mapping(uint256 => address) public _capsuleOwner; // mapping of a capsule staked owner
 
-    mapping(uint8 => uint32) public _capsuleStakeTypeDuration;
-    mapping(uint8 => uint256) public _capsuleStakeTypeLOATokens;
+    mapping(uint8 => uint32) public _capsuleStakeTypeDuration; // mapping of a capsule staked type
+    mapping(uint8 => uint256) public _capsuleStakeTypeLOATokens; // mapping of a capsule staked LOA token
 
     event Staked(
         address owner,
@@ -86,17 +95,20 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
         uint256[] capsuleIds
     );
 
+    //update capsule Contract
     function setCapsuleContract(address capsuleContract) public {
         require(msg.sender == _admin, "You are not authorized.");
         _capsuleToken = IERC1155(capsuleContract);
     }
 
+    // set capsule staking rules (duration of stake, amount of LOA to be staked) for each capsule type
     function setCapsuleStakingRule(uint8 capsuleType, uint32 stakingDays, uint256 loaTokens) public {
         require(msg.sender == _admin, "You are not authorized.");
         _capsuleStakeTypeDuration[capsuleType] = stakingDays;
         _capsuleStakeTypeLOATokens[capsuleType] = loaTokens;
     }
 
+    //stake capsule along with LOA tokens
     function stake(uint256[] memory capsuleIds) public {
         require(capsuleIds.length > 0, "Capsule Ids not provided");
         uint256 stakedAmount = 0;
@@ -128,6 +140,7 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
         emit Staked(msg.sender, capsuleIds);
     }
 
+    // reclaim my staked capsules once its matures after staking period is over
     function reclaim(uint256[] memory capsuleIds) public {
         for (uint256 i = 0; i < capsuleIds.length; i++) {
             require(_capsuleToken.getCapsuleStatus(capsuleIds[i])  == 3, "Capsule not staked.");

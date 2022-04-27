@@ -8,6 +8,28 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "hardhat/console.sol";
 
+/**
+    Raffale contract is kind of lottery contract, where user can stake LOA token for one or multiple Raffle tickets.
+    After tickets are allocated, then user can open those tickets to find if they have own capsule token or not. Anyone who doesnt won capsule after opening ticket, will get his staked LOA in his account.
+    User can open capsule token to get NFT.
+
+    Rules:
+
+    LOA Capsule is a ERC-1155 standard NFT.
+    Standard Raffle: No. of LOA Capsules per draw is shown in table above (this amount is subjected to change). No limit on the number of wallets that can participate, each wallet can purchase any amount of raffle tickets.
+    Each wallet can win more than 1 LOA Capsule, depending on how many raffle tickets owned by that specific wallet are selected as a winner.
+    Standard Raffle price starts from $30 BUSD worth of $LOA Tokens for the first 5,000 raffle entries (the price may change seeing current marketplace conditions). As the raffle entries increases, the price of the raffle entries increases according to the tier which is based on the table above.
+    Once you participate, your $LOA Tokens will be staked/frozen, at the end of the Raffle if you did not get a LOA Capsule you can redeem your $LOA Tokens.
+    At the end of the raffle period, random raffle numbers will be drawn to identify the winners for the LOA Capsules. 
+    Once you participate, your $LOA Tokens will be staked/held. At the end of the Raffle Event, you are able to redeem your $LOA Tokens if you did not get a LOA Capsule.
+    The amount of $LOA Tokens staking requirements may change at a later time if deemed necessary by the team.
+    All $LOA Tokens used to win the LOA Capsules will be sent to the Treasury Pool.
+    Using Smart Contracts for the raffle is strictly prohibited.
+    $LOA Token Holders will have the opportunity to vote on the Raffle Event rules in the future.
+    Unclaimed LOA Capsules are stored in the Marketplace Storage for a period of time. After that time exceeds, the LOA Capsules will be forfeited and the $LOA Tokens staked will be returned to the respective wallets.
+
+ */
+
 interface IERC20Contract {
     function transfer(address recipient, uint256 amount)
         external

@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+/**
+    Zap function is developed for staking single token for liquidity pool participation.
+    A single token amount is taken and instead same value of BUSD-LOA LP token is issued to the user excluding some fees.
+    Underneath it calls pancakeswap router for token exchange and Liquidity Pool participation.
+    This is heavily inspired from Pancake swap zap function (https://github.com/PancakeBunny-finance/Bunny/tree/main/contracts/zap)
+ */
 
 interface IZap {
     function covers(address _token) external view returns (bool);
@@ -368,11 +374,12 @@ contract ZapLOA {
     receive() external payable {}
 
     /* ========== View Functions ========== */
-
+    //check if the token can be flipped to BUSD
     function isFlip(address _address) public view returns (bool) {
         return !notFlip[_address];
     }
 
+    //check if the token is supported
     function covers(address _token) public view returns (bool) {
         return notFlip[_token];
     }
@@ -384,6 +391,7 @@ contract ZapLOA {
 
     /* ========== External Functions ========== */
 
+    //Zap any supported token for BUSD-LOA LP token
     function zap ( address token, uint256 amount) external {
 
         require(covers(token), "Provided token not covered");
@@ -437,7 +445,7 @@ contract ZapLOA {
 
 
 
-
+    // Zap BNB to get BUSD-LOA LP token
     function zapEth () external payable {
 
         uint256 halfBUSDAmount = 0;
@@ -474,7 +482,7 @@ contract ZapLOA {
     }
 
 
-
+    // Swap one supported token to another supported token
     function swapTokens (
         address _from,
         uint amount,
@@ -503,6 +511,8 @@ contract ZapLOA {
         }
     }
 
+
+    //swap any supported token to another supported token
     function _swap(
         address _from,
         uint amount,
@@ -599,6 +609,8 @@ contract ZapLOA {
         tokens.pop();
     }
 
+
+    //sweep and transfer to admin if any extra tokens are allocated to this contract.
     function sweep() external onlyOwner {
         for (uint i = 0; i < tokens.length; i++) {
             address token = tokens[i];
@@ -610,6 +622,7 @@ contract ZapLOA {
         }
     }
 
+    //withdraw and transfer to admin if any extra tokens are allocated to this contract.
     function withdraw(address token) external onlyOwner {
         if (token == address(0)) {
             payable(_admin).transfer(address(this).balance);

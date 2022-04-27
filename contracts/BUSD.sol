@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: MIT
+
+/**
+ * Dummy BUSD contract for testing purpose only
+ */
 pragma solidity ^0.8.7;
+
+
 
 
 interface IERC20 {

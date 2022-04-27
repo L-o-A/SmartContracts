@@ -6,9 +6,6 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 
-// import "hardhat/console.sol";
-
-
 interface IERC20Contract {
     // External ERC20 contract
     function transfer(address recipient, uint256 amount)
@@ -26,21 +23,28 @@ interface IERC20Contract {
     ) external returns (bool);
 }
 
+/**
+ * LPStaking smart contract Liqidity Pool Token or LOA token staking
+ * Initialization: call setRewardsPerSecond() function to set rewards for second
+ * updateWithdrawalFee() to set withdrawal fees. It accepts values in days[] and fee[]. fee value provided in 1/10th of percentage.
+ * stake() to stake Token
+ * unstake() to unstake Token
+ */
 contract LPStaking is ReentrancyGuard {
 
     IERC20Contract public _loaToken;
-    IERC20Contract public _lpToken;
+    IERC20Contract public _stakeToken;
     address private _admin;
 
-    constructor(address loaContract, address lpContract) payable {
+    constructor(address loaContract, address stakeContract) payable {
         _admin = msg.sender;
         _loaToken = IERC20Contract(loaContract);
-        if(loaContract == lpContract)
-            _lpToken = _loaToken;
+        if(loaContract == stakeContract)
+            _stakeToken = _loaToken;
         else 
-            _lpToken = IERC20Contract(lpContract);
+            _stakeToken = IERC20Contract(stakeContract);
 
-        _rewardDistributedLast = block.timestamp;
+        _rewardDistributedLast = 0; //block.timestamp;
     }
 
     address[] public _stakers;
@@ -48,11 +52,14 @@ contract LPStaking is ReentrancyGuard {
     uint256[] public _withdrawFee;
     mapping(address => uint256) public _tokenStaked;
     mapping(address => uint256) public _tokenStakedAt;
-    mapping(address => uint256) public _tokenRewards;
+
+    mapping(address => uint256) public _rewardTallyBefore;
+    uint256 public _rewardPerTokenCumulative;
 
     uint256 public _rewardDistributedLast;
-    uint256 public _rewardPerDay;
-    uint256 public _totalLPStaked;
+    uint256 public _rewardPerSec;
+    uint256 public _totalStakes;
+
 
     event Staked(
         address owner,
@@ -70,14 +77,16 @@ contract LPStaking is ReentrancyGuard {
         uint256 amount
     );
 
+    receive() external payable {}
+
     function updateAdmin() public {
         require(msg.sender == _admin, "You are not authorized.");
         _admin = msg.sender;
     }
 
-    function update(uint256 rewardPerDay) public {
+    function setRewardsPerSecond(uint256 rewardPerSec) public {
         require(msg.sender == _admin, "You are not authorized.");
-        _rewardPerDay = rewardPerDay;
+        _rewardPerSec = rewardPerSec;
     }
 
     function updateWithdrawalFee(uint256[] memory dayList, uint256[] memory fees) public {
@@ -98,32 +107,67 @@ contract LPStaking is ReentrancyGuard {
         _withdrawFee.push(fees[fees.length - 1]);
     }
 
-    function stake(uint256 amount) public {
-        require(_lpToken.balanceOf(msg.sender) >= amount, "Unavailable balance.");
+    function claimRewards() public {
+        require(_tokenStaked[msg.sender] > 0, "User has not staked.");
 
-        _lpToken.transferFrom(msg.sender, address(this), amount);
+        uint256 currentTime = block.timestamp;
+        uint256 secs = currentTime - _rewardDistributedLast;
+        uint256 rewards = SafeMath.mul(_tokenStaked[msg.sender], SafeMath.sub(_rewardPerTokenCumulative, _rewardTallyBefore[msg.sender])) 
+                +   SafeMath.div(_rewardPerSec * secs * _tokenStaked[msg.sender], _totalStakes);
 
-        distributeRewards();
+        _loaToken.transfer(msg.sender, rewards);
 
-        _totalLPStaked += amount;
+        _rewardPerTokenCumulative = _rewardPerTokenCumulative + SafeMath.div(_rewardPerSec * secs, _totalStakes);
+        _rewardDistributedLast = currentTime;
 
-        _tokenStaked[msg.sender] = _tokenStaked[address(this)] +  amount;
-        _tokenStakedAt[msg.sender] = block.timestamp;
-        _stakers.push(msg.sender);
-
-        emit Staked(msg.sender, amount);
+        emit RewardClaimed(msg.sender, rewards);
     }
 
+    function myRewards(address owner) public view returns(uint256, uint256, uint256) {
+        if(_tokenStaked[owner] == 0) {
+            return (0, _rewardDistributedLast, 0);
+        }
+        uint256 currentTime = block.timestamp;
+        uint256 secs = currentTime - _rewardDistributedLast;
+        uint256 rewards = SafeMath.mul(_tokenStaked[msg.sender], SafeMath.sub(_rewardPerTokenCumulative, _rewardTallyBefore[msg.sender])) 
+                +   SafeMath.div(_rewardPerSec * secs * _tokenStaked[msg.sender], _totalStakes);
+            
+        return (rewards, _rewardDistributedLast, SafeMath.div(SafeMath.mul(_tokenStaked[owner], _rewardPerSec), _totalStakes));
+    }
 
-     function unstake(uint256 withdrawAmount) public {
-        require(_tokenStaked[msg.sender] >= withdrawAmount, "User has not staked given amount.");
-        require(withdrawAmount > 0, "Withdraw amount.");
+    function stake(uint256 amount) public {
+        require(_rewardPerSec > 0, "There is no rewards allocated");
+        require(_stakeToken.balanceOf(msg.sender) >= amount, "Unavailable balance.");
 
-        distributeRewards();
+        uint256 currentTime = block.timestamp;
+        uint256 secs = currentTime - _rewardDistributedLast;
 
-        uint256 daysElapsed = SafeMath.div(block.timestamp - _tokenStakedAt[msg.sender] , 86400);
+        if(_tokenStaked[msg.sender] > 0 ) {
+            uint256 rewards = SafeMath.mul(_tokenStaked[msg.sender], SafeMath.sub(_rewardPerTokenCumulative, _rewardTallyBefore[msg.sender])) 
+                +   SafeMath.div(_rewardPerSec * secs * _tokenStaked[msg.sender], _totalStakes);
+            
+            require(_loaToken.transfer(msg.sender, rewards), "Not enough LOA balance available to transfer rewards");
+        }
 
-        uint256 deduction = _withdrawFee[_withdrawFee.length - 1];
+        require(_stakeToken.transferFrom(msg.sender, address(this), amount), "Transfer failed");
+
+        _tokenStakedAt[msg.sender] = currentTime;
+        _totalStakes = SafeMath.add(_totalStakes, amount);
+        _tokenStaked[msg.sender] = _tokenStaked[msg.sender] + amount;
+        _rewardPerTokenCumulative = _rewardPerTokenCumulative + SafeMath.div(_rewardPerSec * secs, _totalStakes);
+        _rewardDistributedLast = currentTime;
+        _rewardTallyBefore[msg.sender] = _rewardPerTokenCumulative;
+    }
+
+    function unstake(uint256 withdrawAmount) public {
+        require(_tokenStaked[msg.sender] >= withdrawAmount, "Unavailable balance.");
+
+        uint256 currentTime = block.timestamp;
+        uint256 secs = currentTime - _rewardDistributedLast;
+
+        uint256 daysElapsed = SafeMath.div(currentTime - _tokenStakedAt[msg.sender] , 86400);
+
+        uint256 deduction = _withdrawFee.length > 0 ? _withdrawFee[_withdrawFee.length - 1] : 0;
         for(uint256 i = 0; i < _withdrawDays.length; i++) {
             if(daysElapsed >= _withdrawDays[i]) {
                 deduction = _withdrawFee[i];
@@ -137,66 +181,34 @@ contract LPStaking is ReentrancyGuard {
             amount -= SafeMath.div(SafeMath.mul(deduction, withdrawAmount), 1000);
         }
 
-        _lpToken.transfer(msg.sender, amount);
-        if(_tokenRewards[msg.sender] > 0)
-            _loaToken.transfer(msg.sender, _tokenRewards[msg.sender]);
+        if(_tokenStaked[msg.sender] > 0 && _rewardPerSec > 0) {
+            uint256 rewards = SafeMath.mul(_tokenStaked[msg.sender], SafeMath.sub(_rewardPerTokenCumulative, _rewardTallyBefore[msg.sender])) 
+                +   SafeMath.div(_rewardPerSec * secs * _tokenStaked[msg.sender], _totalStakes);
+            
+            require(_loaToken.transfer(msg.sender, rewards), "Not enough LOA balance available to transfer rewards");
+        }
 
-        _totalLPStaked -= withdrawAmount;
+        require(_stakeToken.transfer(msg.sender, amount), "Transfer failed");
 
-        _tokenStaked[msg.sender] = _tokenStaked[msg.sender] - withdrawAmount;
-        delete _tokenRewards[msg.sender];
-        _tokenStakedAt[msg.sender] = block.timestamp;
-        
-        if(_tokenStaked[msg.sender] == 0) {
-            for(uint256 i = 0; i < _stakers.length; i++) {
-                if(_stakers[i] == msg.sender) {
-                    _stakers[i] = _stakers[_stakers.length -1];
-                    _stakers.pop();
-                    break;
-                }
-            }
+        _totalStakes = SafeMath.sub(_totalStakes, amount);
+        _tokenStaked[msg.sender] = _tokenStaked[msg.sender] - amount;
+        _rewardPerTokenCumulative = _totalStakes > 0 ? _rewardPerTokenCumulative + SafeMath.div(_rewardPerSec * secs, _totalStakes) : 0;
+        _rewardDistributedLast = currentTime;
+
+        if(_tokenStaked[msg.sender] > 0) 
+            _rewardTallyBefore[msg.sender] = _rewardPerTokenCumulative;
+        else {
+            delete _rewardTallyBefore[msg.sender];
             delete _tokenStakedAt[msg.sender];
-            delete _tokenStakedAt[msg.sender];
-        }
-
-        emit Withdrawn(msg.sender, withdrawAmount, withdrawAmount - amount);
-    }
-
-    function claimRewards() public {
-        distributeRewards();
-        uint256 amount = _tokenRewards[msg.sender];
-        require(amount >= 0, "User has no rewards.");
-        _loaToken.transfer(msg.sender, amount);
-
-        delete _tokenRewards[msg.sender];
-        emit RewardClaimed(msg.sender, amount);
-    }
-
-    function distributeRewards() public {
-        uint256 currentTime = block.timestamp;
-        if(_rewardPerDay > 0 && currentTime - _rewardDistributedLast > 10) {
-            if(_stakers.length > 0) {
-                uint256 secs = SafeMath.sub(currentTime, _rewardDistributedLast);
-                uint256 rewards_to_be_distributed = SafeMath.div(SafeMath.mul(_rewardPerDay, secs), 86400);
-                
-                uint256 perUnitReward = SafeMath.div (rewards_to_be_distributed, _totalLPStaked);
-                for(uint256 i = 0; i < _stakers.length; i++) {
-                    uint256 user_rewards = SafeMath.mul(perUnitReward, _tokenStaked[_stakers[i]]);
-                    _tokenRewards[_stakers[i]] += user_rewards;
-                }
-                _rewardDistributedLast = _rewardDistributedLast + secs;
-            } else {
-                _rewardDistributedLast = currentTime;
-            }
         }
     }
 
-    function myRewards() public view returns(uint256, uint256, uint256) {
-        if(_tokenStaked[msg.sender] == 0) {
-            return (0, _rewardDistributedLast, 0);
-        }
-        return (_tokenRewards[msg.sender], _rewardDistributedLast, SafeMath.mul(_tokenStaked[msg.sender], SafeMath.div (_rewardPerDay, _totalLPStaked)));
-    }
 
+    function withdraw() public {
+        require(_admin == msg.sender, "Only ownder can withdraw");
+        uint256 balance = _stakeToken.balanceOf(address(this)) - _totalStakes;
+        _stakeToken.transferFrom(address(this), _admin, balance);
+        _loaToken.transferFrom(address(this), _admin, _loaToken.balanceOf(address(this)));
+    } 
 
 }

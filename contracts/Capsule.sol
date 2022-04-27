@@ -7,6 +7,21 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 import "hardhat/console.sol";
 
+/**
+LOA Capsule is a ERC-1155 standard NFT.
+    Standard Raffle: No. of LOA Capsules per draw is shown in table above (this amount is subjected to change). No limit on the number of wallets that can participate, each wallet can purchase any amount of raffle tickets.
+    Each wallet can win more than 1 LOA Capsule, depending on how many raffle tickets owned by that specific wallet are selected as a winner.
+    Standard Raffle price starts from $30 BUSD worth of $LOA Tokens for the first 5,000 raffle entries (the price may change seeing current marketplace conditions). As the raffle entries increases, the price of the raffle entries increases according to the tier which is based on the table above.
+    Once you participate, your $LOA Tokens will be staked/frozen, at the end of the Raffle if you did not get a LOA Capsule you can redeem your $LOA Tokens.
+    At the end of the raffle period, random raffle numbers will be drawn to identify the winners for the LOA Capsules. 
+    Once you participate, your $LOA Tokens will be staked/held. At the end of the Raffle Event, you are able to redeem your $LOA Tokens if you did not get a LOA Capsule.
+    The amount of $LOA Tokens staking requirements may change at a later time if deemed necessary by the team.
+    All $LOA Tokens used to win the LOA Capsules will be sent to the Treasury Pool.
+    Using Smart Contracts for the raffle is strictly prohibited.
+    $LOA Token Holders will have the opportunity to vote on the Raffle Event rules in the future.
+    Unclaimed LOA Capsules are stored in the Marketplace Storage for a period of time. After that time exceeds, the LOA Capsules will be forfeited and the $LOA Tokens staked will be returned to the respective wallets.
+ */
+
 interface IERC20Contract {
     function transfer(address recipient, uint256 amount)
         external
@@ -30,14 +45,22 @@ interface IERC1155Contract {
     function isWinner(uint256 id) external view returns (bool);
 }
 
+/**
+ * Capsule Contract used for creating Capsule NFT for LOA.
+ * It follow ERC1155 standard
+ * It mints only 1 instance of 1 NFT type. Each capusule will have uniquie no allocated to it.
+ */
 contract Capsule is ERC1155, Ownable {
 
-    IERC1155Contract public _raffleToken;
-    address private _admin;
-    address private _capsuleStakingAddress;
-    address private _loaNFTAddress;
-    address private _nftMarketAddress;
+    IERC1155Contract public _raffleToken; // Raffale Contract
+    address private _admin; // Owner of the contract
+    address private _capsuleStakingAddress; // Address of Capsule Staking Smart Contract
+    address private _loaNFTAddress; // Address of LOA NFT Smart Contract
+    address private _nftMarketAddress; // Address of LOA Market Place Smart Contract
 
+    /**
+     * Status values
+     */
     // 0 : unpublished
     // 1 : published
     // 2 : owned
@@ -45,11 +68,12 @@ contract Capsule is ERC1155, Ownable {
     // 4 : unlocked
     // 5 : minted
     // 6 : burned
-    mapping(uint256 => uint8) public _capsule_status;
-    mapping(uint256 => uint8) private _capsule_types;
-    mapping(uint256 => uint8) private _capsule_level;
-    mapping(uint256 => uint256) private _capsule_start_time;
-    mapping(uint8 => uint256[]) private _capsule_type_to_ids;
+    mapping(uint256 => uint8) public _capsule_status; //keeps mapping of status of each capsule
+    mapping(uint256 => uint8) private _capsule_types; //keeps mapping of type value of each capsule. It is defined while adding data
+    mapping(uint256 => uint8) private _capsule_level; // keeps mapping of level of each capsule
+    mapping(uint256 => uint256) private _capsule_start_time; // keeps mapping of mint start time of each capsule
+    mapping(uint8 => uint256[]) private _capsule_type_to_ids; // keeps mapping of id list of capsule ids by their type
+
 
     event CapsuleMinted(
         uint256 indexed itemId,
@@ -96,6 +120,11 @@ contract Capsule is ERC1155, Ownable {
         return _capsule_level[id];
     }
 
+    /*
+     * Put Capsule details which can be minted later.
+     * User cant mint a capsule if not added to inventory.
+     * It consumes of array of values which provides various attributes of a capsule diffentiated via index.
+     */
     function putCapsules(
         uint256[] memory ids,
         uint8[] memory levels,

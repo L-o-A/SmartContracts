@@ -41,6 +41,21 @@ contract LOAnft is ERC1155, Ownable {
     mapping(uint256 => uint8) private _nft_level;
     mapping(uint256 => uint8) private _nft_hero;
     mapping(uint256 => address) private _nft_owner;
+
+    mapping(uint256 => uint64) private _nft_attribute_0;
+    mapping(uint256 => uint64) private _nft_attribute_1;
+    mapping(uint256 => uint64) private _nft_attribute_2;
+    mapping(uint256 => uint64) private _nft_attribute_3;
+    mapping(uint256 => uint64) private _nft_attribute_4;
+    mapping(uint256 => uint64) private _nft_attribute_5;
+    mapping(uint256 => uint64) private _nft_attribute_6;
+    mapping(uint256 => uint64) private _nft_attribute_7;
+    mapping(uint256 => uint64) private _nft_attribute_8;
+    mapping(uint256 => uint64) private _nft_attribute_9;
+    mapping(uint256 => uint64) private _nft_attribute_10;
+    mapping(uint256 => uint64) private _nft_attribute_11;
+    mapping(uint256 => uint64) private _nft_attribute_12;
+
     mapping(uint8 => uint256[]) private _nft_level_to_ids;
 
     mapping(uint8 => uint256) public _minting_fee;
