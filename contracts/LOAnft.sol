@@ -219,25 +219,4 @@ contract LOAnft is ERC1155, Ownable {
         _erc20Token.transfer(msg.sender, balance);
     }
 
-    function fusion(address owner, uint256[] memory ids, uint8 fusionLevel, uint256 price) public {
-        require(msg.sender == _fusion_address, "Rule not found");
-
-        //Burn NFTs
-        for (uint256 i = 0; i < ids.length; i++) {
-            _burn(owner, ids[i], 1);
-            _nft_status[ids[i]] = 3;
-            delete _nft_owner[ids[i]];
-        }
-
-        uint256 nextId = _nft_level_to_ids[fusionLevel][_nft_level_to_ids[fusionLevel].length - 1];
-        _nft_level_to_ids[fusionLevel].pop();
-
-        _nft_status[nextId] = 2;
-        _nft_owner[nextId] = owner;
-        _mint(owner, nextId, 1, "");
-        emit NFTMinted(nextId, 0, owner, price);
-    }
-
-
-
 }

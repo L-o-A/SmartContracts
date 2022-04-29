@@ -137,6 +137,7 @@ contract Raffle is ERC1155, Ownable {
         return  _raffle_type[_ticket_raffle_id[id]];
     }
 
+    //Admin need to add Raffle ticket before it can be bought or minted
     function putRaffle(
         uint256 id,
         uint256 price,
@@ -160,7 +161,7 @@ contract Raffle is ERC1155, Ownable {
 
     }
 
-
+    //remove raffle tickets for correction purpose before its bought or minted
     function removeRaffle(uint256 id) public onlyAdmin {
 
         require(_raffle_status[id] < 2, "Id is already closed.");
@@ -173,6 +174,7 @@ contract Raffle is ERC1155, Ownable {
         delete _raffle_end_time[id];
     }
 
+    // User can buy raffle ticket by providing raffileType and no of units
     function buyTicket(uint256 raffleId, uint32 units) public payable {
 
         require(_raffle_status[raffleId] == 1, "Raffle is not open." );

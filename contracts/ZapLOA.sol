@@ -304,31 +304,14 @@ library SafeBEP20 {
     }
 }
 
-
 contract ZapLOA {
     using SafeMath for uint;
     using SafeBEP20 for IBEP20;
 
-    /* ========== CONSTANT VARIABLES ========== */
-
-    // address private constant LOA = 0x94b69263FCA20119Ae817b6f783Fc0F13B02ad50;
-
-    // address private constant BUNNY = 0x4C16f69302CcB511c5Fac682c7626B9eF0Dc126a;
-    // address private constant WBNB = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
-
-    // address private constant DAI = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
-    // address private constant USDT = 0xc2132D05D31c914a87C6611C10748AEb04B58e8F;
-    // address private constant USDC = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174;
-    // address private constant QUICK = 0x831753DD7087CaC61aB5644b308642cc1c33Dc13;
-    // address private constant BTC = 0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6;
-    // address private constant ETH = 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619;
-    // address private constant AAVE = 0xD6DF932A45C0f255f85145f286eA0b292B21C90B;
-
-
     //TESTNET
-    address private LOA; // 0x6eC9aE46b4a4ce6Be27448C5ca65c063A2b217Ea;
-    address private BUSD; // 0x3037c0161d3E2Fa8a5FE0bd7C254b1fDD151395a;
-    address private WBNB; // 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
+    address private LOA; 
+    address private BUSD;
+    address private WBNB; 
 
     address private ROUTER_ADDRESS;
     IPancakeRouter02 private ROUTER; // LIVE 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff , Test 0xD99D1c33F9fC3444f8101754aBC46c52416550D1
@@ -345,7 +328,7 @@ contract ZapLOA {
     constructor(
             address busdAddress, 
             address loaAdddress, 
-            address maticAdddress, 
+            address wBNBAddress, 
             address pancakeRouterAddress
         ) {
         ROUTER_ADDRESS = pancakeRouterAddress;
@@ -353,7 +336,7 @@ contract ZapLOA {
 
         LOA = loaAdddress;
         BUSD = busdAddress;
-        WBNB = maticAdddress;
+        WBNB = wBNBAddress;
 
          _admin = msg.sender;
 
