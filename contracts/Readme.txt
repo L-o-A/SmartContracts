@@ -240,3 +240,36 @@ swapTokens(_from,  amount, _to, amountOutMin, receiver, deadline)
     It only supports which are configured to be supported.
     
 
+//#############################################################################################################################################################################################
+
+
+LPStaking
+
+This contract is used to stake BUSD-LOA Liqidity Pool tokens or LOA tokens to earn rewards 
+
+constructor(address loaContract, address stakeContract)
+    required LOA token address, Staked Token address ( can be LP token or LOA token)
+
+
+setRewardsPerSecond(rewardPerSec)
+    Only admin sets rewards per second.
+
+updateWithdrawalFee(dayList, fees)
+    Only admin sets the withdrawal fee if withdrawn before specific days of staking.
+    example [180, 90, 30, 14, 7], [0, 1, 2, 3, 4, 5]
+    fees are provided in 1/10th of a percentage basis
+
+claimRewards()
+    User can reap the rewards that he has accumulated till now
+
+myRewards()
+    It returns how much reward user has accumulated and what the per seconds rewards he gets and when his rewards were last _rewardDistributedLast
+
+stake(amount)
+    User can stake by provided Staked Token
+
+unstake(withdrawAmount)
+    User can unstake his tokens by calling this function. Withdrawal fees will be deducted as per rule.
+
+withdraw()
+    Admin can withdraw fee collected from unstaking fees.
