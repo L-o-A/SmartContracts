@@ -187,7 +187,7 @@ contract Capsule is ERC1155, Ownable {
         emit CapsuleMinted(capsuleId, msg.sender, 0);
     }
 
-    function mintFromTicket(uint256 ticketId) public payable {
+    function claim(uint256 ticketId) public payable {
 
         require(_raffleToken.balanceOf(msg.sender, ticketId) > 0, "Ticket doesn't belong to you");
         require(_raffleToken.isWinner(ticketId), "Ticket is not a winner");

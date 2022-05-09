@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
     Raffale contract is kind of lottery contract, where user can stake LOA token for one or multiple Raffle tickets.
@@ -55,7 +55,7 @@ interface IERC1155Contract {
 
 contract Raffle is ERC1155, Ownable {
 
-    IERC20Contract public _erc20Token;
+    IERC20Contract public _loaContract;
     address private _admin;
     address private _capsuleAddress;
     using Counters for Counters.Counter;
@@ -74,6 +74,10 @@ contract Raffle is ERC1155, Ownable {
 
 
     mapping(uint256 => uint256[]) public _raffle_tickets;
+    mapping(address => mapping(uint256 => uint256)) public _raffle_tickets_count;
+    mapping(uint256 => uint256) public _raffle_winner_count;
+    mapping(address => uint256) public _raffle_winning_tickets_count;
+    mapping(address => uint256[]) public _raffle_won_tickets;
 
 
     // 0: Not minted
@@ -100,10 +104,10 @@ contract Raffle is ERC1155, Ownable {
         uint256[] ticketIds
     );
 
-    constructor(address erc20Contract) 
+    constructor(address loaContract) 
         ERC1155("https://ticket.leagueofancients.com/api/ticket/{id}.json") {
         _admin = msg.sender;
-        _erc20Token = IERC20Contract(erc20Contract);
+        _loaContract = IERC20Contract(loaContract);
     }
 
     // Modifier
@@ -118,6 +122,15 @@ contract Raffle is ERC1155, Ownable {
 
     function burn(address owner, uint256 id) public payable {
         require(msg.sender == _capsuleAddress, "You are not authorized to burn");
+
+        for(uint256 i = 0; i < _raffle_won_tickets[owner].length; i++){
+            if(_raffle_won_tickets[owner][i] == id) {
+                _raffle_won_tickets[owner][i] = _raffle_won_tickets[owner][_raffle_won_tickets[owner].length - 1];
+                _raffle_won_tickets[owner].pop();
+                break;
+            }
+        }
+
         _ticket_status[id] = 4;
         _burn(owner, id, 1);
     }
@@ -183,11 +196,11 @@ contract Raffle is ERC1155, Ownable {
         require(units > 1, "Invalid units provided." );
 
         require(
-            _erc20Token.balanceOf(msg.sender) >= _raffle_price[raffleId] * units,
+            _loaContract.balanceOf(msg.sender) >= _raffle_price[raffleId] * units,
             "Required LOA balance is not available."
         );
 
-        _erc20Token.transferFrom(msg.sender, address(this), _raffle_price[raffleId] * units);
+        _loaContract.transferFrom(msg.sender, address(this), _raffle_price[raffleId] * units);
 
         for (uint256 i = 0; i < units; i++) {
             _ticketCounter.increment();
@@ -201,40 +214,56 @@ contract Raffle is ERC1155, Ownable {
 
             _raffle_tickets[raffleId].push(id);
         }
+        _raffle_tickets_count[msg.sender][raffleId] += units;
     
         emit TicketMinted(raffleId, units, msg.sender, _raffle_price[raffleId] * units);
     }
 
 
-    function pickWinner(uint256 raffleId) public onlyAdmin {
+    function pickWinner(uint256 raffleId, uint256 count) public onlyAdmin {
         require(_raffle_end_time[raffleId] < block.timestamp, "Raffle event is still open." );
-        require(_raffle_status[raffleId] == 1 
-                || _raffle_status[raffleId] == 2, 
-                "Raffle event is still open." );
-
+        require(_raffle_status[raffleId] < 3, "All winners are declared" );
+        
+        _raffle_status[raffleId] = 2;
         uint256[] storage ticketIds = _raffle_tickets[raffleId];
-        uint256[] memory winners = new uint256[](_raffle_capsule_count[raffleId]);
+        if(count > _raffle_capsule_count[raffleId] - _raffle_winner_count[raffleId]) {
+            count = _raffle_capsule_count[raffleId] - _raffle_winner_count[raffleId];
+        }
 
-        for(uint256 i = 0; i < _raffle_capsule_count[raffleId]; i++) {
+        uint256[] memory winners = new uint256[](count);
+
+        for(uint256 i = 0; i < count; i++) {
             if(ticketIds.length == 0) break;
             uint256 selected = random(ticketIds.length);
 
             winners[i] = ticketIds[selected];
-            _refund_address_to_amount[_admin] += _ticket_price[ticketIds[selected]];
+            
+            _raffle_winning_tickets_count[_ticket_owner[winners[i]]] += 1;
+            _raffle_won_tickets[_ticket_owner[winners[i]]].push(winners[i]);
+
+            _raffle_tickets_count[_ticket_owner[winners[i]]][raffleId] -= 1;
+
             _ticket_status[ticketIds[selected]] = 3;
 
-            console.log("winner: " , winners[i]);
             ticketIds[selected] = ticketIds[ticketIds.length - 1];
             ticketIds.pop();
         }
 
-        for(uint256 i = 0; i < ticketIds.length; i++) {
-            _ticket_status[ticketIds[i]] = 2;
-            _refund_address_to_amount[_ticket_owner[ticketIds[i]]] += _ticket_price[ticketIds[i]];
-            _burn(_ticket_owner[ticketIds[i]], ticketIds[i], 1);
-        }
 
-        _raffle_status[raffleId] = 3;
+        _raffle_winner_count[raffleId] = _raffle_winner_count[raffleId] + winners.length;
+
+
+        if(_raffle_capsule_count[raffleId] <= _raffle_winner_count[raffleId]) {
+                _raffle_status[raffleId] = 3;
+            
+            for(uint256 i = 0; i < ticketIds.length; i++) {
+                _ticket_status[ticketIds[i]] = 2;
+                _refund_address_to_amount[_ticket_owner[ticketIds[i]]] += _ticket_price[ticketIds[i]];
+                _raffle_tickets_count[_ticket_owner[ticketIds[i]]][raffleId] = 0;
+                _burn(_ticket_owner[ticketIds[i]], ticketIds[i], 1);
+            }
+        }
+        
         emit WinnersDeclared(raffleId, winners);
     }
 
@@ -245,7 +274,7 @@ contract Raffle is ERC1155, Ownable {
     function withdraw() public {
         uint256 balance = _refund_address_to_amount[msg.sender];
         require(balance > 0, "Low balance");
-        require( _erc20Token.balanceOf(address(this)) >= balance, "Low tresury balance");
-        _erc20Token.transfer(msg.sender, balance);
+        require( _loaContract.balanceOf(address(this)) >= balance, "Low tresury balance");
+        _loaContract.transfer(msg.sender, balance);
     }
 }
