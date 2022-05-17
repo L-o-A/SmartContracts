@@ -228,6 +228,15 @@ User can can provide single type of token to participate in (BUSD-LOA) Liquidity
 constructor( busdAddress, loaAdddress,  wBNBAddress, pancakeRouterAddress)
     required BUSD token address, LOA token address, Wrapped BNB token address, Pancakeswap Router Address
 
+addAdmin()
+    Add a admin for this contract
+
+removeAdmin()
+    Add a admin for this contract
+
+setTresury()
+    Sets the admin treasury address
+
 zap(token, amount)
     User provides token type and amount to zap to provide BUSD-LOA liquidity
 
@@ -250,6 +259,14 @@ This contract is used to stake BUSD-LOA Liqidity Pool tokens or LOA tokens to ea
 constructor(address loaContract, address stakeContract)
     required LOA token address, Staked Token address ( can be LP token or LOA token)
 
+addAdmin()
+    Add a admin for this contract
+
+removeAdmin()
+    Add a admin for this contract
+
+setTresury()
+    Sets the admin treasury address
 
 setRewardsPerSecond(rewardPerSec)
     Only admin sets rewards per second.
@@ -262,6 +279,18 @@ updateWithdrawalFee(dayList, fees)
 claimRewards()
     User can reap the rewards that he has accumulated till now
 
+Reward Logic:
+    EveryTime a user stakes or unstakes previous rewards are distributed to the calling user.
+    * EveryTime a user stakes 
+        lastRewardDistributed = now
+        cumulativeRewardsPerToken += (now - lastRewardDistributed) * rewardsPerSecond / totalStakedTokens.
+        _rewardTallyBefore[msg.sender] = cumulativeRewardsPerToken;
+        _tokenStakedAt[msg.sender] = now;
+    * On subscequent stake or unstake rewards 
+        rewards = (currentCumulativeRewardsPerToken - _rewardTallyBefore[msg.sender]) * user_token_staked
+        new CumulativeRewardsPerToken is calculated and set.
+Algo link: https://uploads-ssl.webflow.com/5ad71ffeb79acc67c8bcdaba/5ad8d1193a40977462982470_scalable-reward-distribution-paper.pdf
+
 myRewards()
     It returns how much reward user has accumulated and what the per seconds rewards he gets and when his rewards were last _rewardDistributedLast
 
@@ -273,3 +302,7 @@ unstake(withdrawAmount)
 
 withdraw()
     Admin can withdraw fee collected from unstaking fees.
+
+
+extract()
+    Admin can withdraw any artibary ERC20 token send to this address.

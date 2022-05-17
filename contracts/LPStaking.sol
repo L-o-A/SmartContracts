@@ -3,7 +3,6 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 
 interface IERC20Contract {
@@ -34,10 +33,11 @@ contract LPStaking is ReentrancyGuard {
 
     IERC20Contract public _loaToken;
     IERC20Contract public _stakeToken;
-    address private _admin;
+    mapping(address=> uint8) private _admins;
+    address private _treasury;
 
-    constructor(address loaContract, address stakeContract) payable {
-        _admin = msg.sender;
+    constructor(address loaContract, address stakeContract) {
+        _admins[msg.sender] = 1;
         _loaToken = IERC20Contract(loaContract);
         if(loaContract == stakeContract)
             _stakeToken = _loaToken;
@@ -60,6 +60,12 @@ contract LPStaking is ReentrancyGuard {
     uint256 public _rewardPerSec;
     uint256 public _totalStakes;
 
+    uint256 private _lastMajorWithdrawReported;
+    uint256 private _lastAmountWithdrawn;
+    bool private _withdrawBlocked;
+    uint256 private _withdrawLimitPercent;
+
+
     event Staked(
         address owner,
         uint256 amount
@@ -76,20 +82,36 @@ contract LPStaking is ReentrancyGuard {
         uint256 amount
     );
 
-    receive() external payable {}
-
-    function updateAdmin() public {
-        require(msg.sender == _admin, "You are not authorized.");
-        _admin = msg.sender;
+    modifier validAdmin() {
+        require(_admins[msg.sender] == 1, "You are not authorized.");
+        _;
     }
 
-    function setRewardsPerSecond(uint256 rewardPerSec) public {
-        require(msg.sender == _admin, "You are not authorized.");
+    function addAdmin(address newAdmin) validAdmin public {
+        _admins[newAdmin] = 1;
+    }
+
+    function removeAdmin(address oldAdmin) validAdmin public {
+        delete _admins[oldAdmin];
+    }
+
+    function setTresury(address treasury) validAdmin public {
+        _treasury = treasury;
+    }
+
+    function setRewardsPerSecond(uint256 rewardPerSec) validAdmin public {
         _rewardPerSec = rewardPerSec;
     }
 
-    function updateWithdrawalFee(uint256[] memory dayList, uint256[] memory fees) public {
-        require(msg.sender == _admin, "You are not authorized.");
+    function setWithdrawConstraints(uint256 withdrawLimitPercent) validAdmin public {
+        _withdrawLimitPercent = withdrawLimitPercent;
+    }
+
+    function removeWithdrawRestriction() validAdmin public {
+        _withdrawBlocked = false;
+    }
+
+    function updateWithdrawalFee(uint256[] memory dayList, uint256[] memory fees) validAdmin public {
         require(dayList.length + 1 == fees.length, "Data length is incorrected.");
 
         for(uint256 i = 0; i < _withdrawDays.length; i++) {
@@ -111,12 +133,12 @@ contract LPStaking is ReentrancyGuard {
 
         uint256 currentTime = block.timestamp;
         uint256 secs = currentTime - _rewardDistributedLast;
-        uint256 rewards = SafeMath.mul(_tokenStaked[msg.sender], SafeMath.sub(_rewardPerTokenCumulative, _rewardTallyBefore[msg.sender])) 
-                +   SafeMath.div(_rewardPerSec * secs * _tokenStaked[msg.sender], _totalStakes);
+        uint256 rewards = _tokenStaked[msg.sender] * (_rewardPerTokenCumulative - _rewardTallyBefore[msg.sender]) 
+                +   (_rewardPerSec * secs * _tokenStaked[msg.sender] / _totalStakes);
 
         _loaToken.transfer(msg.sender, rewards);
 
-        _rewardPerTokenCumulative = _rewardPerTokenCumulative + SafeMath.div(_rewardPerSec * secs, _totalStakes);
+        _rewardPerTokenCumulative = _rewardPerTokenCumulative + (_rewardPerSec * secs / _totalStakes);
         _rewardDistributedLast = currentTime;
 
         emit RewardClaimed(msg.sender, rewards);
@@ -128,10 +150,10 @@ contract LPStaking is ReentrancyGuard {
         }
         uint256 currentTime = block.timestamp;
         uint256 secs = currentTime - _rewardDistributedLast;
-        uint256 rewards = SafeMath.mul(_tokenStaked[msg.sender], SafeMath.sub(_rewardPerTokenCumulative, _rewardTallyBefore[msg.sender])) 
-                +   SafeMath.div(_rewardPerSec * secs * _tokenStaked[msg.sender], _totalStakes);
+        uint256 rewards = (_tokenStaked[msg.sender] * (_rewardPerTokenCumulative - _rewardTallyBefore[msg.sender])) 
+                +   (_rewardPerSec * secs * _tokenStaked[msg.sender] / _totalStakes);
             
-        return (rewards, _rewardDistributedLast, SafeMath.div(SafeMath.mul(_tokenStaked[owner], _rewardPerSec), _totalStakes));
+        return (rewards, _rewardDistributedLast, ((_tokenStaked[owner]* _rewardPerSec)/ _totalStakes));
     }
 
     function stake(uint256 amount) public {
@@ -142,8 +164,8 @@ contract LPStaking is ReentrancyGuard {
         uint256 secs = currentTime - _rewardDistributedLast;
 
         if(_tokenStaked[msg.sender] > 0 ) {
-            uint256 rewards = SafeMath.mul(_tokenStaked[msg.sender], SafeMath.sub(_rewardPerTokenCumulative, _rewardTallyBefore[msg.sender])) 
-                +   SafeMath.div(_rewardPerSec * secs * _tokenStaked[msg.sender], _totalStakes);
+            uint256 rewards = (_tokenStaked[msg.sender] * (_rewardPerTokenCumulative - _rewardTallyBefore[msg.sender])) 
+                +   (_rewardPerSec * secs * _tokenStaked[msg.sender] / _totalStakes);
             
             require(_loaToken.transfer(msg.sender, rewards), "Not enough LOA balance available to transfer rewards");
         }
@@ -151,9 +173,9 @@ contract LPStaking is ReentrancyGuard {
         require(_stakeToken.transferFrom(msg.sender, address(this), amount), "Transfer failed");
 
         _tokenStakedAt[msg.sender] = currentTime;
-        _totalStakes = SafeMath.add(_totalStakes, amount);
+        _totalStakes = _totalStakes + amount;
         _tokenStaked[msg.sender] = _tokenStaked[msg.sender] + amount;
-        _rewardPerTokenCumulative = _rewardPerTokenCumulative + SafeMath.div(_rewardPerSec * secs, _totalStakes);
+        _rewardPerTokenCumulative = _rewardPerTokenCumulative + (_rewardPerSec * secs / _totalStakes);
         _rewardDistributedLast = currentTime;
         _rewardTallyBefore[msg.sender] = _rewardPerTokenCumulative;
     }
@@ -161,10 +183,26 @@ contract LPStaking is ReentrancyGuard {
     function unstake(uint256 withdrawAmount) public {
         require(_tokenStaked[msg.sender] >= withdrawAmount, "Unavailable balance.");
 
+        uint256 secs = block.timestamp - _rewardDistributedLast;
+        uint256 tokenStaked = _tokenStaked[msg.sender];
+        if(tokenStaked > 0 && _rewardPerSec > 0) {
+            uint256 rewards = (tokenStaked * (_rewardPerTokenCumulative- _rewardTallyBefore[msg.sender])) 
+                +   (_rewardPerSec * secs * tokenStaked/ _totalStakes);
+            
+            require(_loaToken.transfer(msg.sender, rewards), "Not enough LOA balance available to transfer rewards");
+        }
+
+        unstakeWithoutRewards(withdrawAmount);
+    }
+
+    function unstakeWithoutRewards(uint256 withdrawAmount) public {
+        require(_withdrawBlocked == false, "Withdraw is blocked.");
+        require(_tokenStaked[msg.sender] >= withdrawAmount, "Unavailable balance.");
+
         uint256 currentTime = block.timestamp;
         uint256 secs = currentTime - _rewardDistributedLast;
 
-        uint256 daysElapsed = SafeMath.div(currentTime - _tokenStakedAt[msg.sender] , 86400);
+        uint256 daysElapsed = (currentTime - _tokenStakedAt[msg.sender]) / 86400;
 
         uint256 deduction = _withdrawFee.length > 0 ? _withdrawFee[_withdrawFee.length - 1] : 0;
         for(uint256 i = 0; i < _withdrawDays.length; i++) {
@@ -177,21 +215,14 @@ contract LPStaking is ReentrancyGuard {
         uint256 amount = withdrawAmount;
 
         if(deduction > 0) {
-            amount -= SafeMath.div(SafeMath.mul(deduction, withdrawAmount), 1000);
-        }
-
-        if(_tokenStaked[msg.sender] > 0 && _rewardPerSec > 0) {
-            uint256 rewards = SafeMath.mul(_tokenStaked[msg.sender], SafeMath.sub(_rewardPerTokenCumulative, _rewardTallyBefore[msg.sender])) 
-                +   SafeMath.div(_rewardPerSec * secs * _tokenStaked[msg.sender], _totalStakes);
-            
-            require(_loaToken.transfer(msg.sender, rewards), "Not enough LOA balance available to transfer rewards");
+            amount -= ((deduction* withdrawAmount)/ 1000);
         }
 
         require(_stakeToken.transfer(msg.sender, amount), "Transfer failed");
 
-        _totalStakes = SafeMath.sub(_totalStakes, withdrawAmount);
+        _totalStakes = _totalStakes - withdrawAmount;
         _tokenStaked[msg.sender] = _tokenStaked[msg.sender] - withdrawAmount;
-        _rewardPerTokenCumulative = _totalStakes > 0 ? _rewardPerTokenCumulative + SafeMath.div(_rewardPerSec * secs, _totalStakes) : 0;
+        _rewardPerTokenCumulative = _totalStakes > 0 ? (_rewardPerTokenCumulative + (_rewardPerSec * secs / _totalStakes)) : 0;
         _rewardDistributedLast = currentTime;
 
         if(_tokenStaked[msg.sender] > 0) 
@@ -200,14 +231,36 @@ contract LPStaking is ReentrancyGuard {
             delete _rewardTallyBefore[msg.sender];
             delete _tokenStakedAt[msg.sender];
         }
+
+
+        // If amount withdrawn in last 1 hr is more than allowed percentage of total stakes then withdraw is blocked.
+        if(_lastMajorWithdrawReported < currentTime - 3600) {
+            _lastMajorWithdrawReported = currentTime;
+            _lastAmountWithdrawn = withdrawAmount;
+        } else {
+            _lastAmountWithdrawn += withdrawAmount;
+        }
+        if(_totalStakes > 0 && _withdrawLimitPercent > 0 && (_lastAmountWithdrawn * 10000 / _totalStakes) > _withdrawLimitPercent) {
+            _withdrawBlocked = true;
+        }
     }
 
 
-    function withdraw() public {
-        require(_admin == msg.sender, "Only ownder can withdraw");
+    function withdraw() validAdmin public {
         uint256 balance = _stakeToken.balanceOf(address(this)) - _totalStakes;
-        _stakeToken.transferFrom(address(this), _admin, balance);
-        _loaToken.transferFrom(address(this), _admin, _loaToken.balanceOf(address(this)));
+        _stakeToken.transferFrom(address(this), _treasury, balance);
+        _loaToken.transferFrom(address(this), _treasury, _loaToken.balanceOf(address(this)));
     } 
 
+    function extract(address tokenAddress) validAdmin public {
+        if (tokenAddress == address(0)) {
+            payable(_treasury).transfer(address(this).balance);
+            return;
+        }
+
+        IERC20Contract token = IERC20Contract(tokenAddress);
+        require(token != _stakeToken && token != _loaToken, "Invalid token address");
+        token.transferFrom(address(this), _treasury, token.balanceOf(address(this)));
+    }
+    
 }

@@ -201,49 +201,9 @@ library Address {
 }
 
 
-library SafeMath {
-
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        require(c >= a, 'SafeMath: addition overflow');
-        return c;
-    }
-
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        return sub(a, b, 'SafeMath: subtraction overflow');
-    }
-
-    function sub(
-        uint256 a,
-        uint256 b,
-        string memory errorMessage
-    ) internal pure returns (uint256) {
-        require(b <= a, errorMessage);
-        uint256 c = a - b;
-
-        return c;
-    }
-
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        return div(a, b, 'SafeMath: division by zero');
-    }
-
-    function div(
-        uint256 a,
-        uint256 b,
-        string memory errorMessage
-    ) internal pure returns (uint256) {
-        require(b > 0, errorMessage);
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-
-        return c;
-    }
-}
 
 
 library SafeBEP20 {
-    using SafeMath for uint256;
     using Address for address;
 
     function safeTransfer(
@@ -280,7 +240,7 @@ library SafeBEP20 {
         address spender,
         uint256 value
     ) internal {
-        uint256 newAllowance = token.allowance(address(this), spender).add(value);
+        uint256 newAllowance = token.allowance(address(this), spender) + value;
         _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
     }
 
@@ -289,10 +249,7 @@ library SafeBEP20 {
         address spender,
         uint256 value
     ) internal {
-        uint256 newAllowance = token.allowance(address(this), spender).sub(
-            value,
-            'SafeBEP20: decreased allowance below zero'
-        );
+        uint256 newAllowance = token.allowance(address(this), spender) - value;
         _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
     }
 
@@ -305,7 +262,6 @@ library SafeBEP20 {
 }
 
 contract ZapLOA {
-    using SafeMath for uint;
     using SafeBEP20 for IBEP20;
 
     //TESTNET
@@ -322,7 +278,8 @@ contract ZapLOA {
     mapping(address => address) private routePairAddresses;
     address[] public tokens;
 
-    address private _admin;
+    mapping(address=> uint8) private _admins;
+    address private _treasury;
 
 
     constructor(
@@ -338,23 +295,28 @@ contract ZapLOA {
         BUSD = busdAddress;
         WBNB = wBNBAddress;
 
-         _admin = msg.sender;
+        _admins[msg.sender] = 1;
 
         setNotFlip(BUSD);
         setRoutePairAddress(LOA, BUSD);
     }
 
-    // Modifier
-    modifier onlyOwner() {
-        require(_admin == msg.sender, "Only admin can access this");
+    function setTresury(address treasury) validAdmin public {
+        _treasury = treasury;
+    }
+
+    modifier validAdmin() {
+        require(_admins[msg.sender] == 1, "You are not authorized.");
         _;
     }
 
-    function updateAdmin (address newOwner) public onlyOwner(){
-         _admin = newOwner;
+    function addAdmin(address newAdmin) validAdmin public {
+        _admins[newAdmin] = 1;
     }
 
-    receive() external payable {}
+    function removeAdmin(address oldAdmin) validAdmin public {
+        delete _admins[oldAdmin];
+    }
 
     /* ========== View Functions ========== */
     //check if the token can be flipped to BUSD
@@ -393,7 +355,7 @@ contract ZapLOA {
 
             uint256 amountBUSD = _swap(token, amount, BUSD, 0, address(this), block.timestamp);
 
-            halfBUSDAmount = SafeMath.div(amountBUSD, 2);
+            halfBUSDAmount = amountBUSD / 2;
 
             _approveTokenIfNeeded(BUSD, amountBUSD);
 
@@ -405,7 +367,7 @@ contract ZapLOA {
 
             require(busdToken.balanceOf(msg.sender) >= amount, "Amount not available" );
 
-            halfBUSDAmount = SafeMath.div(amount, 2);
+            halfBUSDAmount = amount / 2;
 
             busdToken.safeTransferFrom(msg.sender, address(this), amount);
             _approveTokenIfNeeded(token, amount);
@@ -435,8 +397,6 @@ contract ZapLOA {
         uint256 loaAmount = 0;
 
         require(msg.value > 0 , "Value not provided" );
-        payable(address(this)).transfer(msg.value);
-
 
         address[] memory path = new address[](2);
         path[0] = WBNB;
@@ -445,7 +405,7 @@ contract ZapLOA {
         uint[] memory amounts = ROUTER.swapExactETHForTokens{ value: msg.value }(0, path, address(this), block.timestamp);
         uint amountBUSD = amounts[amounts.length - 1];
 
-        halfBUSDAmount = SafeMath.div(amountBUSD, 2); //100000000000000000
+        halfBUSDAmount = amountBUSD / 2; 
         _approveTokenIfNeeded(BUSD, amountBUSD);
 
         loaAmount = _swap(BUSD, halfBUSDAmount, LOA, 0, address(this), block.timestamp);
@@ -462,27 +422,6 @@ contract ZapLOA {
                 msg.sender,
                 block.timestamp
             );
-    }
-
-
-    // Swap one supported token to another supported token
-    function swapTokens (
-        address _from,
-        uint amount,
-        address _to,
-        uint amountOutMin,
-        address receiver,
-        uint deadline
-    ) public returns (uint) {
-
-        require(_from != _to, "From and To tokens cant be same");
-        require(_from != address(0) && _to != address(0), "From and To token address cant be zero address.");
-
-        IBEP20 fromToken = IBEP20(_from);
-        require(fromToken.balanceOf(msg.sender) >= amount, "Amount not available" );
-
-        fromToken.approve(ROUTER_ADDRESS, amount);
-        return _swap(_from, amount, _to, amountOutMin, receiver, deadline);
     }
 
 
@@ -573,11 +512,11 @@ contract ZapLOA {
 
     /* ========== RESTRICTED FUNCTIONS ========== */
 
-    function setRoutePairAddress(address asset, address route) public onlyOwner {
+    function setRoutePairAddress(address asset, address route) public validAdmin {
         routePairAddresses[asset] = route;
     }
 
-    function setNotFlip(address token) public onlyOwner {
+    function setNotFlip(address token) public validAdmin {
         bool needPush = notFlip[token] == false;
         notFlip[token] = true;
         if (needPush) {
@@ -585,7 +524,7 @@ contract ZapLOA {
         }
     }
 
-    function removeToken(uint i) external onlyOwner {
+    function removeToken(uint i) external validAdmin {
         address token = tokens[i];
         notFlip[token] = false;
         tokens[i] = tokens[tokens.length - 1];
@@ -594,24 +533,25 @@ contract ZapLOA {
 
 
     //sweep and transfer to admin if any extra tokens are allocated to this contract.
-    function sweep() external onlyOwner {
+    function sweep() external validAdmin {
         for (uint i = 0; i < tokens.length; i++) {
             address token = tokens[i];
             if (token == address(0)) continue;
             uint amount = IBEP20(token).balanceOf(address(this));
             if (amount > 0) {
-                _swap(token, amount, BUSD, 0, _admin, block.timestamp);
+                _swap(token, amount, BUSD, 0, _treasury, block.timestamp);
             }
         }
     }
 
     //withdraw and transfer to admin if any extra tokens are allocated to this contract.
-    function withdraw(address token) external onlyOwner {
+    function withdraw(address token) external validAdmin {
         if (token == address(0)) {
-            payable(_admin).transfer(address(this).balance);
+            payable(_treasury).transfer(address(this).balance);
             return;
         }
 
-        IBEP20(token).transfer(_admin, IBEP20(token).balanceOf(address(this)));
+        IBEP20(token).transfer(_treasury, IBEP20(token).balanceOf(address(this)));
     }
+
 }
