@@ -62,8 +62,8 @@ contract LPStaking is ReentrancyGuard {
 
     uint256 private _lastMajorWithdrawReported;
     uint256 private _lastAmountWithdrawn;
-    bool private _withdrawBlocked;
-    uint256 private _withdrawLimitPercent;
+    bool public _withdrawBlocked;
+    uint256 public _withdrawLimitPercent;
 
 
     event Staked(
