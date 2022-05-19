@@ -53,11 +53,11 @@ interface IERC1155Contract {
 contract Capsule is ERC1155, Ownable {
 
     IERC1155Contract public _raffleToken; // Raffale Contract
-    address private _admin; // Owner of the contract
     address private _capsuleStakingAddress; // Address of Capsule Staking Smart Contract
     address private _loaNFTAddress; // Address of LOA NFT Smart Contract
     address private _nftMarketAddress; // Address of LOA Market Place Smart Contract
-
+    mapping(address=> uint8) private _admins;
+    address private _treasury;
     /**
      * Status values
      */
@@ -82,25 +82,37 @@ contract Capsule is ERC1155, Ownable {
     );
 
     constructor() ERC1155("https://capsule.leagueofancients.com/api/capsule/{id}.json") {
-        _admin = msg.sender;
+        _admins[msg.sender] = 1;
     }
 
     // Modifier
-    modifier onlyAdmin() {
-        require(_admin == msg.sender, "Only admin can access this");
+    modifier validAdmin() {
+        require(_admins[msg.sender] == 1, "You are not authorized.");
         _;
     }
 
-    function setRaffleAddress(address raffleContract) public onlyAdmin{
+    function addAdmin(address newAdmin) validAdmin public {
+        _admins[newAdmin] = 1;
+    }
+
+    function removeAdmin(address oldAdmin) validAdmin public {
+        delete _admins[oldAdmin];
+    }
+
+    function setTresury(address treasury) validAdmin public {
+        _treasury = treasury;
+    }
+
+    function setRaffleAddress(address raffleContract) public validAdmin{
         _raffleToken = IERC1155Contract(raffleContract);
     }
 
-    function setNFTAddress(address loaNFTAddress, address nftMarketAddress) public onlyAdmin{
+    function setNFTAddress(address loaNFTAddress, address nftMarketAddress) public validAdmin{
         _loaNFTAddress = loaNFTAddress;
         _nftMarketAddress= nftMarketAddress;
     }
 
-    function setCapsuleStakingAddress(address capsuleStakingAddress) public onlyAdmin{
+    function setCapsuleStakingAddress(address capsuleStakingAddress) public validAdmin{
         _capsuleStakingAddress = capsuleStakingAddress;
     }
 
@@ -130,7 +142,7 @@ contract Capsule is ERC1155, Ownable {
         uint8[] memory levels,
         uint8[] memory types,
         uint256[] memory startTimes
-    ) public onlyAdmin {
+    ) public validAdmin {
 
         require(ids.length ==  levels.length && levels.length == types.length && types.length == startTimes.length, "Args length not matching");
         
@@ -149,7 +161,7 @@ contract Capsule is ERC1155, Ownable {
         }
     }
 
-    function removeCapsules(uint256[] memory ids)public onlyAdmin {
+    function removeCapsules(uint256[] memory ids)public validAdmin {
         for (uint256 i = 0; i < ids.length; i++) {
             require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
         }
@@ -172,7 +184,7 @@ contract Capsule is ERC1155, Ownable {
         }
     }
 
-    function airdrop(uint8 capsuleType, address dropTo) public payable onlyAdmin {
+    function airdrop(uint8 capsuleType, address dropTo) public payable validAdmin {
 
         require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
         uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
@@ -232,7 +244,7 @@ contract Capsule is ERC1155, Ownable {
         uint256 amount,
         bytes memory data
     ) public virtual override {
-        require(msg.sender == _admin ||
+        require(_admins[msg.sender] == 1 ||
             msg.sender == _nftMarketAddress ||
             to == address(0) ||
             msg.sender == address(this) || 
@@ -252,7 +264,7 @@ contract Capsule is ERC1155, Ownable {
         bytes memory data
     ) public virtual override {
 
-        require(msg.sender == _admin ||
+        require(_admins[msg.sender] == 1 ||
             msg.sender == _nftMarketAddress ||
             to == address(0) ||
             msg.sender == address(this) || 

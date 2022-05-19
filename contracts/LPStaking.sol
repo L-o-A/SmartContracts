@@ -260,7 +260,7 @@ contract LPStaking is ReentrancyGuard {
 
         IERC20Contract token = IERC20Contract(tokenAddress);
         require(token != _stakeToken && token != _loaToken, "Invalid token address");
-        token.transferFrom(address(this), _treasury, token.balanceOf(address(this)));
+        token.transfer(_treasury, token.balanceOf(address(this)));
     }
     
 }
