@@ -28,6 +28,15 @@ Unclaimed LOA Capsules are stored in the Marketplace Storage for a period of tim
 constructor():
     requrires address or LOA token
 
+addAdmin()
+    Add a admin for this contract
+
+removeAdmin()
+    Add a admin for this contract
+
+setTresury()
+    Sets the admin treasury address
+
 putRaffle():
     requires Admin to add Raffle ticket before it can be bought or minted
     Admin needs to provide 1) price, 2) category, 3) capsuleCount, 4) startTime, 5) endTime
@@ -74,6 +83,16 @@ Unclaimed LOA Capsules are stored in the Marketplace Storage for a period of tim
 
 
 #Functions
+
+
+addAdmin()
+    Add a admin for this contract
+
+removeAdmin()
+    Add a admin for this contract
+
+setTresury()
+    Sets the admin treasury address
 
 setRaffleAddress(raffleContract)
     Admin sets the Raffle Contract Address.
@@ -145,6 +164,16 @@ constructor(loaContract)
     requrires address or LOA token
 
 
+addAdmin()
+    Add a admin for this contract
+
+removeAdmin()
+    Add a admin for this contract
+
+setTresury()
+    Sets the admin treasury address
+
+
 setCapsuleContract(capsuleContract)
     Only admin set capsule contract.
 
@@ -201,6 +230,16 @@ The responsibility of this contract is to merge multiple NFTs to a single more v
 
 constructor(loaContract, loaNFTContract)
     requrires address of LOA token and LOA NFT Contract
+
+
+addAdmin()
+    Add a admin for this contract
+
+removeAdmin()
+    Add a admin for this contract
+
+setTresury()
+    Sets the admin treasury address
 
 withdraw()
     Admin can withdraw fee collected from minting fees.
@@ -282,9 +321,9 @@ claimRewards()
 Reward Logic:
     EveryTime a user stakes or unstakes previous rewards are distributed to the calling user.
     * EveryTime a user stakes 
-        lastRewardDistributed = now
         cumulativeRewardsPerToken += (now - lastRewardDistributed) * rewardsPerSecond / totalStakedTokens.
         _rewardTallyBefore[msg.sender] = cumulativeRewardsPerToken;
+        lastRewardDistributed = now
         _tokenStakedAt[msg.sender] = now;
     * On subscequent stake or unstake rewards 
         rewards = (currentCumulativeRewardsPerToken - _rewardTallyBefore[msg.sender]) * user_token_staked

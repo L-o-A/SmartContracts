@@ -40,8 +40,9 @@ contract Raffle is ERC1155, Ownable {
 
     IERC20Contract public _loaContract;
     Helper public _helper;
-    address private _admin;
+    mapping(address => uint8) private _admins;
     address private _capsuleAddress;
+    address public _treasury;
     using Counters for Counters.Counter;
     Counters.Counter private _ticketCounter;
 
@@ -92,14 +93,25 @@ contract Raffle is ERC1155, Ownable {
 
     constructor(address loaContract) 
         ERC1155("https://ticket.leagueofancients.com/api/ticket/{id}.json") {
-        _admin = msg.sender;
+        _admins[msg.sender] = 1;
         _loaContract = IERC20Contract(loaContract);
     }
 
-    // Modifier
-    modifier onlyAdmin() {
-        require(_admin == msg.sender, "Only admin can access this");
+    modifier validAdmin() {
+        require(_admins[msg.sender] == 1, "You are not authorized.");
         _;
+    }
+
+    function addAdmin(address newAdmin) validAdmin public {
+        _admins[newAdmin] = 1;
+    }
+
+    function removeAdmin(address oldAdmin) validAdmin public {
+        delete _admins[oldAdmin];
+    }
+
+    function setTresury(address treasury) validAdmin public {
+        _treasury = treasury;
     }
 
     function burn(address owner, uint256 id) public payable {
@@ -124,7 +136,7 @@ contract Raffle is ERC1155, Ownable {
         uint64[] memory reward_amount,
         address capsuleAddress, 
         address raffleHelper
-    ) public onlyAdmin {
+    ) public validAdmin {
         require(_raffle_status < 2, "Raffle is already closed.");
         require(startTime < endTime, "Start time must be less than end time.");
         require(reward_range.length + 1 == reward_amount.length, "Data length is incorrected.");
@@ -164,7 +176,7 @@ contract Raffle is ERC1155, Ownable {
     function putRafflePrices(
         uint256[] memory supply,
         uint256[] memory prices
-    ) public onlyAdmin {
+    ) public validAdmin {
         require(_raffle_status < 2, "Raffle is already closed.");
         require(supply.length + 1 == prices.length, "Data length is incorrected.");
 
@@ -233,7 +245,7 @@ contract Raffle is ERC1155, Ownable {
     }
 
 
-    function pickWinner(uint256 count) public onlyAdmin {
+    function pickWinner(uint256 count) public validAdmin {
         require(_raffle_end_time < block.timestamp, "Raffle event is still open." );
         require(_raffle_status < 3, "All winners are declared" );
         
