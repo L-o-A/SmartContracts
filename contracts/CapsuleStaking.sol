@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
-
-// import "hardhat/console.sol";
+// import "./library/strings.sol";
+import "hardhat/console.sol";
 
 /**
  * This contract is for Capsule Staking
@@ -36,13 +36,9 @@ interface IERC1155 {
     
     function isApprovedForAll(address _owner, address _operator) external view returns (bool);
 
-    function getCapsuleStatus(uint256 capsuleId) external view returns (uint8);
+    function markStatus(uint256 capsuleId, bool vested, bool unlocked, bool unstaked) external;
 
-    function markVested(uint256 capsuleId) external;
-
-    function markUnlocked(uint256 capsuleId) external;
-
-    function getCapsuleType(uint256 id) external view returns (uint8);
+    function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8);
 }
 
 
@@ -71,10 +67,11 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
     IERC20Contract public _loaToken;
     IERC1155 public _capsuleToken;
-    address private _admin;
+    mapping(address => uint8) private _admins;
+    address public _treasury;
 
     constructor(address erc20Contract) payable {
-        _admin = msg.sender;
+        _admins[msg.sender] = 1;
         _loaToken = IERC20Contract(erc20Contract);
     }
 
@@ -87,23 +84,35 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
     event Staked(
         address owner,
-        uint256[] capsuleIds
+        uint256[] capsuleIds,
+        bool staked,
+        bool vestingDone
     );
 
-    event Reclaimed(
-        address owner,
-        uint256[] capsuleIds
-    );
+    modifier validAdmin() {
+        require(_admins[msg.sender] == 1, "You are not authorized.");
+        _;
+    }
+
+    function addAdmin(address newAdmin) validAdmin public {
+        _admins[newAdmin] = 1;
+    }
+
+    function removeAdmin(address oldAdmin) validAdmin public {
+        delete _admins[oldAdmin];
+    }
+
+    function setTresury(address treasury) public validAdmin {
+        _treasury = treasury;
+    }
 
     //update capsule Contract
-    function setCapsuleContract(address capsuleContract) public {
-        require(msg.sender == _admin, "You are not authorized.");
+    function setCapsuleContract(address capsuleContract) public validAdmin {
         _capsuleToken = IERC1155(capsuleContract);
     }
 
     // set capsule staking rules (duration of stake, amount of LOA to be staked) for each capsule type
-    function setCapsuleStakingRule(uint8 capsuleType, uint32 stakingDays, uint256 loaTokens) public {
-        require(msg.sender == _admin, "You are not authorized.");
+    function setCapsuleStakingRule(uint8 capsuleType, uint32 stakingDays, uint256 loaTokens) validAdmin public {
         _capsuleStakeTypeDuration[capsuleType] = stakingDays;
         _capsuleStakeTypeLOATokens[capsuleType] = loaTokens;
     }
@@ -112,49 +121,40 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
     function stake(uint256[] memory capsuleIds) public {
         require(capsuleIds.length > 0, "Capsule Ids not provided");
         uint256 stakedAmount = 0;
-        // console.log("capsuleIds.length :", capsuleIds.length);
-        // console.log("_capsuleToken.balanceOf(msg.sender, capsuleIds[i]) :", _capsuleToken.balanceOf(msg.sender, capsuleIds[0]));
 
         for (uint256 i = 0; i < capsuleIds.length; i++) {
             require(_capsuleToken.balanceOf(msg.sender, capsuleIds[i]) > 0, "Capsule doesnt belong to user");
-            require(_capsuleToken.getCapsuleStatus(capsuleIds[i])  == 2, "Capsule not ready for staking.");
-            uint8 capsuleType = _capsuleToken.getCapsuleType(capsuleIds[i]);
+            (uint8 capsuleType, , uint8 capsuleStatus) = _capsuleToken.getCapsuleDetail(capsuleIds[i]);
+            require(capsuleStatus  == 2, "Capsule not ready for staking.");
             stakedAmount += _capsuleStakeTypeLOATokens[capsuleType];
-        }
 
-        // console.log("stakedAmount :", stakedAmount);
-        // console.log("_loaToken.balanceOf(msg.sender) :", _loaToken.balanceOf(msg.sender));
-
-        require(_loaToken.balanceOf(msg.sender) >= stakedAmount, "Not enough balance available.");
-        
-        for (uint256 i = 0; i < capsuleIds.length; i++) {
+            
             _capsuleToken.safeTransferFrom(msg.sender, address(this), capsuleIds[i], 1, "0x00");
-            _capsuleToken.markVested(capsuleIds[i]);
+            _capsuleToken.markStatus(capsuleIds[i], true, false, false);
             _capsuleStakedOn[capsuleIds[i]] = block.timestamp;
             _capsuleOwner[capsuleIds[i]] = msg.sender;
-            _capsuleStakedAmount[capsuleIds[i]] = _capsuleStakeTypeLOATokens[_capsuleToken.getCapsuleType(capsuleIds[i])];
+            _capsuleStakedAmount[capsuleIds[i]] = _capsuleStakeTypeLOATokens[capsuleType];
         }
 
-        require(_loaToken.transferFrom(msg.sender, address(this), stakedAmount), "LOA staking failed");
+        require(_loaToken.transferFrom(msg.sender, address(this), stakedAmount), "Not enough LOA balance available.");
 
-        emit Staked(msg.sender, capsuleIds);
+        emit Staked(msg.sender, capsuleIds, true, false);
     }
 
-    // reclaim my staked capsules once its matures after staking period is over
-    function reclaim(uint256[] memory capsuleIds) public {
+
+    //umergency unstaking capsules and loa tokens 
+    function umergencyUnstake(uint256[] memory capsuleIds) public {
         for (uint256 i = 0; i < capsuleIds.length; i++) {
-            require(_capsuleToken.getCapsuleStatus(capsuleIds[i])  == 3, "Capsule not staked.");
+            (, , uint8 capsuleStatus) = _capsuleToken.getCapsuleDetail(capsuleIds[i]);
+            require(capsuleStatus  == 3, "Capsule not staked.");
             require(_capsuleOwner[capsuleIds[i]] == msg.sender, "Capsule doesnt belong to user");
-            
-            uint8 capsuleType = _capsuleToken.getCapsuleType(capsuleIds[i]);
-            require((_capsuleStakedOn[capsuleIds[i]] + _capsuleStakeTypeDuration[capsuleType] * 86400) < block.timestamp, "Capsule staking period is not over.");
         }
 
         uint256 stakedAmount = 0;
         
         for (uint256 i = 0; i < capsuleIds.length; i++) {
             _capsuleToken.safeTransferFrom(address(this), msg.sender, capsuleIds[i], 1, "0x00");
-            _capsuleToken.markUnlocked(capsuleIds[i]);
+            _capsuleToken.markStatus(capsuleIds[i], false, false, true);
 
             stakedAmount += _capsuleStakedAmount[capsuleIds[i]];
 
@@ -165,7 +165,46 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
         _loaToken.transfer(msg.sender, stakedAmount);
 
-        emit Reclaimed(msg.sender, capsuleIds);
+        emit Staked(msg.sender, capsuleIds, false, false);
+    }
+
+    // reclaim my staked capsules once its matures after staking period is over
+    function reclaim(uint256[] memory capsuleIds) public {
+        for (uint256 i = 0; i < capsuleIds.length; i++) {
+            (uint8 capsuleType, , uint8 capsuleStatus) = _capsuleToken.getCapsuleDetail(capsuleIds[i]);
+            require(capsuleStatus  == 3, "Capsule not staked.");
+            require(_capsuleOwner[capsuleIds[i]] == msg.sender, "Capsule doesnt belong to user");
+            require((_capsuleStakedOn[capsuleIds[i]] + _capsuleStakeTypeDuration[capsuleType] * 86400) < block.timestamp, "Capsule staking period is not over.");
+        }
+
+        uint256 stakedAmount = 0;
+        
+        for (uint256 i = 0; i < capsuleIds.length; i++) {
+            _capsuleToken.safeTransferFrom(address(this), msg.sender, capsuleIds[i], 1, "0x00");
+            _capsuleToken.markStatus(capsuleIds[i], false, true, false);
+
+            stakedAmount += _capsuleStakedAmount[capsuleIds[i]];
+
+            delete _capsuleStakedOn[capsuleIds[i]];
+            delete _capsuleOwner[capsuleIds[i]];
+            delete _capsuleStakedAmount[capsuleIds[i]];
+        }
+
+        _loaToken.transfer(msg.sender, stakedAmount);
+        emit Staked(msg.sender, capsuleIds, false, true);
+    }
+
+
+    function extract(address tokenAddress) validAdmin public {
+        if (tokenAddress == address(0)) {
+            payable(_treasury).transfer(address(this).balance);
+            return;
+        }
+        IERC20Contract token = IERC20Contract(tokenAddress);
+        require(token != _loaToken, "Invalid token address");
+        token.transfer(_treasury, token.balanceOf(address(this)));
     }
 
 }
+
+

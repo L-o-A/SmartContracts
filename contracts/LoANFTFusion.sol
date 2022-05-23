@@ -22,7 +22,6 @@ interface IERC20Contract {
 interface IERC1155Contract {
     function balanceOf(address tokenOwner, uint256 id) external view returns (uint256);
     function burn(address tokenOwner, uint256 id) external;
-    function getCapsuleLevel(uint256 id) external view returns (uint8);
     function getNFTDetail(uint256 id) external view returns (uint8, uint8, address, uint8) ;
     function fusion(address owner, uint256[] memory ids, uint8 fusionLevel, uint256 price) external;
 }

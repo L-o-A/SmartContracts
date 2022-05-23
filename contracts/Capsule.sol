@@ -52,7 +52,7 @@ interface IERC1155Contract {
  */
 contract Capsule is ERC1155, Ownable {
 
-    IERC1155Contract public _raffleToken; // Raffale Contract
+    mapping(address => uint8) public _raffleAddresses; // Raffale Contract
     address private _capsuleStakingAddress; // Address of Capsule Staking Smart Contract
     address private _loaNFTAddress; // Address of LOA NFT Smart Contract
     address private _nftMarketAddress; // Address of LOA Market Place Smart Contract
@@ -91,45 +91,36 @@ contract Capsule is ERC1155, Ownable {
         _;
     }
 
-    function addAdmin(address newAdmin) validAdmin public {
-        _admins[newAdmin] = 1;
+    function modifyAdmin(address adminAddress, bool add) validAdmin public {
+        if(add)
+            _admins[adminAddress] = 1;
+        else
+            delete _admins[adminAddress];
     }
 
-    function removeAdmin(address oldAdmin) validAdmin public {
-        delete _admins[oldAdmin];
-    }
-
-    function setTresury(address treasury) validAdmin public {
+    function setAddresses(address treasury, address loaNFTAddress, address nftMarketAddress, address capsuleStakingAddress) public validAdmin{
         _treasury = treasury;
-    }
-
-    function setRaffleAddress(address raffleContract) public validAdmin{
-        _raffleToken = IERC1155Contract(raffleContract);
-    }
-
-    function setNFTAddress(address loaNFTAddress, address nftMarketAddress) public validAdmin{
         _loaNFTAddress = loaNFTAddress;
         _nftMarketAddress= nftMarketAddress;
-    }
-
-    function setCapsuleStakingAddress(address capsuleStakingAddress) public validAdmin{
         _capsuleStakingAddress = capsuleStakingAddress;
     }
 
-    function burn(address owner, uint256 id) public payable {
+    function modifyRaffleAddress(address raffleAddress, bool add) public validAdmin {
+        if(add)
+            _raffleAddresses[raffleAddress] = 1;
+        else
+            delete _raffleAddresses[raffleAddress];
+    }
+
+    function burn(address owner, uint256 id) public {
         require(msg.sender == _loaNFTAddress, "You are not authorized to burn");
         _capsule_status[id] = 6;
         _burn(owner, id, 1);
     }
 
-    function getCapsuleType(uint256 id) public view returns (uint8) {
+    function getCapsuleDetail(uint256 id) public view returns (uint8, uint8, uint8) {
         require(msg.sender == _capsuleStakingAddress, "You are not authorized to call this method");
-        return _capsule_types[id];
-    }
-
-    function getCapsuleLevel(uint256 id) public view returns (uint8) {
-        require(msg.sender == _loaNFTAddress, "You are not authorized to call this method");
-        return _capsule_level[id];
+        return (_capsule_types[id], _capsule_level[id], _capsule_status[id]);
     }
 
     /*
@@ -137,54 +128,55 @@ contract Capsule is ERC1155, Ownable {
      * User cant mint a capsule if not added to inventory.
      * It consumes of array of values which provides various attributes of a capsule diffentiated via index.
      */
-    function putCapsules(
+    function modifyCapsules(
+        bool add,
         uint256[] memory ids,
         uint8[] memory levels,
         uint8[] memory types,
         uint256[] memory startTimes
     ) public validAdmin {
 
-        require(ids.length ==  levels.length && levels.length == types.length && types.length == startTimes.length, "Args length not matching");
-        
-        for (uint256 i = 0; i < ids.length; i++) {
-            require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
-        }
-
-        for (uint256 i = 0; i < ids.length; i++) {
-            if(_capsule_status[ids[i]] == 0) {
-                _capsule_type_to_ids[types[i]].push(ids[i]);
+        if(add) {
+            require(ids.length ==  levels.length && levels.length == types.length && types.length == startTimes.length, "Args length not matching");
+            
+            for (uint256 i = 0; i < ids.length; i++) {
+                require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
             }
-            _capsule_status[ids[i]] = 1;
-            _capsule_level[ids[i]] = levels[i];
-            _capsule_types[ids[i]] = types[i];
-            _capsule_start_time[ids[i]] = startTimes[i];
-        }
-    }
 
-    function removeCapsules(uint256[] memory ids)public validAdmin {
-        for (uint256 i = 0; i < ids.length; i++) {
-            require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
-        }
+            for (uint256 i = 0; i < ids.length; i++) {
+                if(_capsule_status[ids[i]] == 0) {
+                    _capsule_type_to_ids[types[i]].push(ids[i]);
+                }
+                _capsule_status[ids[i]] = 1;
+                _capsule_level[ids[i]] = levels[i];
+                _capsule_types[ids[i]] = types[i];
+                _capsule_start_time[ids[i]] = startTimes[i];
+            }
+        } else {
+            for (uint256 i = 0; i < ids.length; i++) {
+                require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
+            }
 
-        for (uint256 i = 0; i < ids.length; i++) {
-            if(_capsule_status[ids[i]] == 0) {
-                uint256[] storage cids = _capsule_type_to_ids[_capsule_types[ids[i]]];
-                for(uint256 j = 0; j < cids.length; j++) {
-                    if(cids[j] == ids[i]) {
-                        cids[j] = cids[cids.length -1];
-                        cids.pop();
-                        break;
+            for (uint256 i = 0; i < ids.length; i++) {
+                if(_capsule_status[ids[i]] == 0) {
+                    uint256[] storage cids = _capsule_type_to_ids[_capsule_types[ids[i]]];
+                    for(uint256 j = 0; j < cids.length; j++) {
+                        if(cids[j] == ids[i]) {
+                            cids[j] = cids[cids.length -1];
+                            cids.pop();
+                            break;
+                        }
                     }
                 }
+                delete _capsule_status[ids[i]];
+                delete _capsule_level[ids[i]];
+                delete _capsule_types[ids[i]];
+                delete _capsule_start_time[ids[i]];
             }
-            delete _capsule_status[ids[i]];
-            delete _capsule_level[ids[i]];
-            delete _capsule_types[ids[i]];
-            delete _capsule_start_time[ids[i]];
         }
     }
 
-    function airdrop(uint8 capsuleType, address dropTo) public payable validAdmin {
+    function airdrop(uint8 capsuleType, address dropTo) public validAdmin {
 
         require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
         uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
@@ -199,12 +191,15 @@ contract Capsule is ERC1155, Ownable {
         emit CapsuleMinted(capsuleId, msg.sender, 0);
     }
 
-    function claim(uint256 ticketId) public payable {
+    function claim(uint256 ticketId, address raffleAddress) public {
 
-        require(_raffleToken.balanceOf(msg.sender, ticketId) > 0, "Ticket doesn't belong to you");
-        require(_raffleToken.isWinner(ticketId), "Ticket is not a winner");
+        require(_raffleAddresses[raffleAddress] == 1, "Invalid Raffle contract");
+        IERC1155Contract _raffleContract = IERC1155Contract(raffleAddress);
 
-        uint8 capsuleType = _raffleToken.getType(ticketId);
+        require(_raffleContract.balanceOf(msg.sender, ticketId) > 0, "Ticket doesn't belong to you");
+        require(_raffleContract.isWinner(ticketId), "Ticket is not a winner");
+
+        uint8 capsuleType = _raffleContract.getType(ticketId);
 
         require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
         uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
@@ -215,26 +210,26 @@ contract Capsule is ERC1155, Ownable {
         _capsule_status[capsuleId] = 2;
 
         _mint(msg.sender, capsuleId, 1, "");
-        _raffleToken.burn(msg.sender, ticketId);
+        _raffleContract.burn(msg.sender, ticketId);
         
         _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
         emit CapsuleMinted(capsuleId, msg.sender, 0);
     }
 
-    function markVested(uint256 capsuleId) public  {
+    function markStatus(uint256 capsuleId, bool vested, bool unlocked, bool unstaked) public  {
         require(_capsuleStakingAddress == msg.sender, "You are not authorized.");
-        require(_capsule_status[capsuleId] == 2, "Token is not allocated.");
-        _capsule_status[capsuleId] = 3;
-    }
-
-    function getCapsuleStatus(uint256 capsuleId) public view returns (uint8)  {
-        return _capsule_status[capsuleId];
-    }
-
-    function markUnlocked(uint256 capsuleId) public  {
-        require(_capsuleStakingAddress == msg.sender, "You are not authorized.");
-        require(_capsule_status[capsuleId] == 3, "Token is not vested.");
-        _capsule_status[capsuleId] = 4;
+        if(vested) {
+            require(_capsule_status[capsuleId] == 2, "Token is not allocated.");
+            _capsule_status[capsuleId] = 3;
+        }
+        else if(unlocked) {
+            require(_capsule_status[capsuleId] == 3, "Token is not vested.");
+            _capsule_status[capsuleId] = 4;
+        }
+        else if(unstaked) {
+            require(_capsule_status[capsuleId] == 3, "Token is not vested.");
+            _capsule_status[capsuleId] = 2;
+        }
     }
 
     function safeTransferFrom(
@@ -274,5 +269,15 @@ contract Capsule is ERC1155, Ownable {
             from == _nftMarketAddress, "Not authorized to transfer");
 
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);
+    }
+
+    function extract(address tokenAddress) validAdmin public {
+        if (tokenAddress == address(0)) {
+            payable(_treasury).transfer(address(this).balance);
+            return;
+        }
+        IERC20Contract token = IERC20Contract(tokenAddress);
+        require(token.balanceOf(address(this)) > 0, "No balance available");
+        token.transfer(_treasury, token.balanceOf(address(this)));
     }
 }

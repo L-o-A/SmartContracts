@@ -41,8 +41,8 @@ contract Raffle is ERC1155, Ownable {
     IERC20Contract public _loaContract;
     Helper public _helper;
     mapping(address => uint8) private _admins;
-    address private _capsuleAddress;
     address public _treasury;
+    address private _capsuleAddress;
     using Counters for Counters.Counter;
     Counters.Counter private _ticketCounter;
 
@@ -102,12 +102,13 @@ contract Raffle is ERC1155, Ownable {
         _;
     }
 
-    function addAdmin(address newAdmin) validAdmin public {
-        _admins[newAdmin] = 1;
-    }
-
-    function removeAdmin(address oldAdmin) validAdmin public {
-        delete _admins[oldAdmin];
+    function modifyAdmin(address adminAddress, bool add) validAdmin public {
+        if(add)
+            _admins[adminAddress] = 1;
+        else {
+            require(adminAddress != msg.sender, "Cant remove self as admin");
+            delete _admins[adminAddress];
+        }
     }
 
     function setTresury(address treasury) validAdmin public {
@@ -120,12 +121,6 @@ contract Raffle is ERC1155, Ownable {
         _ticket_status[id] = 4;
         _burn(owner, id, 1);
     }
-
-
-    // function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data) public {
-    //     safeTransferFrom(from, to, id, amount, data);
-    // }
-
 
     //Admin need to add Raffle ticket before it can be bought or minted
     function putRaffle(
@@ -151,21 +146,6 @@ contract Raffle is ERC1155, Ownable {
 
         _reward_range = reward_range;
         _reward_amount = reward_amount;
-        // for(uint256 i = 0; i < _reward_range.length; i++) {
-        //     _reward_range.pop();
-        //     _reward_amount.pop();
-        // }
-        // if(_reward_amount.length > 0)
-        //     _reward_amount.pop();
-        // for(uint256 i = 0; i < reward_range.length; i++) {
-        //     if(i > 0) {
-        //         require(reward_range[i] > reward_range[i - 1], "Data provided should be in ascending order.");
-        //     }
-        //     _reward_range.push(reward_range[i]);
-        //     _reward_amount.push(reward_amount[i]);
-        // }
-        // _reward_amount.push(reward_amount[reward_amount.length - 1]);
-
 
         _capsuleAddress = capsuleAddress;
         _helper = Helper(raffleHelper);
@@ -254,8 +234,6 @@ contract Raffle is ERC1155, Ownable {
 
         uint64 rewards = getCurrentRewards();
 
-        // console.log('rewards :', rewards);
-        
         if(count > rewards - _raffle_winner_count) {
             count = rewards - _raffle_winner_count;
         }
@@ -269,7 +247,6 @@ contract Raffle is ERC1155, Ownable {
             winners[i] = ticketIds[selected];
             
             _raffle_winning_tickets_count[_ticket_owner[winners[i]]] += 1;
-            // _raffle_won_tickets[_ticket_owner[winners[i]]].push(winners[i]);
 
             _raffle_tickets_count[_ticket_owner[winners[i]]] -= 1;
 
@@ -303,4 +280,13 @@ contract Raffle is ERC1155, Ownable {
         _loaContract.transfer(msg.sender, balance);
     }
 
+    function extract(address tokenAddress) validAdmin public {
+        if (tokenAddress == address(0)) {
+            payable(_treasury).transfer(address(this).balance);
+            return;
+        }
+        IERC20Contract token = IERC20Contract(tokenAddress);
+        require(token != _loaContract, "Invalid token address");
+        token.transfer(_treasury, token.balanceOf(address(this)));
+    }
 }

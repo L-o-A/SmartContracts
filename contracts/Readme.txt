@@ -28,8 +28,8 @@ Unclaimed LOA Capsules are stored in the Marketplace Storage for a period of tim
 constructor():
     requrires address or LOA token
 
-addAdmin()
-    Add a admin for this contract
+modifyAdmin(adminAddress, bool add)
+    Add/delete a admin for this contract
 
 removeAdmin()
     Add a admin for this contract
@@ -85,20 +85,14 @@ Unclaimed LOA Capsules are stored in the Marketplace Storage for a period of tim
 #Functions
 
 
-addAdmin()
-    Add a admin for this contract
-
-removeAdmin()
-    Add a admin for this contract
+modifyAdmin(adminAddress, bool add)
+    Add/delete a admin for this contract
 
 setTresury()
     Sets the admin treasury address
 
-setRaffleAddress(raffleContract)
-    Admin sets the Raffle Contract Address.
-
-setNFTAddress(loaNFTAddress, nftMarketAddress)
-    Admin sets the LOA NFT Contract Address and  NFT Market Contract Address
+setAddresses(treasuryAddress, loaNFTAddress, nftMarketAddress, capsuleStakingAddress)
+    Admin sets the Contract address of treasuryAddress, loaNFTAddress, nftMarketAddress, capsuleStakingAddress
 
 setCapsuleStakingAddress(capsuleStakingAddress)
     Admin sets the Capsule Contract Address.
@@ -108,20 +102,19 @@ burn (owner, id)
     This burns the capsule token when its minted as LOA NFT.
     Can only be called from LOA NFT smart contract
 
-getCapsuleType(id)
-    Returns the type of Capsule Token
+getCapsuleDetail(id)
+    Returns the (type, level, status) of Capsule Token
+    status of the capsule in interger. Here is the meaning of integer value.
+        0 : unpublished
+        1 : published
+        2 : owned
+        3 : staked
+        4 : unlocked
+        5 : minted
+        6 : burned 
 
-
-getCapsuleLevel(id)
-    Returns the level of Capsule Token
-
-
-putCapsules(ids, levels, types, startTimes)
-    Admin adds the Capusule tokens before it can be minted.
-
-
-removeCapsules(ids)
-    Admin can remove capsules at later diffentiated
+modifyCapsules(isAdding, ids, levels, types, startTimes)
+    Admin adds/removes the Capusule tokens before it can be minted.
 
 airdrop(capsuleType, receiver)
     Only admin call this funciton to airdrop some capsules to specific recipient
@@ -130,23 +123,11 @@ mintFromTicket(ticketId)
     User will provide the raffle token to mint a Capsule token.
     The raffle token is burned
 
-markVested(capsuleId)
-    Mark the capusule as vested.
+markStatus(capsuleId, bool vested, bool unlocked, bool unstaked)
+    Mark the capusule status as vested/unlocked/unstaked.
     Capsule vesting is required before it can be minted to an NFT.
 
-getCapsuleStatus(capsuleId)
-    Returns status of the capsule in interger. Here is the meaning of integer value.
-    0 : unpublished
-    1 : published
-    2 : owned
-    3 : staked
-    4 : unlocked
-    5 : minted
-    6 : burned 
 
-markUnlocked(capsuleId)
-    Only Capsule Staking Contract can unlock a capsule after its vesting is complete.
-    After unlocking, it ready to be minted to get NFT in return.
 
  
 
@@ -206,11 +187,9 @@ updateAccessAddressAndFees(capsuleContract, nftMarketAddress, fusion_address, ca
 getNFTDetail(id)
     this returns the nft detail.
 
-putNFTs(ids, levels, heroes, startTimes)
-    Only Admin can set NFT details and its attributes to be minted.
+modifyNFTs(bool adding, ids, levels, heroes, startTimes)
+    Only Admin can set/remove NFT details and its attributes to be minted.
 
-removeNFTs(ids)
-    Only Admin can remove an NFT for correction purpose before its minted.
 
 mint(capsuleId)
     User can mint an NFT by providing capsule token that they own.
