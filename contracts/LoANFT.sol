@@ -46,6 +46,8 @@ contract LoANFT is ERC1155, Ownable {
 
     mapping(uint8 => uint256[]) _nft_level_to_ids;
     mapping(uint8 => uint256) _minting_fee;
+    mapping(address => uint256[]) _user_holdings;
+
 
     event NFTMinted(
         uint256 indexed itemId,
@@ -103,6 +105,10 @@ contract LoANFT is ERC1155, Ownable {
             _nft_owner[id],
             _nft_status[id]
         );
+    }
+
+    function getUserNFTs() public view returns (uint256[] memory) {
+        return _user_holdings[msg.sender];
     }
 
 
@@ -190,6 +196,12 @@ contract LoANFT is ERC1155, Ownable {
         
         for(uint8 i = 0; i <= ids.length; i++) {
             _burn(owner, ids[i], 1);
+            for(uint256 j = 0; j <= _user_holdings[owner].length; j++) {
+                if(_user_holdings[owner][j] == ids[i]) {
+                    _user_holdings[owner][j] = _user_holdings[owner][_user_holdings[owner].length - 1];
+                    _user_holdings[owner].pop();
+                }
+            }
         }
 
         uint256 id = _nft_level_to_ids[fusionLevel][_nft_level_to_ids[fusionLevel].length -1];
@@ -199,6 +211,7 @@ contract LoANFT is ERC1155, Ownable {
         _nft_status[id] = 2;
 
         _mint(owner, id, 1, "");
+        _user_holdings[owner].push(id);
         _nft_level_to_ids[_nft_level[id]].pop();
         emit NFTMinted(id, 0, owner, price);
     }
@@ -217,6 +230,7 @@ contract LoANFT is ERC1155, Ownable {
         _nft_status[id] = 2;
 
         _mint(msg.sender, id, 1, "");
+        _user_holdings[msg.sender].push(id);
         _capsuleToken.burn(msg.sender, capsuleId);
         _nft_level_to_ids[_nft_level[id]].pop();
 
@@ -233,4 +247,5 @@ contract LoANFT is ERC1155, Ownable {
         IERC20Contract token = IERC20Contract(tokenAddress);
         token.transfer(_treasury, token.balanceOf(address(this)));
     }
+
 }

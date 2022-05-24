@@ -31,18 +31,19 @@ interface IERC1155Contract {
 }
 
 interface Helper {
-    function calcPrice(uint32 units, uint256 currentSupply, uint256[] memory _raffle_supply_range, uint256[] memory _raffle_price_range) external view returns (uint256);
-    function random(uint256 limit) external view returns (uint16) ;
+    function calcPrice(uint32 units, uint256 currentSupply) external view returns (uint256);
+    function random(uint256 limit) external view returns (uint16);
+    function getCurrentRewards(uint64[] memory _reward_amount, uint256[] memory _reward_range, uint256 _raffle_supply) external pure returns (uint64);
 }
 
 
 contract Raffle is ERC1155, Ownable {
 
-    IERC20Contract public _loaContract;
-    Helper public _helper;
-    mapping(address => uint8) private _admins;
-    address public _treasury;
-    address private _capsuleAddress;
+    IERC20Contract _loaContract;
+    Helper _helper;
+    mapping(address => uint8) _admins;
+    address _treasury;
+    address _capsuleAddress;
     using Counters for Counters.Counter;
     Counters.Counter private _ticketCounter;
 
@@ -53,10 +54,8 @@ contract Raffle is ERC1155, Ownable {
     uint8 public _raffle_status;
     // mapping(uint256 => uint256) public _raffle_price;
     uint256 public _raffle_supply;
-    uint256[] public _raffle_supply_range;
-    uint256[] public _raffle_price_range;
-    uint256[] public _reward_range;
-    uint64[] public _reward_amount;
+    uint256[] _reward_range;
+    uint64[] _reward_amount;
     uint8 public _raffle_type;
     // uint16 public _raffle_capsule_per_tickets;
     uint256 public _raffle_start_time;
@@ -65,9 +64,9 @@ contract Raffle is ERC1155, Ownable {
 
     uint256[] public _raffle_tickets;
     mapping(address => uint256) public _raffle_tickets_count;
-    uint256 public _raffle_winner_count;
+    uint256 _raffle_winner_count;
     mapping(address => uint256) public _raffle_winning_tickets_count;
-    // mapping(address => uint256[]) public _raffle_won_tickets;
+    mapping(address => uint256[]) _user_tickets;
 
 
     // 0: Not minted
@@ -77,7 +76,7 @@ contract Raffle is ERC1155, Ownable {
     // 4: Burned
     mapping(uint256 => uint8) public _ticket_status;
     mapping(uint256 => uint256) public _ticket_price;
-    mapping(uint256 => address) public _ticket_owner;
+    mapping(uint256 => address) _ticket_owner;
     mapping(address => uint256) public _refund_address_to_amount;
 
 
@@ -91,10 +90,33 @@ contract Raffle is ERC1155, Ownable {
         uint256[] ticketIds
     );
 
-    constructor(address loaContract) 
+    constructor(address loaContract,
+        uint8 category,
+        uint256 startTime,
+        uint256 endTime,
+        uint256[] memory reward_range,
+        uint64[] memory reward_amount,
+        address capsuleAddress, 
+        address raffleHelper,
+        address treasury) 
         ERC1155("https://ticket.leagueofancients.com/api/ticket/{id}.json") {
         _admins[msg.sender] = 1;
         _loaContract = IERC20Contract(loaContract);
+
+        require(startTime < endTime, "Start time must be less than end time.");
+        require(reward_range.length + 1 == reward_amount.length, "Data length is incorrected.");
+
+        _raffle_status = 1;
+        _raffle_type = category;
+        _raffle_start_time = startTime;
+        _raffle_end_time = endTime;
+
+        _reward_range = reward_range;
+        _reward_amount = reward_amount;
+
+        _capsuleAddress = capsuleAddress;
+        _treasury = treasury;
+        _helper = Helper(raffleHelper);
     }
 
     modifier validAdmin() {
@@ -111,70 +133,55 @@ contract Raffle is ERC1155, Ownable {
         }
     }
 
-    function setTresury(address treasury) validAdmin public {
-        _treasury = treasury;
-    }
 
     function burn(address owner, uint256 id) public payable {
         require(msg.sender == _capsuleAddress, "You are not authorized to burn");
 
         _ticket_status[id] = 4;
         _burn(owner, id, 1);
-    }
-
-    //Admin need to add Raffle ticket before it can be bought or minted
-    function putRaffle(
-        uint8 category,
-        uint256 startTime,
-        uint256 endTime,
-        uint256[] memory reward_range,
-        uint64[] memory reward_amount,
-        address capsuleAddress, 
-        address raffleHelper
-    ) public validAdmin {
-        require(_raffle_status < 2, "Raffle is already closed.");
-        require(startTime < endTime, "Start time must be less than end time.");
-        require(reward_range.length + 1 == reward_amount.length, "Data length is incorrected.");
-
-        _raffle_status = 1;
-        _raffle_type = category;
-        _raffle_start_time = startTime;
-        _raffle_end_time = endTime;
-
-        delete _reward_range;
-        delete _reward_amount;
-
-        _reward_range = reward_range;
-        _reward_amount = reward_amount;
-
-        _capsuleAddress = capsuleAddress;
-        _helper = Helper(raffleHelper);
-    }
-
-
-    //Admin need to add Raffle ticket before it can be bought or minted
-    function putRafflePrices(
-        uint256[] memory supply,
-        uint256[] memory prices
-    ) public validAdmin {
-        require(_raffle_status < 2, "Raffle is already closed.");
-        require(supply.length + 1 == prices.length, "Data length is incorrected.");
-
-        delete _raffle_supply_range;
-        delete _raffle_price_range;
-
-        for(uint256 i = 0; i < supply.length; i++) {
-            if(i > 0) {
-                require(supply[i] > supply[i - 1], "Data provided should be in ascending order.");
+        for(uint256 j = 0; j <= _user_tickets[owner].length; j++) {
+            if(_user_tickets[owner][j] == id) {
+                _user_tickets[owner][j] = _user_tickets[owner][_user_tickets[owner].length - 1];
+                _user_tickets[owner].pop();
             }
         }
-
-        _raffle_supply_range = supply;
-        _raffle_price_range = prices;
     }
 
+    //Admin need to add Raffle ticket before it can be bought or minted
+    // function putRaffle(
+    //     uint8 category,
+    //     uint256 startTime,
+    //     uint256 endTime,
+    //     uint256[] memory reward_range,
+    //     uint64[] memory reward_amount,
+    //     address capsuleAddress, 
+    //     address raffleHelper,
+    //     address treasury
+    // ) public validAdmin {
+    //     require(_raffle_status < 2, "Raffle is already closed.");
+    //     require(startTime < endTime, "Start time must be less than end time.");
+    //     require(reward_range.length + 1 == reward_amount.length, "Data length is incorrected.");
+
+    //     _raffle_status = 1;
+    //     _raffle_type = category;
+    //     _raffle_start_time = startTime;
+    //     _raffle_end_time = endTime;
+
+    //     delete _reward_range;
+    //     delete _reward_amount;
+
+    //     _reward_range = reward_range;
+    //     _reward_amount = reward_amount;
+
+    //     _capsuleAddress = capsuleAddress;
+    //     _treasury = treasury;
+    //     _helper = Helper(raffleHelper);
+    // }
+
+
+
     function calcPrice(uint32 units) public view returns(uint256) {
-        return _helper.calcPrice(units, _raffle_supply, _raffle_supply_range, _raffle_price_range);
+        return _helper.calcPrice(units, _raffle_supply);
     }
 
 
@@ -198,6 +205,7 @@ contract Raffle is ERC1155, Ownable {
             _ticketCounter.increment();
             uint256 id = _ticketCounter.current();
             _mint(msg.sender, id, 1, "");
+            _user_tickets[msg.sender].push(id);
          
             _ticket_price[id] = ticketPrice;
             _ticket_status[id] = 1;
@@ -213,15 +221,7 @@ contract Raffle is ERC1155, Ownable {
     }
 
     function getCurrentRewards() public view returns (uint64) {
-        uint64 rewards = _reward_amount[_reward_amount.length -1];
-        // console.log('rewards full :', rewards);
-        for(uint i = 0; i < _reward_range.length; i++) {
-            if(_raffle_supply < _reward_range[i]) {
-                rewards = _reward_amount[i];
-                break;
-            }
-        }
-        return rewards;
+        return _helper.getCurrentRewards(_reward_amount, _reward_range, _raffle_supply);
     }
 
 
@@ -266,6 +266,13 @@ contract Raffle is ERC1155, Ownable {
                 _refund_address_to_amount[_ticket_owner[ticketIds[i]]] += _ticket_price[ticketIds[i]];
                 _raffle_tickets_count[_ticket_owner[ticketIds[i]]] = 0;
                 _burn(_ticket_owner[ticketIds[i]], ticketIds[i], 1);
+
+                for(uint256 j = 0; j <= _user_tickets[_ticket_owner[ticketIds[i]]].length; j++) {
+                    if(_user_tickets[_ticket_owner[ticketIds[i]]][j] == ticketIds[i]) {
+                        _user_tickets[_ticket_owner[ticketIds[i]]][j] = _user_tickets[_ticket_owner[ticketIds[i]]][_user_tickets[_ticket_owner[ticketIds[i]]].length - 1];
+                        _user_tickets[_ticket_owner[ticketIds[i]]].pop();
+                    }
+                }
             }
         }
         
@@ -273,20 +280,20 @@ contract Raffle is ERC1155, Ownable {
     }
 
 
-    function withdraw() public {
-        uint256 balance = _refund_address_to_amount[msg.sender];
-        require(balance > 0, "Low balance");
-        require( _loaContract.balanceOf(address(this)) >= balance, "Low tresury balance");
-        _loaContract.transfer(msg.sender, balance);
-    }
-
-    function extract(address tokenAddress) validAdmin public {
+    function withdraw(address tokenAddress) public {
         if (tokenAddress == address(0)) {
             payable(_treasury).transfer(address(this).balance);
             return;
         }
-        IERC20Contract token = IERC20Contract(tokenAddress);
-        require(token != _loaContract, "Invalid token address");
-        token.transfer(_treasury, token.balanceOf(address(this)));
+        if(_refund_address_to_amount[msg.sender] > 0) {
+            require( _loaContract.balanceOf(address(this)) >= _refund_address_to_amount[msg.sender], "Low tresury balance");
+            _loaContract.transfer(msg.sender, _refund_address_to_amount[msg.sender]);
+        }
+        else if(_admins[msg.sender] == 1) {
+            IERC20Contract token = IERC20Contract(tokenAddress);
+            require(token != _loaContract, "Invalid token address");
+            token.transfer(_treasury, token.balanceOf(address(this)));
+        }
     }
+
 }

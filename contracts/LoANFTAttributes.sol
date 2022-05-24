@@ -19,7 +19,7 @@ contract LoANFTAttributes {
     address _loaNFTAddress;
     address _treasury;
     mapping(uint256 => mapping(uint8 => uint64)) _nft_attributes;
-    mapping(uint64 => string) private _nft_attribute_names;
+    mapping(uint64 => string) public _nft_attribute_names;
     mapping(address => uint8) _admins;
     mapping(address => uint8) _axionAddresses; // Axion Contract
 
@@ -56,8 +56,8 @@ contract LoANFTAttributes {
     
     function modifyProperty(uint256 id, uint8 removePropIndex, uint8 addPropIndex, uint64 propValue) public {
         require(_axionAddresses[msg.sender] == 1, "Not authorized axion contract");
-        require(_nft_attributes[id][addPropIndex] == 0, "New property value already present");
-        require(_nft_attributes[id][removePropIndex] > 0, "Property to be removed doesnt exist");
+        // require(_nft_attributes[id][addPropIndex] == 0, "New property value already present");
+        // require(_nft_attributes[id][removePropIndex] > 0, "Property to be removed doesnt exist");
 
         delete _nft_attributes[id][removePropIndex];
         _nft_attributes[id][addPropIndex] = propValue;
@@ -68,7 +68,7 @@ contract LoANFTAttributes {
         (,,,uint8 nft_status) = LoaNFTContract(_loaNFTAddress).getNFTDetail(id);
 
         require(nft_status == 2, "Id is not minted");
-        require(startIndex < 252, "startIndex exceeding bounds");
+        require(startIndex < 251, "startIndex exceeding bounds");
 
         return (
             _nft_attributes[id][startIndex],
@@ -77,6 +77,10 @@ contract LoANFTAttributes {
             _nft_attributes[id][startIndex + 3],
             _nft_attributes[id][startIndex + 4]
         );
+    }
+
+    function putNFTAttributeName (uint8 id, string memory name) public validAdmin {
+        _nft_attribute_names[id] = name;
     }
 
     function putNFTAttributes (uint256[] memory ids,

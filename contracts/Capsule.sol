@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
 LOA Capsule is a ERC-1155 standard NFT.
@@ -52,12 +52,12 @@ interface IERC1155Contract {
  */
 contract Capsule is ERC1155, Ownable {
 
-    mapping(address => uint8) public _raffleAddresses; // Raffale Contract
-    address private _capsuleStakingAddress; // Address of Capsule Staking Smart Contract
-    address private _loaNFTAddress; // Address of LOA NFT Smart Contract
-    address private _nftMarketAddress; // Address of LOA Market Place Smart Contract
-    mapping(address=> uint8) private _admins;
-    address private _treasury;
+    mapping(address => uint8) _raffleAddresses; // Raffale Contract
+    address _capsuleStakingAddress; // Address of Capsule Staking Smart Contract
+    address _loaNFTAddress; // Address of LOA NFT Smart Contract
+    address _nftMarketAddress; // Address of LOA Market Place Smart Contract
+    mapping(address=> uint8) _admins;
+    address _treasury;
     /**
      * Status values
      */
@@ -68,11 +68,11 @@ contract Capsule is ERC1155, Ownable {
     // 4 : unlocked
     // 5 : minted
     // 6 : burned
-    mapping(uint256 => uint8) public _capsule_status; //keeps mapping of status of each capsule
-    mapping(uint256 => uint8) private _capsule_types; //keeps mapping of type value of each capsule. It is defined while adding data
-    mapping(uint256 => uint8) private _capsule_level; // keeps mapping of level of each capsule
-    mapping(uint256 => uint256) private _capsule_start_time; // keeps mapping of mint start time of each capsule
-    mapping(uint8 => uint256[]) private _capsule_type_to_ids; // keeps mapping of id list of capsule ids by their type
+    mapping(uint256 => uint8) _capsule_status; //keeps mapping of status of each capsule
+    mapping(uint256 => uint8) _capsule_types; //keeps mapping of type value of each capsule. It is defined while adding data
+    mapping(uint256 => uint8) _capsule_level; // keeps mapping of level of each capsule
+    mapping(uint8 => uint256[]) _capsule_type_to_ids; // keeps mapping of id list of capsule ids by their type
+    mapping(address => uint256[]) _user_holdings;
 
 
     event CapsuleMinted(
@@ -94,8 +94,10 @@ contract Capsule is ERC1155, Ownable {
     function modifyAdmin(address adminAddress, bool add) validAdmin public {
         if(add)
             _admins[adminAddress] = 1;
-        else
+        else {
+            require(adminAddress != msg.sender, "Cant remove self as admin");
             delete _admins[adminAddress];
+        }
     }
 
     function setAddresses(address treasury, address loaNFTAddress, address nftMarketAddress, address capsuleStakingAddress) public validAdmin{
@@ -116,11 +118,21 @@ contract Capsule is ERC1155, Ownable {
         require(msg.sender == _loaNFTAddress, "You are not authorized to burn");
         _capsule_status[id] = 6;
         _burn(owner, id, 1);
+        for(uint256 j = 0; j <= _user_holdings[owner].length; j++) {
+            if(_user_holdings[owner][j] == id) {
+                _user_holdings[owner][j] = _user_holdings[owner][_user_holdings[owner].length - 1];
+                _user_holdings[owner].pop();
+            }
+        }
     }
 
     function getCapsuleDetail(uint256 id) public view returns (uint8, uint8, uint8) {
         require(msg.sender == _capsuleStakingAddress, "You are not authorized to call this method");
         return (_capsule_types[id], _capsule_level[id], _capsule_status[id]);
+    }
+
+    function getUserCapsules() public view returns (uint256[] memory) {
+        return _user_holdings[msg.sender];
     }
 
     /*
@@ -132,32 +144,25 @@ contract Capsule is ERC1155, Ownable {
         bool add,
         uint256[] memory ids,
         uint8[] memory levels,
-        uint8[] memory types,
-        uint256[] memory startTimes
+        uint8[] memory types
     ) public validAdmin {
 
         if(add) {
-            require(ids.length ==  levels.length && levels.length == types.length && types.length == startTimes.length, "Args length not matching");
+            require(ids.length ==  levels.length && levels.length == types.length , "Args length not matching");
             
             for (uint256 i = 0; i < ids.length; i++) {
                 require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
-            }
-
-            for (uint256 i = 0; i < ids.length; i++) {
                 if(_capsule_status[ids[i]] == 0) {
                     _capsule_type_to_ids[types[i]].push(ids[i]);
                 }
                 _capsule_status[ids[i]] = 1;
                 _capsule_level[ids[i]] = levels[i];
                 _capsule_types[ids[i]] = types[i];
-                _capsule_start_time[ids[i]] = startTimes[i];
             }
         } else {
-            for (uint256 i = 0; i < ids.length; i++) {
-                require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
-            }
 
             for (uint256 i = 0; i < ids.length; i++) {
+                require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
                 if(_capsule_status[ids[i]] == 0) {
                     uint256[] storage cids = _capsule_type_to_ids[_capsule_types[ids[i]]];
                     for(uint256 j = 0; j < cids.length; j++) {
@@ -171,7 +176,6 @@ contract Capsule is ERC1155, Ownable {
                 delete _capsule_status[ids[i]];
                 delete _capsule_level[ids[i]];
                 delete _capsule_types[ids[i]];
-                delete _capsule_start_time[ids[i]];
             }
         }
     }
@@ -182,10 +186,10 @@ contract Capsule is ERC1155, Ownable {
         uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
 
         require(_capsule_status[capsuleId] == 1, "Capsule is not available");
-        require(_capsule_start_time[capsuleId] < block.timestamp, "Minting hasn't started yet");
 
         _capsule_status[capsuleId] = 2;
         _mint(dropTo, capsuleId, 1, "");
+        _user_holdings[dropTo].push(capsuleId);
         
         _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
         emit CapsuleMinted(capsuleId, msg.sender, 0);
@@ -205,11 +209,11 @@ contract Capsule is ERC1155, Ownable {
         uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
 
         require(_capsule_status[capsuleId] == 1, "id is not available");
-        require(_capsule_start_time[capsuleId] < block.timestamp, "Minting hasn't started yet");
 
         _capsule_status[capsuleId] = 2;
 
         _mint(msg.sender, capsuleId, 1, "");
+        _user_holdings[msg.sender].push(capsuleId);
         _raffleContract.burn(msg.sender, ticketId);
         
         _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
