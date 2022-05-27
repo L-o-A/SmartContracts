@@ -248,8 +248,8 @@ contract LPStaking is ReentrancyGuard {
 
     function withdraw() validAdmin public {
         uint256 balance = _stakeToken.balanceOf(address(this)) - _totalStakes;
-        _stakeToken.transferFrom(address(this), _treasury, balance);
-        _loaToken.transferFrom(address(this), _treasury, _loaToken.balanceOf(address(this)));
+        _stakeToken.transfer(_treasury, balance);
+        _loaToken.transfer(_treasury, _loaToken.balanceOf(address(this)));
     } 
 
     function extract(address tokenAddress) validAdmin public {
@@ -262,5 +262,4 @@ contract LPStaking is ReentrancyGuard {
         require(token != _stakeToken && token != _loaToken, "Invalid token address");
         token.transfer(_treasury, token.balanceOf(address(this)));
     }
-    
 }
