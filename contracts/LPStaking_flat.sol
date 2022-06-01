@@ -335,8 +335,6 @@ contract LPStaking is ReentrancyGuard {
             _stakeToken = _loaToken;
         else 
             _stakeToken = IERC20Contract(stakeContract);
-
-        _rewardDistributedLast = block.timestamp;
     }
 
     address[] public _stakers;
@@ -355,7 +353,8 @@ contract LPStaking is ReentrancyGuard {
     uint256 private _lastMajorWithdrawReported;
     uint256 private _lastAmountWithdrawn;
     bool public _withdrawBlocked;
-    uint256 private _withdrawLimitPercent;
+    uint256 public _withdrawLimitPercent;
+    uint256  public MULTIPLIER = 1_000_000_000_000;
 
 
     event Staked(
@@ -425,14 +424,15 @@ contract LPStaking is ReentrancyGuard {
 
         uint256 currentTime = block.timestamp;
         uint256 secs = currentTime - _rewardDistributedLast;
-        uint256 rewards = _tokenStaked[msg.sender] * (_rewardPerTokenCumulative - _rewardTallyBefore[msg.sender]) 
+        uint256 rewards = _tokenStaked[msg.sender] * (_rewardPerTokenCumulative - _rewardTallyBefore[msg.sender]) / MULTIPLIER 
                 +   (_rewardPerSec * secs * _tokenStaked[msg.sender] / _totalStakes);
 
         _loaToken.transfer(msg.sender, rewards);
 
-        _rewardPerTokenCumulative = _rewardPerTokenCumulative + (_rewardPerSec * secs / _totalStakes);
+        _rewardPerTokenCumulative = _rewardPerTokenCumulative + (_rewardPerSec * secs * MULTIPLIER / _totalStakes);
         _rewardDistributedLast = currentTime;
 
+        _rewardTallyBefore[msg.sender] = _rewardPerTokenCumulative;
         emit RewardClaimed(msg.sender, rewards);
     }
 
@@ -442,8 +442,9 @@ contract LPStaking is ReentrancyGuard {
         }
         uint256 currentTime = block.timestamp;
         uint256 secs = currentTime - _rewardDistributedLast;
-        uint256 rewards = (_tokenStaked[msg.sender] * (_rewardPerTokenCumulative - _rewardTallyBefore[msg.sender])) 
-                +   (_rewardPerSec * secs * _tokenStaked[msg.sender] / _totalStakes);
+        
+        uint256 rewards = (_tokenStaked[owner] * (_rewardPerTokenCumulative - _rewardTallyBefore[owner])) / MULTIPLIER
+                +   (_rewardPerSec * secs * _tokenStaked[owner] / _totalStakes);
             
         return (rewards, _rewardDistributedLast, ((_tokenStaked[owner]* _rewardPerSec)/ _totalStakes));
     }
@@ -453,10 +454,11 @@ contract LPStaking is ReentrancyGuard {
         require(_stakeToken.balanceOf(msg.sender) >= amount, "Unavailable balance.");
 
         uint256 currentTime = block.timestamp;
-        uint256 secs = currentTime - _rewardDistributedLast;
+
+        uint256 secs = _rewardDistributedLast == 0 ? 0 : (currentTime - _rewardDistributedLast);
 
         if(_tokenStaked[msg.sender] > 0 ) {
-            uint256 rewards = (_tokenStaked[msg.sender] * (_rewardPerTokenCumulative - _rewardTallyBefore[msg.sender])) 
+            uint256 rewards = (_tokenStaked[msg.sender] * (_rewardPerTokenCumulative - _rewardTallyBefore[msg.sender])) / MULTIPLIER
                 +   (_rewardPerSec * secs * _tokenStaked[msg.sender] / _totalStakes);
             
             require(_loaToken.transfer(msg.sender, rewards), "Not enough LOA balance available to transfer rewards");
@@ -467,7 +469,7 @@ contract LPStaking is ReentrancyGuard {
         _tokenStakedAt[msg.sender] = currentTime;
         _totalStakes = _totalStakes + amount;
         _tokenStaked[msg.sender] = _tokenStaked[msg.sender] + amount;
-        _rewardPerTokenCumulative = _rewardPerTokenCumulative + (_rewardPerSec * secs / _totalStakes);
+        _rewardPerTokenCumulative = _rewardPerTokenCumulative + (_rewardPerSec * secs * MULTIPLIER / _totalStakes);
         _rewardDistributedLast = currentTime;
         _rewardTallyBefore[msg.sender] = _rewardPerTokenCumulative;
     }
@@ -478,7 +480,7 @@ contract LPStaking is ReentrancyGuard {
         uint256 secs = block.timestamp - _rewardDistributedLast;
         uint256 tokenStaked = _tokenStaked[msg.sender];
         if(tokenStaked > 0 && _rewardPerSec > 0) {
-            uint256 rewards = (tokenStaked * (_rewardPerTokenCumulative- _rewardTallyBefore[msg.sender])) 
+            uint256 rewards = (tokenStaked * (_rewardPerTokenCumulative- _rewardTallyBefore[msg.sender])) / MULTIPLIER
                 +   (_rewardPerSec * secs * tokenStaked/ _totalStakes);
             
             require(_loaToken.transfer(msg.sender, rewards), "Not enough LOA balance available to transfer rewards");
@@ -511,10 +513,14 @@ contract LPStaking is ReentrancyGuard {
         }
 
         require(_stakeToken.transfer(msg.sender, amount), "Transfer failed");
+        //transfer fees to treasury
+        if(withdrawAmount - amount > 0) {
+            _stakeToken.transfer(_treasury, withdrawAmount - amount);
+        }
 
         _totalStakes = _totalStakes - withdrawAmount;
         _tokenStaked[msg.sender] = _tokenStaked[msg.sender] - withdrawAmount;
-        _rewardPerTokenCumulative = _totalStakes > 0 ? (_rewardPerTokenCumulative + (_rewardPerSec * secs / _totalStakes)) : 0;
+        _rewardPerTokenCumulative = _totalStakes > 0 ? (_rewardPerTokenCumulative + (_rewardPerSec * secs * MULTIPLIER / _totalStakes)) : 0;
         _rewardDistributedLast = currentTime;
 
         if(_tokenStaked[msg.sender] > 0) 
@@ -523,7 +529,6 @@ contract LPStaking is ReentrancyGuard {
             delete _rewardTallyBefore[msg.sender];
             delete _tokenStakedAt[msg.sender];
         }
-
 
         // If amount withdrawn in last 1 hr is more than allowed percentage of total stakes then withdraw is blocked.
         if(_lastMajorWithdrawReported < currentTime - 3600) {
@@ -540,8 +545,8 @@ contract LPStaking is ReentrancyGuard {
 
     function withdraw() validAdmin public {
         uint256 balance = _stakeToken.balanceOf(address(this)) - _totalStakes;
-        _stakeToken.transferFrom(address(this), _treasury, balance);
-        _loaToken.transferFrom(address(this), _treasury, _loaToken.balanceOf(address(this)));
+        _stakeToken.transfer(_treasury, balance);
+        _loaToken.transfer(_treasury, _loaToken.balanceOf(address(this)));
     } 
 
     function extract(address tokenAddress) validAdmin public {
@@ -552,7 +557,6 @@ contract LPStaking is ReentrancyGuard {
 
         IERC20Contract token = IERC20Contract(tokenAddress);
         require(token != _stakeToken && token != _loaToken, "Invalid token address");
-        token.transferFrom(address(this), _treasury, token.balanceOf(address(this)));
+        token.transfer(_treasury, token.balanceOf(address(this)));
     }
-    
 }
