@@ -28,7 +28,7 @@ interface IERC1155Contract {
 
 contract LoANFTFusion {
 
-    IERC20Contract public _erc20Token;
+    IERC20Contract public _loaToken;
     IERC1155Contract public _nftContract;
     address private _admin;
 
@@ -54,7 +54,7 @@ contract LoANFTFusion {
     );
 
     constructor(address loaContract, address loaNFTContract) {
-        _erc20Token = IERC20Contract(loaContract);
+        _loaToken = IERC20Contract(loaContract);
         _nftContract = IERC1155Contract(loaNFTContract);
         _admin = msg.sender;
     }
@@ -66,9 +66,9 @@ contract LoANFTFusion {
     }
 
     function withdraw() public onlyAdmin {
-        uint256 balance = _erc20Token.balanceOf(address(this));
+        uint256 balance = _loaToken.balanceOf(address(this));
         require(balance > 0, "Low balance");
-        _erc20Token.transfer(msg.sender, balance);
+        _loaToken.transfer(msg.sender, balance);
     }
 
     function createFusionRule(
@@ -91,7 +91,7 @@ contract LoANFTFusion {
     function fusion(uint256 ruleId, uint256[] memory ids) public {
         require(_fusion_rule_price[ruleId] > 0, "Rule not found");
         require(
-            _erc20Token.balanceOf(msg.sender) >= _fusion_rule_price[ruleId],
+            _loaToken.balanceOf(msg.sender) >= _fusion_rule_price[ruleId],
             "Required LOA balance is not available."
         );
 
@@ -109,7 +109,7 @@ contract LoANFTFusion {
             nft_prev_hero = nft_hero;
         }
 
-        _erc20Token.transferFrom(msg.sender, address(this), _fusion_rule_price[ruleId]);
+        _loaToken.transferFrom(msg.sender, address(this), _fusion_rule_price[ruleId]);
 
         _nftContract.fusion(msg.sender, ids, _fusion_rule_result[ruleId], _fusion_rule_price[ruleId]);
     }

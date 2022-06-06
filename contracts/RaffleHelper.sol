@@ -15,14 +15,22 @@ contract RaffleHelper {
     uint256[] _raffle_supply_range;
     uint256[] _raffle_price_range;
     address _treasury;
+    address public _raffle;
+    uint64[] public _reward_amount;
+    uint256[] public _reward_range;
 
     constructor() {
         _admins[msg.sender] = 1;
     }
+    
 
-     modifier validAdmin() {
+    modifier validAdmin() {
         require(_admins[msg.sender] == 1, "You are not authorized.");
         _;
+    }
+
+    function isValidAdmin(address adminAddress) public view returns (bool) {
+        return _admins[adminAddress] == 1;
     }
 
     function modifyAdmin(address adminAddress, bool add) validAdmin public {
@@ -34,29 +42,43 @@ contract RaffleHelper {
         }
     }
 
-     function setTresury(address treasury) public validAdmin {
+     function setTresury(address treasury, address raffle) public validAdmin {
         _treasury = treasury;
+        _raffle = raffle;
     }
 
     //Admin need to add Raffle ticket before it can be bought or minted
     function putRafflePrices(
         uint256[] memory supply,
-        uint256[] memory prices
+        uint256[] memory prices,
+        uint64[] memory reward_amount,
+        uint256[] memory reward_range
+        
     ) public validAdmin {
         // require(_raffle_status < 2, "Raffle is already closed.");
         require(supply.length + 1 == prices.length, "Data length is incorrected.");
+        require(reward_range.length + 1 == reward_amount.length, "Data length is incorrected.");
 
         delete _raffle_supply_range;
         delete _raffle_price_range;
+        delete _reward_amount;
+        delete _reward_range;
 
         for(uint256 i = 0; i < supply.length; i++) {
             if(i > 0) {
                 require(supply[i] > supply[i - 1], "Data provided should be in ascending order.");
             }
         }
+        for(uint256 i = 0; i < reward_range.length; i++) {
+            if(i > 0) {
+                require(reward_range[i] > reward_range[i - 1], "Data provided should be in ascending order.");
+            }
+        }
 
         _raffle_supply_range = supply;
         _raffle_price_range = prices;
+        _reward_amount = reward_amount;
+        _reward_range = reward_range;
     }
     
     function calcPrice(uint32 units, uint256 currentSupply) public view returns (uint256) {
@@ -97,7 +119,7 @@ contract RaffleHelper {
         return uint16(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, limit)))% limit);
     }
 
-    function getCurrentRewards(uint64[] memory _reward_amount, uint256[] memory _reward_range, uint256 _raffle_supply) public pure returns (uint64) {
+    function getCurrentRewards(uint256 _raffle_supply) public view returns (uint64) {
         uint64 rewards = _reward_amount[_reward_amount.length -1];
         for(uint i = 0; i < _reward_range.length; i++) {
             if(_raffle_supply < _reward_range[i]) {

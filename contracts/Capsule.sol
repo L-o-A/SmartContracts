@@ -3,7 +3,7 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+// import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 // import "hardhat/console.sol";
 
@@ -41,8 +41,15 @@ interface IERC20Contract {
 interface IERC1155Contract {
     function balanceOf(address tokenOwner, uint256 id) external view returns (uint256);
     function burn(address tokenOwner, uint256 id) external;
-    function getType(uint256 id) external view returns (uint8);
-    function isWinner(uint256 id) external view returns (bool);
+    function getTicketDetail(uint256 id) external view returns (uint8 , uint256, address, uint8);
+}
+
+interface Admin {
+    function isValidAdmin(address adminAddress) external pure returns (bool);
+    function getTreasury() external view returns (address);
+    function isValidRaffleAddress(address addr) external view returns (bool);
+    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
+    
 }
 
 /**
@@ -52,12 +59,10 @@ interface IERC1155Contract {
  */
 contract Capsule is ERC1155, Ownable {
 
-    mapping(address => uint8) _raffleAddresses; // Raffale Contract
     address _capsuleStakingAddress; // Address of Capsule Staking Smart Contract
     address _loaNFTAddress; // Address of LOA NFT Smart Contract
     address _nftMarketAddress; // Address of LOA Market Place Smart Contract
-    mapping(address=> uint8) _admins;
-    address _treasury;
+    Admin _admin;
     /**
      * Status values
      */
@@ -81,37 +86,21 @@ contract Capsule is ERC1155, Ownable {
         uint256 totalPrice
     );
 
-    constructor() ERC1155("https://capsule.leagueofancients.com/api/capsule/{id}.json") {
-        _admins[msg.sender] = 1;
+    constructor(address adminContractAddress) ERC1155("https://capsule.leagueofancients.com/api/capsule/{id}.json") {
+        _admin = Admin(adminContractAddress);
     }
 
     // Modifier
     modifier validAdmin() {
-        require(_admins[msg.sender] == 1, "You are not authorized.");
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
         _;
     }
 
-    function modifyAdmin(address adminAddress, bool add) validAdmin public {
-        if(add)
-            _admins[adminAddress] = 1;
-        else {
-            require(adminAddress != msg.sender, "Cant remove self as admin");
-            delete _admins[adminAddress];
-        }
-    }
-
-    function setAddresses(address treasury, address loaNFTAddress, address nftMarketAddress, address capsuleStakingAddress) public validAdmin{
-        _treasury = treasury;
+    function setAddresses(address loaNFTAddress, address nftMarketAddress, address capsuleStakingAddress) public {
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
         _loaNFTAddress = loaNFTAddress;
         _nftMarketAddress= nftMarketAddress;
         _capsuleStakingAddress = capsuleStakingAddress;
-    }
-
-    function modifyRaffleAddress(address raffleAddress, bool add) public validAdmin {
-        if(add)
-            _raffleAddresses[raffleAddress] = 1;
-        else
-            delete _raffleAddresses[raffleAddress];
     }
 
     function burn(address owner, uint256 id) public {
@@ -145,8 +134,8 @@ contract Capsule is ERC1155, Ownable {
         uint256[] memory ids,
         uint8[] memory levels,
         uint8[] memory types
-    ) public validAdmin {
-
+    ) public {
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
         if(add) {
             require(ids.length ==  levels.length && levels.length == types.length , "Args length not matching");
             
@@ -180,12 +169,13 @@ contract Capsule is ERC1155, Ownable {
         }
     }
 
-    function airdrop(uint8 capsuleType, address dropTo) public validAdmin {
+    function airdrop(uint8 capsuleType, address dropTo) public {
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
 
         require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
         uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
 
-        require(_capsule_status[capsuleId] == 1, "Capsule is not available");
+        // require(_capsule_status[capsuleId] == 1, "Capsule is not available");
 
         _capsule_status[capsuleId] = 2;
         _mint(dropTo, capsuleId, 1, "");
@@ -195,29 +185,33 @@ contract Capsule is ERC1155, Ownable {
         emit CapsuleMinted(capsuleId, msg.sender, 0);
     }
 
-    function claim(uint256 ticketId, address raffleAddress) public {
-
-        require(_raffleAddresses[raffleAddress] == 1, "Invalid Raffle contract");
+    function claim(uint256[] memory ticketIds, address raffleAddress, address owner) public {
+        require(_admin.isValidRaffleAddress(msg.sender), "Not authorized");
+        require(_admin.isValidRaffleAddress(raffleAddress), "Invalid Raffle contract");
         IERC1155Contract _raffleContract = IERC1155Contract(raffleAddress);
 
-        require(_raffleContract.balanceOf(msg.sender, ticketId) > 0, "Ticket doesn't belong to you");
-        require(_raffleContract.isWinner(ticketId), "Ticket is not a winner");
+        for(uint256 i = 0; i < ticketIds.length; i++) {
+            uint256 ticketId = ticketIds[i];
+            
+            require(_raffleContract.balanceOf(owner, ticketId) > 0, "Ticket doesn't belong to you");
 
-        uint8 capsuleType = _raffleContract.getType(ticketId);
+            (uint8 status, , , uint8 capsuleType) = _raffleContract.getTicketDetail(ticketId);
+            require(status == 3, "Ticket is not a winner");
 
-        require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
-        uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
+            require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
+            uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
 
-        require(_capsule_status[capsuleId] == 1, "id is not available");
+            require(_capsule_status[capsuleId] == 1, "id is not available");
 
-        _capsule_status[capsuleId] = 2;
+            _capsule_status[capsuleId] = 2;
 
-        _mint(msg.sender, capsuleId, 1, "");
-        _user_holdings[msg.sender].push(capsuleId);
-        _raffleContract.burn(msg.sender, ticketId);
-        
-        _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
-        emit CapsuleMinted(capsuleId, msg.sender, 0);
+            _mint(owner, capsuleId, 1, "");
+            _user_holdings[owner].push(capsuleId);
+            _raffleContract.burn(owner, ticketId);
+            
+            _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
+            emit CapsuleMinted(capsuleId, owner, 0);
+        }
     }
 
     function markStatus(uint256 capsuleId, bool vested, bool unlocked, bool unstaked) public  {
@@ -243,15 +237,7 @@ contract Capsule is ERC1155, Ownable {
         uint256 amount,
         bytes memory data
     ) public virtual override {
-        require(_admins[msg.sender] == 1 ||
-            msg.sender == _nftMarketAddress ||
-            to == address(0) ||
-            msg.sender == address(this) || 
-            to == _capsuleStakingAddress ||
-            from == _capsuleStakingAddress ||
-            to == _nftMarketAddress ||
-            from == _nftMarketAddress, "Not authorized to transfer");
-
+        require(_admin.isValidCapsuleTransfer(msg.sender, from, to), "Not permitted to transfer");
         return super.safeTransferFrom(from, to, id, amount, data);
     }
 
@@ -262,26 +248,19 @@ contract Capsule is ERC1155, Ownable {
         uint256[] memory amounts,
         bytes memory data
     ) public virtual override {
-
-        require(_admins[msg.sender] == 1 ||
-            msg.sender == _nftMarketAddress ||
-            to == address(0) ||
-            msg.sender == address(this) || 
-            to == _capsuleStakingAddress ||
-            from == _capsuleStakingAddress ||
-            to == _nftMarketAddress ||
-            from == _nftMarketAddress, "Not authorized to transfer");
-
+        require(_admin.isValidCapsuleTransfer(msg.sender, from, to), "Not permitted to transfer");
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }
 
-    function extract(address tokenAddress) validAdmin public {
+    function extract(address tokenAddress) public {
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
+
         if (tokenAddress == address(0)) {
-            payable(_treasury).transfer(address(this).balance);
+            payable(_admin.getTreasury()).transfer(address(this).balance);
             return;
         }
         IERC20Contract token = IERC20Contract(tokenAddress);
         require(token.balanceOf(address(this)) > 0, "No balance available");
-        token.transfer(_treasury, token.balanceOf(address(this)));
+        token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
     }
 }

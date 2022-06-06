@@ -5,8 +5,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
-// import "./library/strings.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 /**
  * This contract is for Capsule Staking
@@ -70,7 +69,7 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
     mapping(address => uint8) private _admins;
     address public _treasury;
 
-    constructor(address erc20Contract) payable {
+    constructor(address erc20Contract) {
         _admins[msg.sender] = 1;
         _loaToken = IERC20Contract(erc20Contract);
     }

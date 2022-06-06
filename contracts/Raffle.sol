@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 // import "hardhat/console.sol";
 
-
 interface IERC20Contract {
     function transfer(address recipient, uint256 amount)
         external
@@ -33,15 +32,18 @@ interface IERC1155Contract {
 interface Helper {
     function calcPrice(uint32 units, uint256 currentSupply) external view returns (uint256);
     function random(uint256 limit) external view returns (uint16);
-    function getCurrentRewards(uint64[] memory _reward_amount, uint256[] memory _reward_range, uint256 _raffle_supply) external pure returns (uint64);
+    function getCurrentRewards(uint256 _raffle_supply) external pure returns (uint64);
+    function isValidAdmin(address adminAddress) external pure returns (bool);
 }
 
+interface CapsuleInterface {
+    function claim(uint256[] memory ticketIds, address raffleAddress, address receiver) external;
+}
 
 contract Raffle is ERC1155, Ownable {
 
     IERC20Contract _loaContract;
     Helper _helper;
-    mapping(address => uint8) _admins;
     address _treasury;
     address _capsuleAddress;
     using Counters for Counters.Counter;
@@ -52,21 +54,17 @@ contract Raffle is ERC1155, Ownable {
     // 2 : closed
     // 3 : winners diclared
     uint8 public _raffle_status;
-    // mapping(uint256 => uint256) public _raffle_price;
     uint256 public _raffle_supply;
-    uint256[] _reward_range;
-    uint64[] _reward_amount;
     uint8 public _raffle_type;
-    // uint16 public _raffle_capsule_per_tickets;
     uint256 public _raffle_start_time;
     uint256 public _raffle_end_time;
 
 
     uint256[] public _raffle_tickets;
     mapping(address => uint256) public _raffle_tickets_count;
-    uint256 _raffle_winner_count;
+    uint256 public _raffle_winner_count;
     mapping(address => uint256) public _raffle_winning_tickets_count;
-    mapping(address => uint256[]) _user_tickets;
+    mapping(address => uint256[]) public _user_tickets;
 
 
     // 0: Not minted
@@ -74,63 +72,35 @@ contract Raffle is ERC1155, Ownable {
     // 2: Lost Lottery
     // 3: Won Lottery
     // 4: Burned
-    mapping(uint256 => uint8) public _ticket_status;
-    mapping(uint256 => uint256) public _ticket_price;
+    mapping(uint256 => uint8) _ticket_status;
+    mapping(uint256 => uint256) _ticket_price;
     mapping(uint256 => address) _ticket_owner;
     mapping(address => uint256) public _refund_address_to_amount;
 
 
-    // event TicketMinted(
-    //     uint256 indexed units,
-    //     address indexed buyer,
-    //     uint256 totalPrice
-    // );
+    event TicketMinted(
+        uint256 indexed units,
+        address indexed buyer,
+        uint256 totalPrice
+    );
 
     event WinnersDeclared(
         uint256[] ticketIds
     );
 
-    constructor(address loaContract,
-        uint8 category,
-        uint256 startTime,
-        uint256 endTime,
-        uint256[] memory reward_range,
-        uint64[] memory reward_amount,
-        address capsuleAddress, 
-        address raffleHelper,
-        address treasury) 
+    constructor(address loaContract, address raffleHelper) 
         ERC1155("https://ticket.leagueofancients.com/api/ticket/{id}.json") {
-        _admins[msg.sender] = 1;
         _loaContract = IERC20Contract(loaContract);
-
-        require(startTime < endTime, "Start time must be less than end time.");
-        require(reward_range.length + 1 == reward_amount.length, "Data length is incorrected.");
-
-        _raffle_status = 1;
-        _raffle_type = category;
-        _raffle_start_time = startTime;
-        _raffle_end_time = endTime;
-
-        _reward_range = reward_range;
-        _reward_amount = reward_amount;
-
-        _capsuleAddress = capsuleAddress;
-        _treasury = treasury;
         _helper = Helper(raffleHelper);
     }
 
     modifier validAdmin() {
-        require(_admins[msg.sender] == 1, "You are not authorized.");
+        require(_helper.isValidAdmin(msg.sender) , "You are not authorized.");
         _;
     }
 
-    function modifyAdmin(address adminAddress, bool add) validAdmin public {
-        if(add)
-            _admins[adminAddress] = 1;
-        else {
-            require(adminAddress != msg.sender, "Cant remove self as admin");
-            delete _admins[adminAddress];
-        }
+    function getTicketDetail(uint256 id) public view returns (uint8 , uint256, address, uint8) {
+        return (_ticket_status[id], _ticket_price[id], _ticket_owner[id], _raffle_type);
     }
 
 
@@ -143,47 +113,30 @@ contract Raffle is ERC1155, Ownable {
             if(_user_tickets[owner][j] == id) {
                 _user_tickets[owner][j] = _user_tickets[owner][_user_tickets[owner].length - 1];
                 _user_tickets[owner].pop();
+                break;
             }
         }
     }
 
     //Admin need to add Raffle ticket before it can be bought or minted
-    // function putRaffle(
-    //     uint8 category,
-    //     uint256 startTime,
-    //     uint256 endTime,
-    //     uint256[] memory reward_range,
-    //     uint64[] memory reward_amount,
-    //     address capsuleAddress, 
-    //     address raffleHelper,
-    //     address treasury
-    // ) public validAdmin {
-    //     require(_raffle_status < 2, "Raffle is already closed.");
-    //     require(startTime < endTime, "Start time must be less than end time.");
-    //     require(reward_range.length + 1 == reward_amount.length, "Data length is incorrected.");
+    function putRaffle(
+        uint8 category,
+        uint256 startTime,
+        uint256 endTime,
+        address capsuleAddress,
+        address treasury
+    ) public validAdmin {
+        require(_raffle_status < 2, "Raffle is already closed.");
+        require(startTime < endTime, "Start time must be less than end time.");
 
-    //     _raffle_status = 1;
-    //     _raffle_type = category;
-    //     _raffle_start_time = startTime;
-    //     _raffle_end_time = endTime;
+        _raffle_status = 1;
+        _raffle_type = category;
+        _raffle_start_time = startTime;
+        _raffle_end_time = endTime;
 
-    //     delete _reward_range;
-    //     delete _reward_amount;
-
-    //     _reward_range = reward_range;
-    //     _reward_amount = reward_amount;
-
-    //     _capsuleAddress = capsuleAddress;
-    //     _treasury = treasury;
-    //     _helper = Helper(raffleHelper);
-    // }
-
-
-
-    function calcPrice(uint32 units) public view returns(uint256) {
-        return _helper.calcPrice(units, _raffle_supply);
+        _capsuleAddress = capsuleAddress;
+        _treasury = treasury;
     }
-
 
     // User can buy raffle ticket by providing raffileType and no of units
     function buyTicket(uint32 units) public payable {
@@ -193,7 +146,7 @@ contract Raffle is ERC1155, Ownable {
         require(_raffle_end_time > block.timestamp, "Raffle is not open." );
         require(units > 1, "Invalid units provided." );
 
-        uint256 amount = calcPrice(units);
+        uint256 amount = _helper.calcPrice(units, _raffle_supply);
 
         require( _loaContract.balanceOf(msg.sender) >= amount, "Required LOA balance is not available.");
 
@@ -217,13 +170,8 @@ contract Raffle is ERC1155, Ownable {
         _raffle_tickets_count[msg.sender] += units;
         _raffle_supply += units;
     
-        // emit TicketMinted(raffleId, units, msg.sender, amount);
+        emit TicketMinted(units, msg.sender, amount);
     }
-
-    function getCurrentRewards() public view returns (uint64) {
-        return _helper.getCurrentRewards(_reward_amount, _reward_range, _raffle_supply);
-    }
-
 
     function pickWinner(uint256 count) public validAdmin {
         require(_raffle_end_time < block.timestamp, "Raffle event is still open." );
@@ -232,7 +180,7 @@ contract Raffle is ERC1155, Ownable {
         _raffle_status = 2;
         uint256[] storage ticketIds = _raffle_tickets;
 
-        uint64 rewards = getCurrentRewards();
+        uint64 rewards = _helper.getCurrentRewards(_raffle_supply);
 
         if(count > rewards - _raffle_winner_count) {
             count = rewards - _raffle_winner_count;
@@ -265,12 +213,14 @@ contract Raffle is ERC1155, Ownable {
                 _ticket_status[ticketIds[i]] = 2;
                 _refund_address_to_amount[_ticket_owner[ticketIds[i]]] += _ticket_price[ticketIds[i]];
                 _raffle_tickets_count[_ticket_owner[ticketIds[i]]] = 0;
+
                 _burn(_ticket_owner[ticketIds[i]], ticketIds[i], 1);
 
                 for(uint256 j = 0; j <= _user_tickets[_ticket_owner[ticketIds[i]]].length; j++) {
                     if(_user_tickets[_ticket_owner[ticketIds[i]]][j] == ticketIds[i]) {
                         _user_tickets[_ticket_owner[ticketIds[i]]][j] = _user_tickets[_ticket_owner[ticketIds[i]]][_user_tickets[_ticket_owner[ticketIds[i]]].length - 1];
                         _user_tickets[_ticket_owner[ticketIds[i]]].pop();
+                        break;
                     }
                 }
             }
@@ -289,10 +239,14 @@ contract Raffle is ERC1155, Ownable {
             require( _loaContract.balanceOf(address(this)) >= _refund_address_to_amount[msg.sender], "Low tresury balance");
             _loaContract.transfer(msg.sender, _refund_address_to_amount[msg.sender]);
         }
-        else if(_admins[msg.sender] == 1) {
+        else if(_helper.isValidAdmin(msg.sender)) {
             IERC20Contract token = IERC20Contract(tokenAddress);
-            require(token != _loaContract, "Invalid token address");
-            token.transfer(_treasury, token.balanceOf(address(this)));
+            if(token != _loaContract && token.balanceOf(address(this)) > 0) {
+                token.transfer(_treasury, token.balanceOf(address(this)));
+            }
+        }
+        if(_raffle_status == 3 && _user_tickets[msg.sender].length > 0) {
+            CapsuleInterface(_capsuleAddress).claim(_user_tickets[msg.sender], address(this), msg.sender);
         }
     }
 

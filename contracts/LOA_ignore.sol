@@ -44,8 +44,8 @@ contract LOA_ignore is IERC20 {
     uint256 totalSupply_;
 
     constructor() {
-        // totalSupply_ = 1_000_000_000 * 1_000_000_000_000_000_000;
-        totalSupply_ = 100000;
+        totalSupply_ = 1_000_000_000 * 1_000_000_000_000_000_000;
+        // totalSupply_ = 10000000;
         balances[msg.sender] = totalSupply_;
         console.log(msg.sender);
     }
