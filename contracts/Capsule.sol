@@ -49,7 +49,6 @@ interface Admin {
     function getTreasury() external view returns (address);
     function isValidRaffleAddress(address addr) external view returns (bool);
     function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
-    
 }
 
 /**

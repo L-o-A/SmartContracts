@@ -59,6 +59,13 @@ interface IERC20Contract {
     ) external returns (bool);
 }
 
+interface Admin {
+    function isValidAdmin(address adminAddress) external pure returns (bool);
+    function getTreasury() external view returns (address);
+    function isValidRaffleAddress(address addr) external view returns (bool);
+    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
+}
+
 /**
  * Smart contract for capsule staking
  */
@@ -66,11 +73,10 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
     IERC20Contract public _loaToken;
     IERC1155 public _capsuleToken;
-    mapping(address => uint8) private _admins;
-    address public _treasury;
+    Admin _admin;
 
-    constructor(address erc20Contract) {
-        _admins[msg.sender] = 1;
+    constructor(address erc20Contract, address adminContractAddress) {
+        _admin = Admin(adminContractAddress);
         _loaToken = IERC20Contract(erc20Contract);
     }
 
@@ -88,24 +94,15 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
         bool vestingDone
     );
 
+    // Modifier
     modifier validAdmin() {
-        require(_admins[msg.sender] == 1, "You are not authorized.");
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
         _;
     }
 
-    function modifyAdmin(address adminAddress, bool add) validAdmin public {
-        if(add)
-            _admins[adminAddress] = 1;
-        else {
-            require(adminAddress != msg.sender, "Cant remove self as admin");
-            delete _admins[adminAddress];
-        }
-    }
-
     //update capsule Contract, treasury contract 
-    function setAddresses(address capsuleContract, address treasury) public validAdmin {
+    function setAddresses(address capsuleContract) public validAdmin {
         _capsuleToken = IERC1155(capsuleContract);
-        _treasury = treasury;
     }
 
     // set capsule staking rules (duration of stake, amount of LOA to be staked) for each capsule type
@@ -173,12 +170,12 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
     function withdraw(address tokenAddress) validAdmin public {
         if (tokenAddress == address(0)) {
-            payable(_treasury).transfer(address(this).balance);
+            payable(_admin.getTreasury()).transfer(address(this).balance);
             return;
         }
         IERC20Contract token = IERC20Contract(tokenAddress);
         require(token != _loaToken, "Invalid token address");
-        token.transfer(_treasury, token.balanceOf(address(this)));
+        token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
     }
 
 }

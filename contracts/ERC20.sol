@@ -33,9 +33,9 @@ interface IERC20 {
     );
 }
 
-contract LOA_ignore is IERC20 {
-    string public constant name = "ERC20Basic";
-    string public constant symbol = "ERC";
+contract ERC20 is IERC20 {
+    string public name = "ERC20Basic";
+    string public symbol = "ERC";
     uint8 public constant decimals = 0;
 
     mapping(address => uint256) balances;
@@ -43,7 +43,9 @@ contract LOA_ignore is IERC20 {
 
     uint256 totalSupply_;
 
-    constructor() {
+    constructor(string memory _name, string memory _symbol) {
+        name = _name;
+        symbol = _symbol;
         totalSupply_ = 1_000_000_000 * 1_000_000_000_000_000_000;
         // totalSupply_ = 10000000;
         balances[msg.sender] = totalSupply_;

@@ -44,7 +44,7 @@ contract Raffle is ERC1155, Ownable {
 
     IERC20Contract _loaContract;
     Helper _helper;
-    address _treasury;
+    address public _treasury;
     address _capsuleAddress;
     using Counters for Counters.Counter;
     Counters.Counter private _ticketCounter;
@@ -89,7 +89,7 @@ contract Raffle is ERC1155, Ownable {
     );
 
     constructor(address loaContract, address raffleHelper) 
-        ERC1155("https://ticket.leagueofancients.com/api/ticket/{id}.json") {
+        ERC1155("https://raffle.leagueofancients.com/api/ticket/{id}.json") {
         _loaContract = IERC20Contract(loaContract);
         _helper = Helper(raffleHelper);
     }
@@ -249,5 +249,4 @@ contract Raffle is ERC1155, Ownable {
             CapsuleInterface(_capsuleAddress).claim(_user_tickets[msg.sender], address(this), msg.sender);
         }
     }
-
 }
