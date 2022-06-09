@@ -48,19 +48,6 @@ interface IERC20Contract {
     ) external returns (bool);
 }
 
-contract SellerPayment {
-
-    IERC20Contract public _erc20Token;
-
-    constructor(address erc20) {
-        _erc20Token = IERC20Contract(erc20);
-    }
-
-    function pay(address from, address to, uint256 amount) external returns (bool) {
-        return _erc20Token.transferFrom(from, to, amount);
-    }
-}
-
 contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
     using Counters for Counters.Counter;

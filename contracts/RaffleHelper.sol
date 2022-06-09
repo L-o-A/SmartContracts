@@ -9,40 +9,39 @@ interface IERC20Contract {
     function balanceOf(address tokenOwner) external view returns (uint256);
 }
 
+interface Admin {
+    function isValidAdmin(address adminAddress) external pure returns (bool);
+    function getTreasury() external view returns (address);
+    function isValidRaffleAddress(address addr) external view returns (bool);
+    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
+}
+
 contract RaffleHelper {
 
-    mapping(address => uint8) _admins;
     uint256[] _raffle_supply_range;
     uint256[] _raffle_price_range;
     address _treasury;
     address public _raffle;
     uint64[] public _reward_amount;
     uint256[] public _reward_range;
+    Admin _admin;
 
-    constructor() {
-        _admins[msg.sender] = 1;
+    constructor(address adminContractAddress) {
+        _admin = Admin(adminContractAddress);
     }
     
 
+    // Modifier
     modifier validAdmin() {
-        require(_admins[msg.sender] == 1, "You are not authorized.");
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
         _;
     }
 
     function isValidAdmin(address adminAddress) public view returns (bool) {
-        return _admins[adminAddress] == 1;
+        return _admin.isValidAdmin(adminAddress);
     }
 
-    function modifyAdmin(address adminAddress, bool add) validAdmin public {
-        if(add)
-            _admins[adminAddress] = 1;
-        else {
-            require(adminAddress != msg.sender, "Cant remove self as admin");
-            delete _admins[adminAddress];
-        }
-    }
-
-     function setTresury(address treasury, address raffle) public validAdmin {
+    function setTresury(address treasury, address raffle) public validAdmin {
         _treasury = treasury;
         _raffle = raffle;
     }

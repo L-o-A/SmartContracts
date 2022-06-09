@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import "hardhat/console.sol";
+
 contract MultiSigAdmin {
 
     mapping(address=> uint8) _admins;
     address _treasury;
     mapping(address => uint8) _raffleAddresses; // Raffale Contract
-    address _loaNFTAddress;
-    address _nftMarketAddress;
-    address _capsuleStakingAddress;
+    address[] public _contractAddresses;
 
     constructor() {
         _admins[msg.sender] = 1;
@@ -48,19 +48,16 @@ contract MultiSigAdmin {
             delete _raffleAddresses[raffleAddress];
     }
 
-    function setAddresses(address loaNFTAddress, address nftMarketAddress, address capsuleStakingAddress) public validAdmin {
-        _loaNFTAddress = loaNFTAddress;
-        _nftMarketAddress = nftMarketAddress;
-        _capsuleStakingAddress = capsuleStakingAddress;
+    function updateContractAddresses(address[] memory contractAddresses) public validAdmin {
+        delete _contractAddresses;
+        _contractAddresses = contractAddresses;
     }
 
     function isValidCapsuleTransfer(address sender, address from, address to) public view returns (bool) {
-        return isValidAdmin(sender) ||
-            sender == _nftMarketAddress ||
-            to == address(0) ||
-            to == _capsuleStakingAddress ||
-            from == _capsuleStakingAddress ||
-            to == _nftMarketAddress ||
-            from == _nftMarketAddress;
+        for(uint256 i = 0; i < _contractAddresses.length; i++) {
+            if(sender == _contractAddresses[i] || from == _contractAddresses[i] || to == _contractAddresses[i])
+                return true;
+        }
+        return false;
     }
 }

@@ -40,6 +40,7 @@ interface CapsuleInterface {
     function claim(uint256[] memory ticketIds, address raffleAddress, address receiver) external;
 }
 
+
 contract Raffle is ERC1155, Ownable {
 
     IERC20Contract _loaContract;
