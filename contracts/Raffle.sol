@@ -5,8 +5,6 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-// import "hardhat/console.sol";
-
 interface IERC20Contract {
     function transfer(address recipient, uint256 amount)
         external
@@ -89,10 +87,10 @@ contract Raffle is ERC1155, Ownable {
         uint256[] ticketIds
     );
 
-    constructor(address loaContract, address raffleHelper) 
+    constructor(address loaContract, address raffleHelper ) 
         ERC1155("https://raffle.leagueofancients.com/api/ticket/{id}.json") {
-        _loaContract = IERC20Contract(loaContract);
         _helper = Helper(raffleHelper);
+        _loaContract = IERC20Contract(loaContract);
     }
 
     modifier validAdmin() {
@@ -120,7 +118,7 @@ contract Raffle is ERC1155, Ownable {
     }
 
     //Admin need to add Raffle ticket before it can be bought or minted
-    function putRaffle(
+    function setRaffleData(
         uint8 category,
         uint256 startTime,
         uint256 endTime,
@@ -144,7 +142,7 @@ contract Raffle is ERC1155, Ownable {
 
         require(_raffle_status == 1, "Raffle is not open." );
         require(_raffle_start_time < block.timestamp, "Raffle is not open." );
-        require(_raffle_end_time > block.timestamp, "Raffle is not open." );
+        require(_raffle_end_time > block.timestamp, "Raffle is closed." );
         require(units > 1, "Invalid units provided." );
 
         uint256 amount = _helper.calcPrice(units, _raffle_supply);
@@ -241,10 +239,7 @@ contract Raffle is ERC1155, Ownable {
             _loaContract.transfer(msg.sender, _refund_address_to_amount[msg.sender]);
         }
         else if(_helper.isValidAdmin(msg.sender)) {
-            IERC20Contract token = IERC20Contract(tokenAddress);
-            if(token != _loaContract && token.balanceOf(address(this)) > 0) {
-                token.transfer(_treasury, token.balanceOf(address(this)));
-            }
+            IERC20Contract(tokenAddress).transfer(_treasury, IERC20Contract(tokenAddress).balanceOf(address(this)));
         }
         if(_raffle_status == 3 && _user_tickets[msg.sender].length > 0) {
             CapsuleInterface(_capsuleAddress).claim(_user_tickets[msg.sender], address(this), msg.sender);
