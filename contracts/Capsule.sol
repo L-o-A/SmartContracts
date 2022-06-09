@@ -49,6 +49,7 @@ interface Admin {
     function getTreasury() external view returns (address);
     function isValidRaffleAddress(address addr) external view returns (bool);
     function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
+    function isValidMarketPlaceContract(address sender) external view returns (bool);
 }
 
 /**
@@ -61,7 +62,6 @@ contract Capsule is ERC1155, Ownable {
     address _capsuleStakingAddress; // Address of Capsule Staking Smart Contract
     address _loaNFTAddress; // Address of LOA NFT Smart Contract
     address _nftMarketAddress; // Address of LOA Market Place Smart Contract
-    Admin _admin;
     /**
      * Status values
      */
@@ -72,11 +72,13 @@ contract Capsule is ERC1155, Ownable {
     // 4 : unlocked
     // 5 : minted
     // 6 : burned
-    mapping(uint256 => uint8) _capsule_status; //keeps mapping of status of each capsule
-    mapping(uint256 => uint8) _capsule_types; //keeps mapping of type value of each capsule. It is defined while adding data
+    mapping(uint256 => uint8) public _capsule_status; //keeps mapping of status of each capsule
+    mapping(uint256 => uint8) public _capsule_types; //keeps mapping of type value of each capsule. It is defined while adding data
     mapping(uint256 => uint8) _capsule_level; // keeps mapping of level of each capsule
     mapping(uint8 => uint256[]) _capsule_type_to_ids; // keeps mapping of id list of capsule ids by their type
     mapping(address => uint256[]) _user_holdings;
+
+    Admin _admin;
 
 
     event CapsuleMinted(
@@ -115,7 +117,7 @@ contract Capsule is ERC1155, Ownable {
     }
 
     function getCapsuleDetail(uint256 id) public view returns (uint8, uint8, uint8) {
-        require(msg.sender == _capsuleStakingAddress, "You are not authorized to call this method");
+        require(_admin.isValidMarketPlaceContract(msg.sender), "You are not authorized to call this method");
         return (_capsule_types[id], _capsule_level[id], _capsule_status[id]);
     }
 

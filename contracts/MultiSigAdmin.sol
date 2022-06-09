@@ -53,6 +53,14 @@ contract MultiSigAdmin {
         _contractAddresses = contractAddresses;
     }
 
+    function isValidMarketPlaceContract(address sender) public view returns (bool) {
+        for(uint256 i = 0; i < _contractAddresses.length; i++) {
+            if(sender == _contractAddresses[i])
+                return true;
+        }
+        return false;
+    }
+
     function isValidCapsuleTransfer(address sender, address from, address to) public view returns (bool) {
         for(uint256 i = 0; i < _contractAddresses.length; i++) {
             if(sender == _contractAddresses[i] || from == _contractAddresses[i] || to == _contractAddresses[i])

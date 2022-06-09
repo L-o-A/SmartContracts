@@ -13,23 +13,27 @@ interface LoaNFTContract {
     function getNFTDetail(uint256 id) external view returns (uint8, uint8, address, uint8);
 }
 
-
 contract LoANFTAttributes {
 
     address _loaNFTAddress;
-    address _treasury;
-    mapping(uint256 => mapping(uint8 => uint64)) _nft_attributes;
-    mapping(uint64 => string) public _nft_attribute_names;
-    mapping(address => uint8) _admins;
+    mapping(uint256 => string) _nft_attributes;
+    string public _nft_attribute_names;
     mapping(address => uint8) _axionAddresses; // Axion Contract
 
-    constructor() {
-        _admins[msg.sender] = 1;
+    Admin _admin;
+
+    constructor(address adminContractAddress) {
+        _admin = Admin(adminContractAddress);
     }
 
-    function setNFTAddress(address loaNFTAddress, address treasury) public validAdmin {
+    // Modifier
+    modifier validAdmin() {
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
+        _;
+    }
+
+    function setNFTAddress(address loaNFTAddress) public validAdmin {
         _loaNFTAddress = loaNFTAddress;
-        _treasury = treasury;
     }
 
     function modifyAxionAddresses(address axionAddress, bool add) public validAdmin {
@@ -39,83 +43,40 @@ contract LoANFTAttributes {
             delete _axionAddresses[axionAddress];
     }
 
-    // Modifier
-    modifier validAdmin() {
-        require(_admins[msg.sender] == 1, "You are not authorized.");
-        _;
-    }
-
-    function modifyAdmin(address adminAddress, bool add) validAdmin public {
-        if(add)
-            _admins[adminAddress] = 1;
-        else {
-            require(adminAddress != msg.sender, "Cant remove self as admin");
-            delete _admins[adminAddress];
-        }
-    }
-    
-    function modifyProperty(uint256 id, uint8 removePropIndex, uint8 addPropIndex, uint64 propValue) public {
+    function modifyProperty(uint256 id, string memory newProperties) public {
         require(_axionAddresses[msg.sender] == 1, "Not authorized axion contract");
-        // require(_nft_attributes[id][addPropIndex] == 0, "New property value already present");
-        // require(_nft_attributes[id][removePropIndex] > 0, "Property to be removed doesnt exist");
-
-        delete _nft_attributes[id][removePropIndex];
-        _nft_attributes[id][addPropIndex] = propValue;
+        _nft_attributes[id] = newProperties;
     }
 
-
-    function getNFTAttributes(uint256 id, uint8 startIndex) public view returns (uint64, uint64, uint64, uint64, uint64) {
+    function getNFTAttributes(uint256 id) public view returns (string memory) {
         (,,,uint8 nft_status) = LoaNFTContract(_loaNFTAddress).getNFTDetail(id);
 
         require(nft_status == 2, "Id is not minted");
-        require(startIndex < 251, "startIndex exceeding bounds");
-
-        return (
-            _nft_attributes[id][startIndex],
-            _nft_attributes[id][startIndex + 1],
-            _nft_attributes[id][startIndex + 2],
-            _nft_attributes[id][startIndex + 3],
-            _nft_attributes[id][startIndex + 4]
-        );
+        return (_nft_attributes[id]);
     }
 
-    function putNFTAttributeName (uint8 id, string memory name) public validAdmin {
-        _nft_attribute_names[id] = name;
+    function putNFTAttributeNames (string memory nft_attribute_names) public validAdmin {
+        _nft_attribute_names = nft_attribute_names;
     }
 
-    function putNFTAttributes (uint256[] memory ids,
-        uint8 attributeStartIndex,
-        uint64[] memory attrib_1,
-        uint64[] memory attrib_2,
-        uint64[] memory attrib_3,
-        uint64[] memory attrib_4,
-        uint64[] memory attrib_5) public validAdmin {
+    function putNFTAttributes (uint256[] memory ids, string[] memory attribs) public validAdmin {
 
-        require(ids.length ==  attrib_1.length 
-                && ids.length == attrib_2.length 
-                && ids.length == attrib_3.length 
-                && ids.length == attrib_4.length 
-                && ids.length == attrib_5.length, "Args length not matching");
-        
+        require(ids.length ==  attribs.length, "Args length not matching");
             for (uint256 i = 0; i < ids.length; i++) {
                 (,,,uint8 nft_status) = LoaNFTContract(_loaNFTAddress).getNFTDetail(ids[i]);
-                require(nft_status != 0, "Id is not published");
+                require(nft_status == 1, "Id is not published");
 
-                _nft_attributes[ids[i]][attributeStartIndex] = attrib_1[i];
-                _nft_attributes[ids[i]][attributeStartIndex + 1] = attrib_2[i];
-                _nft_attributes[ids[i]][attributeStartIndex + 2] = attrib_3[i];
-                _nft_attributes[ids[i]][attributeStartIndex + 3] = attrib_4[i];
-                _nft_attributes[ids[i]][attributeStartIndex + 4] = attrib_5[i];
+                _nft_attributes[ids[i]] = attribs[i];
         }
     }
 
     function withdraw(address tokenAddress) public validAdmin {
         if (tokenAddress == address(0)) {
-            payable(_treasury).transfer(address(this).balance);
+            payable(_admin.getTreasury()).transfer(address(this).balance);
             return;
         }
 
         IERC20Contract token = IERC20Contract(tokenAddress);
-        token.transfer(_treasury, token.balanceOf(address(this)));
+        token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
     }
 }

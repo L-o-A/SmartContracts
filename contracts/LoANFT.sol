@@ -25,6 +25,14 @@ interface IERC1155Contract {
     function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8);
 }
 
+interface Admin {
+    function isValidAdmin(address adminAddress) external pure returns (bool);
+    function getTreasury() external view returns (address);
+    function isValidRaffleAddress(address addr) external view returns (bool);
+    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
+    function isValidMarketPlaceContract(address sender) external view returns (bool);
+}
+
 contract LoANFT is ERC1155, Ownable {
 
     address _loaAddress;
@@ -32,14 +40,13 @@ contract LoANFT is ERC1155, Ownable {
     address _nftMarketAddress;
     address _fusion_address;
     mapping(address => uint8) _admins;
-    address _treasury;
     address _loaNFTAttributeAddress;
 
     // 0 : unpublished
     // 1 : ready to mint
     // 2 : minted
     // 3 : burned
-    mapping(uint256 => uint8) _nft_status;
+    mapping(uint256 => uint8) public _nft_status;
     mapping(uint256 => uint8) _nft_level;
     mapping(uint256 => uint8) _nft_hero;
     mapping(uint256 => address) _nft_owner;
@@ -47,6 +54,8 @@ contract LoANFT is ERC1155, Ownable {
     mapping(uint8 => uint256[]) _nft_level_to_ids;
     mapping(uint8 => uint256) _minting_fee;
     mapping(address => uint256[]) _user_holdings;
+
+    Admin _admin;
 
 
     event NFTMinted(
@@ -56,11 +65,11 @@ contract LoANFT is ERC1155, Ownable {
         uint256 price
     );
 
-    constructor(address loaAddress)
+    constructor(address loaAddress, address adminContractAddress)
         ERC1155("https://nft.leagueofancients.com/api/nft/{id}.json")
     {
         _loaAddress = loaAddress;
-        _admins[msg.sender] = 1;
+        _admin = Admin(adminContractAddress);
     }
 
     function updateAccessAddressAndFees (
@@ -82,17 +91,8 @@ contract LoANFT is ERC1155, Ownable {
 
     // Modifier
     modifier validAdmin() {
-        require(_admins[msg.sender] == 1, "You are not authorized.");
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
         _;
-    }
-
-    function modifyAdmin(address adminAddress, bool add) validAdmin public {
-        if(add)
-            _admins[adminAddress] = 1;
-        else {
-            require(adminAddress != msg.sender, "Cant remove self as admin");
-            delete _admins[adminAddress];
-        }
     }
 
     function getNFTDetail(uint256 id) public view returns (uint8, uint8, address, uint8) {
@@ -194,7 +194,7 @@ contract LoANFT is ERC1155, Ownable {
     function fusion(address owner, uint256[] memory ids, uint8 fusionLevel, uint256 price) public payable {
         require(msg.sender == _fusion_address, "Not authorized");
         
-        for(uint8 i = 0; i <= ids.length; i++) {
+        for(uint8 i = 0; i < ids.length; i++) {
             _burn(owner, ids[i], 1);
             for(uint256 j = 0; j <= _user_holdings[owner].length; j++) {
                 if(_user_holdings[owner][j] == ids[i]) {
@@ -240,12 +240,11 @@ contract LoANFT is ERC1155, Ownable {
 
     function withdraw(address tokenAddress) public validAdmin {
         if (tokenAddress == address(0)) {
-            payable(_treasury).transfer(address(this).balance);
+            payable(_admin.getTreasury()).transfer(address(this).balance);
             return;
         }
 
         IERC20Contract token = IERC20Contract(tokenAddress);
-        token.transfer(_treasury, token.balanceOf(address(this)));
+        token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
     }
-
 }
