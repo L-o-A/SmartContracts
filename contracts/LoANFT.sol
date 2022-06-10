@@ -234,7 +234,7 @@ contract LoANFT is ERC1155, Ownable {
         _capsuleToken.burn(msg.sender, capsuleId);
         _nft_level_to_ids[_nft_level[id]].pop();
 
-        IERC20Contract(_loaAddress).transferFrom(msg.sender, address(this), fee);
+        IERC20Contract(_loaAddress).transferFrom(msg.sender, _admin.getTreasury(), fee);
         emit NFTMinted(id, capsuleId, msg.sender, 0);
     }
 

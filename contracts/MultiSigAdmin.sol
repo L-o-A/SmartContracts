@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract MultiSigAdmin {
 
@@ -27,6 +27,9 @@ contract MultiSigAdmin {
         return _raffleAddresses[addr] == 1;
     }
 
+    function setTreasury(address treasury) public validAdmin {
+        _treasury = treasury;
+    }
 
     function getTreasury() public view returns (address) {
         return _treasury;
