@@ -121,8 +121,9 @@ contract Capsule is ERC1155, Ownable {
         return (_capsule_types[id], _capsule_level[id], _capsule_status[id]);
     }
 
-    function getUserCapsules() public view returns (uint256[] memory) {
-        return _user_holdings[msg.sender];
+    function getUserCapsules(address owner) public view returns (uint256[] memory) {
+        uint256[] storage d = _user_holdings[owner];
+        return d;
     }
 
     /*
