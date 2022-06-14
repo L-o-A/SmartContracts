@@ -102,6 +102,9 @@ contract Raffle is ERC1155, Ownable {
         return (_ticket_status[id], _ticket_price[id], _ticket_owner[id], _raffle_type);
     }
 
+    function getUserTickets(address userAddress) public view returns (uint256[] memory) {
+        return _user_tickets[userAddress];
+    }
 
     function burn(address owner, uint256 id) public payable {
         require(msg.sender == _capsuleAddress, "You are not authorized to burn");

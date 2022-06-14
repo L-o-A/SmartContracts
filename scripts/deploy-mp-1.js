@@ -190,6 +190,9 @@ async function main() {
      */
     await _NFTMarket.updateFees([_LoANFT.address], ["100000000000000000000"]);
     console.log(14);
+    
+    await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
+    console.log(15);
 }
 
 main();
