@@ -187,7 +187,6 @@ contract Capsule is ERC1155, Ownable {
     }
 
     function claim(uint256[] memory ticketIds, address raffleAddress, address owner) public {
-        require(_admin.isValidRaffleAddress(msg.sender), "Not authorized");
         require(_admin.isValidRaffleAddress(raffleAddress), "Invalid Raffle contract");
         IERC1155Contract _raffleContract = IERC1155Contract(raffleAddress);
 
