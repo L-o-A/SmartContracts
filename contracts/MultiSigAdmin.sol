@@ -5,13 +5,16 @@ pragma solidity ^0.8.7;
 
 contract MultiSigAdmin {
 
-    mapping(address=> uint8) _admins;
+    mapping(address=> uint8) public _admins;
     address _treasury;
     mapping(address => uint8) _raffleAddresses; // Raffale Contract
     address[] public _contractAddresses;
+    address[] public _adminList;
 
+    // function initialize() public {
     constructor() {
         _admins[msg.sender] = 1;
+        _adminList.push(msg.sender);
     }
 
     modifier validAdmin() {
@@ -36,11 +39,19 @@ contract MultiSigAdmin {
     }
 
     function modifyAdmin(address adminAddress, bool add) validAdmin public {
-        if(add)
+        if(add) {
             _admins[adminAddress] = 1;
-        else {
+            _adminList.push(adminAddress);
+        } else {
             require(adminAddress != msg.sender, "Cant remove self as admin");
             delete _admins[adminAddress];
+            for(uint256 i = 0; i < _adminList.length; i++) {
+                if(_adminList[i] == adminAddress) {
+                    _adminList[i] = _adminList[_adminList.length - 1];
+                    _adminList.pop();
+                    break;
+                }
+            }
         }
     }
 

@@ -3,6 +3,8 @@ require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
 require("@openzeppelin/hardhat-upgrades");
 
+let secret = require("./secret.json");
+
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -24,18 +26,28 @@ module.exports = {
   networks: {
     hardhat:{
       forking: {
-        // url: `https://eth-ropsten.alchemyapi.io/v2/${process.env.ROPSTEN_ALCHEMY_KEY}`
-        url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.POLYGON_MUMBAI_KEY}`
+        // url: secret.ROPSTEN_ALCHEMY_URL
+        url: secret.POLYGON_MUMBAI_URL
       },
       allowUnlimitedContractSize:true
     },
-  }
+    bsctestnet: {
+      url: secret.BSC_TESTNET_URL,
+      accounts: [secret.WALLET_PRI_KEY],
+    },
+  },
+
+  etherscan: {
+    apiKey: secret.BSC_API_KEY,
+  },
+
   // networks: {
-  //   hardhat:{
-  //     forking: {
-  //       url: "https://eth-ropsten.alchemyapi.io/v2/2a7LlBSMIgf9YSaKtVcBWmyy5xHCNzr0"
-  //     },
-  //     allowUnlimitedContractSize:true
+  //   mumbai: {
+  //     url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.POLYGON_MUMBAI_KEY}`,
+  //     accounts: [process.env.WALLET_PRI_KEY],
   //   },
-  // }
+  // },
+  // etherscan: {
+  //   apiKey: process.env.MUMBAI_SCAN_API_KEY,
+  // },
 };

@@ -26,11 +26,17 @@ interface IERC1155Contract {
     function fusion(address owner, uint256[] memory ids, uint8 fusionLevel, uint256 price) external;
 }
 
+interface Admin {
+    function isValidAdmin(address adminAddress) external pure returns (bool);
+    function getTreasury() external view returns (address);
+    function isValidRaffleAddress(address addr) external view returns (bool);
+    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
+}
+
 contract LoANFTFusion {
 
     IERC20Contract public _loaToken;
     IERC1155Contract public _nftContract;
-    address private _admin;
 
     // 0 : unpublished
     // 1 : ready to mint
@@ -45,6 +51,8 @@ contract LoANFTFusion {
     mapping(uint256 => uint256) public _fusion_rule_price;
     mapping(uint256 => uint8) public _fusion_rule_result;
     mapping(uint256 => uint8[]) public _fusion_rule_levels;
+    Admin _admin;
+    
 
     event NFTMinted(
         uint256 indexed itemId,
@@ -53,22 +61,16 @@ contract LoANFTFusion {
         uint256 price
     );
 
-    constructor(address loaContract, address loaNFTContract) {
+    constructor(address loaContract, address loaNFTContract, address adminContractAddress) {
         _loaToken = IERC20Contract(loaContract);
         _nftContract = IERC1155Contract(loaNFTContract);
-        _admin = msg.sender;
+        _admin = Admin(adminContractAddress);
     }
 
     // Modifier
-    modifier onlyAdmin() {
-        require(_admin == msg.sender, "Only admin can access this");
+    modifier validAdmin() {
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
         _;
-    }
-
-    function withdraw() public onlyAdmin {
-        uint256 balance = _loaToken.balanceOf(address(this));
-        require(balance > 0, "Low balance");
-        _loaToken.transfer(msg.sender, balance);
     }
 
     function createFusionRule(
@@ -76,13 +78,13 @@ contract LoANFTFusion {
         uint256 price,
         uint8 resultLevel,
         uint8[] memory levelValues
-    ) public onlyAdmin {
+    ) public validAdmin {
         _fusion_rule_price[id]= price;
         _fusion_rule_result[id]= resultLevel;
         _fusion_rule_levels[id]= levelValues;
     }
 
-    function removeFusionRule(uint256 id) public onlyAdmin {
+    function removeFusionRule(uint256 id) public validAdmin {
         delete _fusion_rule_price[id];
         delete _fusion_rule_result[id];
         delete _fusion_rule_levels[id];
@@ -111,6 +113,16 @@ contract LoANFTFusion {
 
         _loaToken.transferFrom(msg.sender, address(this), _fusion_rule_price[ruleId]);
         _nftContract.fusion(msg.sender, ids, _fusion_rule_result[ruleId], _fusion_rule_price[ruleId]);
+    }
+
+
+    function withdraw(address tokenAddress) validAdmin public {
+        if (tokenAddress == address(0)) {
+            payable(_admin.getTreasury()).transfer(address(this).balance);
+            return;
+        }
+        IERC20Contract token = IERC20Contract(tokenAddress);
+        token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
     }
 
 }

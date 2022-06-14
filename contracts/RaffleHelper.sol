@@ -20,7 +20,6 @@ contract RaffleHelper {
 
     uint256[] _raffle_supply_range;
     uint256[] _raffle_price_range;
-    address _treasury;
     address public _raffle;
     uint64[] public _reward_amount;
     uint256[] public _reward_range;
@@ -29,7 +28,6 @@ contract RaffleHelper {
     constructor(address adminContractAddress) {
         _admin = Admin(adminContractAddress);
     }
-    
 
     // Modifier
     modifier validAdmin() {
@@ -41,8 +39,7 @@ contract RaffleHelper {
         return _admin.isValidAdmin(adminAddress);
     }
 
-    function setTresury(address treasury, address raffle) public validAdmin {
-        _treasury = treasury;
+    function setRaffle(address raffle) public validAdmin {
         _raffle = raffle;
     }
 
@@ -131,12 +128,12 @@ contract RaffleHelper {
 
     function extract(address tokenAddress) validAdmin public {
         if (tokenAddress == address(0)) {
-            payable(_treasury).transfer(address(this).balance);
+            payable(_admin.getTreasury()).transfer(address(this).balance);
             return;
         }
 
         IERC20Contract token = IERC20Contract(tokenAddress);
-        token.transfer(_treasury, token.balanceOf(address(this)));
+        token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
     }
 
 }

@@ -48,6 +48,14 @@ interface IERC20Contract {
     ) external returns (bool);
 }
 
+interface Admin {
+    function isValidAdmin(address adminAddress) external pure returns (bool);
+    function getTreasury() external view returns (address);
+    function isValidRaffleAddress(address addr) external view returns (bool);
+    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
+    function isValidMarketPlaceContract(address sender) external view returns (bool);
+}
+
 contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
     using Counters for Counters.Counter;
@@ -55,12 +63,14 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
     Counters.Counter private _itemsSold;
     IERC20Contract public _erc20Token; // External BUSD contract
     IERC1155 _loaNFT;
-    address private _admin;
 
     mapping(uint256 => MarketItem) public _id_to_listed_item;
     mapping(address => uint256[]) private _adddress_to_listed_item_ids;
     mapping(address => uint256) private _user_balance;
     mapping(address => uint256) private _listingFee;
+    uint256 public _totalLOAStaked;
+
+    Admin _admin;
 
     event MarketItemCreated(
         uint256 indexed itemId,
@@ -86,16 +96,16 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         address to
     );
 
-    constructor(address erc20Contract, address loaNFT) payable {
-        _admin = msg.sender;
+    constructor(address erc20Contract, address loaNFT, address adminContractAddress) payable {
         _erc20Token = IERC20Contract(erc20Contract);
         _loaNFT = IERC1155(loaNFT);
+        _admin = Admin(adminContractAddress);
     }
 
     function updateFees (
         address[] memory contractAddresses, 
         uint256[] memory fees) public {
-        require(msg.sender == _admin, "You are not authorized");
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized");
 
         for(uint8 i = 0; i < contractAddresses.length; i++) {
             _listingFee[contractAddresses[i]] = fees[i];
@@ -129,13 +139,10 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             price
         );
         
-        _erc20Token.transferFrom(msg.sender, address(this), _listingFee[nftContract]);
+        _erc20Token.transferFrom(msg.sender, _admin.getTreasury(), _listingFee[nftContract]);
         erc1155.safeTransferFrom(msg.sender, address(this), tokenId, 1, "0x00");
         
         _adddress_to_listed_item_ids[msg.sender].push(itemId);
-
-        console.log("Listing complete");
-
 
         emit MarketItemCreated(
             itemId,
@@ -155,7 +162,6 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
         IERC1155 erc1155 = IERC1155(_id_to_listed_item[itemId].nftContract);
         require( erc1155.balanceOf(address(this), tokenId) == 1, "Contract doesn't have enought NFT Units.");
-        
 
         //Remove sender listed item ids
         uint256[] storage itemIds = _adddress_to_listed_item_ids[msg.sender];
@@ -169,7 +175,6 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         }
 
         delete _id_to_listed_item[itemId];
-
         erc1155.safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
     }
 
@@ -229,16 +234,12 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         //transfer seller amount
         //_id_to_listed_item[itemId].seller.transfer(price);
         uint256 listingFee = _listingFee[nftContract];
-        console.log("Seller Amount :", price);
-        console.log("current a/c balance :", _erc20Token.balanceOf(address(this)));
 
         _user_balance[address(this)] = SafeMath.add(_user_balance[address(this)], listingFee);
         _user_balance[_id_to_listed_item[itemId].seller] = SafeMath.add(_user_balance[_id_to_listed_item[itemId].seller], price);
         
 
-        console.log("Seller Amount transferred");
         IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
-        console.log("NFTs transferred");
     }
 
     function fetchMarketItems() public view returns (MarketItem[] memory) {
@@ -276,18 +277,22 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         return _user_balance[msg.sender];
     } 
 
-    function withdrawMyPayment() public {
+    function withdraw() public {
         uint256 balance = _user_balance[msg.sender];
         require(balance > 0, "No balance present to withdraw." );
 
-         _erc20Token.transferFrom(address(this), msg.sender, balance);
+         _erc20Token.transfer(msg.sender, balance);
     } 
 
-    function withdraw() public {
-        require(_admin == msg.sender, "Only ownder can withdraw");
-        uint256 balance = _erc20Token.balanceOf(address(this));
-        require(balance > 0, "No balance present to withdraw." );
+    function extract(address tokenAddress) public {
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
 
-         _erc20Token.transferFrom(address(this), _admin, balance);
-    } 
+        if (tokenAddress == address(0)) {
+            payable(_admin.getTreasury()).transfer(address(this).balance);
+            return;
+        }
+        IERC20Contract token = IERC20Contract(tokenAddress);
+        require(token.balanceOf(address(this)) > 0, "No balance available");
+        token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
+    }
 }
