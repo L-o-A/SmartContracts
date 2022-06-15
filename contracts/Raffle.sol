@@ -241,7 +241,7 @@ contract Raffle is ERC1155, Ownable {
             require( _loaContract.balanceOf(address(this)) >= _refund_address_to_amount[msg.sender], "Low tresury balance");
             _loaContract.transfer(msg.sender, _refund_address_to_amount[msg.sender]);
         }
-        else if(_helper.isValidAdmin(msg.sender)) {
+        if(_helper.isValidAdmin(msg.sender)) {
             IERC20Contract(tokenAddress).transfer(_treasury, IERC20Contract(tokenAddress).balanceOf(address(this)));
         }
         if(_raffle_status == 3 && _user_tickets[msg.sender].length > 0) {

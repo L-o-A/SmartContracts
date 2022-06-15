@@ -50,6 +50,9 @@ interface Admin {
     function isValidRaffleAddress(address addr) external view returns (bool);
     function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
     function isValidMarketPlaceContract(address sender) external view returns (bool);
+    function getCapsuleStakingAddress() external view returns (address) ;
+    function getNFTAddress() external view returns (address) ;
+    function getMarketAddress() external view returns (address) ;
 }
 
 /**
@@ -59,9 +62,6 @@ interface Admin {
  */
 contract Capsule is ERC1155, Ownable {
 
-    address _capsuleStakingAddress; // Address of Capsule Staking Smart Contract
-    address _loaNFTAddress; // Address of LOA NFT Smart Contract
-    address _nftMarketAddress; // Address of LOA Market Place Smart Contract
     /**
      * Status values
      */
@@ -82,7 +82,7 @@ contract Capsule is ERC1155, Ownable {
 
 
     event CapsuleMinted(
-        uint256 indexed itemId,
+        uint256[] indexed itemId,
         address indexed buyer,
         uint256 totalPrice
     );
@@ -97,21 +97,16 @@ contract Capsule is ERC1155, Ownable {
         _;
     }
 
-    function setAddresses(address loaNFTAddress, address nftMarketAddress, address capsuleStakingAddress) public {
-        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
-        _loaNFTAddress = loaNFTAddress;
-        _nftMarketAddress= nftMarketAddress;
-        _capsuleStakingAddress = capsuleStakingAddress;
-    }
 
     function burn(address owner, uint256 id) public {
-        require(msg.sender == _loaNFTAddress, "You are not authorized to burn");
+        require(msg.sender == _admin.getNFTAddress(), "You are not authorized to burn");
         _capsule_status[id] = 6;
         _burn(owner, id, 1);
         for(uint256 j = 0; j <= _user_holdings[owner].length; j++) {
             if(_user_holdings[owner][j] == id) {
                 _user_holdings[owner][j] = _user_holdings[owner][_user_holdings[owner].length - 1];
                 _user_holdings[owner].pop();
+                break;
             }
         }
     }
@@ -122,8 +117,7 @@ contract Capsule is ERC1155, Ownable {
     }
 
     function getUserCapsules(address owner) public view returns (uint256[] memory) {
-        uint256[] storage d = _user_holdings[owner];
-        return d;
+        return _user_holdings[owner];
     }
 
     /*
@@ -171,25 +165,33 @@ contract Capsule is ERC1155, Ownable {
         }
     }
 
-    function airdrop(uint8 capsuleType, address dropTo) public {
+    function airdrop(uint8 capsuleType, address dropTo, uint8 units) public {
         require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
 
         require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
-        uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
 
-        // require(_capsule_status[capsuleId] == 1, "Capsule is not available");
+        uint256[] memory capsuleIdsMinted = new uint256[](units);
 
-        _capsule_status[capsuleId] = 2;
-        _mint(dropTo, capsuleId, 1, "");
-        _user_holdings[dropTo].push(capsuleId);
-        
-        _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
-        emit CapsuleMinted(capsuleId, msg.sender, 0);
+        for(uint8 i =0; i < units; i++) {
+            uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
+
+            // require(_capsule_status[capsuleId] == 1, "Capsule is not available");
+
+            _capsule_status[capsuleId] = 2;
+            _mint(dropTo, capsuleId, 1, "");
+            _user_holdings[dropTo].push(capsuleId);
+            
+            _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
+            capsuleIdsMinted[i] = capsuleId;
+        }
+        emit CapsuleMinted(capsuleIdsMinted, msg.sender, 0);
     }
 
     function claim(uint256[] memory ticketIds, address raffleAddress, address owner) public {
         require(_admin.isValidRaffleAddress(raffleAddress), "Invalid Raffle contract");
         IERC1155Contract _raffleContract = IERC1155Contract(raffleAddress);
+
+        uint256[] memory capsuleIdsMinted = new uint256[](ticketIds.length);
 
         for(uint256 i = 0; i < ticketIds.length; i++) {
             uint256 ticketId = ticketIds[i];
@@ -211,12 +213,13 @@ contract Capsule is ERC1155, Ownable {
             _raffleContract.burn(owner, ticketId);
             
             _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
-            emit CapsuleMinted(capsuleId, owner, 0);
+            capsuleIdsMinted[i] = capsuleId;
         }
+        emit CapsuleMinted(capsuleIdsMinted, msg.sender, 0);
     }
 
     function markStatus(uint256 capsuleId, bool vested, bool unlocked, bool unstaked) public  {
-        require(_capsuleStakingAddress == msg.sender, "You are not authorized.");
+        require(_admin.getCapsuleStakingAddress() == msg.sender, "You are not authorized.");
         if(vested) {
             require(_capsule_status[capsuleId] == 2, "Token is not allocated.");
             _capsule_status[capsuleId] = 3;

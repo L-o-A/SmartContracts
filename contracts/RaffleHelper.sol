@@ -87,11 +87,9 @@ contract RaffleHelper {
 
         for(uint256 i = 0; i < _raffle_supply_range.length; i++) {
             if(remaining > 0){
-                price = _raffle_price_range[i];
-                if(supply >= _raffle_supply_range[i]) {
+                if(supply < _raffle_supply_range[i]) {
                     price = _raffle_price_range[i];
-                } else {
-                    if(supply + remaining < _raffle_supply_range[i]) {
+                    if(supply + remaining <= _raffle_supply_range[i]) {
                         amount += price * remaining;
                         remaining = 0;
                         break;
@@ -115,15 +113,15 @@ contract RaffleHelper {
         return uint16(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, limit)))% limit);
     }
 
-    function getCurrentRewards(uint256 _raffle_supply) public view returns (uint64) {
-        uint64 rewards = _reward_amount[_reward_amount.length -1];
+    function getCurrentRewards(uint256 _raffle_supply) public view returns (uint256) {
+        uint256 rewards = _reward_amount[_reward_amount.length -1];
         for(uint i = 0; i < _reward_range.length; i++) {
             if(_raffle_supply < _reward_range[i]) {
                 rewards = _reward_amount[i];
                 break;
             }
         }
-        return rewards;
+        return rewards < _raffle_supply ? rewards : _raffle_supply;
     }
 
     function extract(address tokenAddress) validAdmin public {

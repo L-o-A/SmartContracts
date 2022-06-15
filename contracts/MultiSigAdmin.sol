@@ -10,9 +10,21 @@ contract MultiSigAdmin {
     mapping(address => uint8) _raffleAddresses; // Raffale Contract
     address[] public _contractAddresses;
     address[] public _adminList;
+    address _capsuleStakingAddress;
+    address _capsuleAddress;
+    address _nftAddress;
+    address _marketAddress;
+    address _nftFusionAddress;
+    address _axionAddress;
 
-    // function initialize() public {
+
     constructor() {
+        _admins[msg.sender] = 1;
+        _adminList.push(msg.sender);
+    }
+
+
+    function initialize() public {
         _admins[msg.sender] = 1;
         _adminList.push(msg.sender);
     }
@@ -36,6 +48,54 @@ contract MultiSigAdmin {
 
     function getTreasury() public view returns (address) {
         return _treasury;
+    }
+
+    function setAxionAddress(address axionAddress) public validAdmin {
+        _axionAddress = axionAddress;
+    }
+
+    function getAxionAddress() public view returns (address) {
+        return _axionAddress;
+    }
+
+    function setFusionAddress(address nftFusionAddress) public validAdmin {
+        _nftFusionAddress = nftFusionAddress;
+    }
+
+    function getFusionAddress() public view returns (address) {
+        return _nftFusionAddress;
+    }
+
+    function setMarketAddress(address marketAddress) public validAdmin {
+        _marketAddress = marketAddress;
+    }
+
+    function getMarketAddress() public view returns (address) {
+        return _marketAddress;
+    }
+
+    function setNFTAddress(address nftAddress) public validAdmin {
+        _nftAddress = nftAddress;
+    }
+
+    function getNFTAddress() public view returns (address) {
+        return _nftAddress;
+    }
+
+    function setCapsuleAddress(address capsuleAddress) public validAdmin {
+        _capsuleAddress = capsuleAddress;
+    }
+
+    function getCapsuleAddress() public view returns (address) {
+        return _capsuleAddress;
+    }
+
+    function setCapsuleStakingAddress(address capsuleStakingAddress) public validAdmin {
+        _capsuleStakingAddress = capsuleStakingAddress;
+    }
+
+    function getCapsuleStakingAddress() public view returns (address) {
+        return _capsuleStakingAddress;
     }
 
     function modifyAdmin(address adminAddress, bool add) validAdmin public {
