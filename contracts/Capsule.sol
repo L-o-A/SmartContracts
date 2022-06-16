@@ -55,6 +55,10 @@ interface Admin {
     function getMarketAddress() external view returns (address) ;
 }
 
+interface ICapsuleStaking {
+    function getCapsuleStakeInfo(uint256 id) external view returns (address, uint256, uint256);
+}
+
 /**
  * Capsule Contract used for creating Capsule NFT for LOA.
  * It follow ERC1155 standard
@@ -114,6 +118,11 @@ contract Capsule is ERC1155, Ownable {
     function getCapsuleDetail(uint256 id) public view returns (uint8, uint8, uint8) {
         require(_admin.isValidMarketPlaceContract(msg.sender), "You are not authorized to call this method");
         return (_capsule_types[id], _capsule_level[id], _capsule_status[id]);
+    }
+
+    function getCapsuleInfo(uint256 id) public view returns (uint8, uint8, address, uint256, uint256) {
+        (address owner, uint256 endtime, uint256 amount) = ICapsuleStaking(_admin.getCapsuleStakingAddress()).getCapsuleStakeInfo(id);
+        return (_capsule_types[id], _capsule_status[id], owner, endtime, amount);
     }
 
     function getUserCapsules(address owner) public view returns (uint256[] memory) {

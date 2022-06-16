@@ -16,6 +16,7 @@ contract MultiSigAdmin {
     address _marketAddress;
     address _nftFusionAddress;
     address _axionAddress;
+    address _nftAttributeAddress;
 
 
     constructor() {
@@ -96,6 +97,14 @@ contract MultiSigAdmin {
 
     function getCapsuleStakingAddress() public view returns (address) {
         return _capsuleStakingAddress;
+    }
+
+    function setNFTAttributeAddress(address nftAttributeAddress) public validAdmin {
+        _nftAttributeAddress = nftAttributeAddress;
+    }
+
+    function getNFTAttributeAddress() public view returns (address) {
+        return _nftAttributeAddress;
     }
 
     function modifyAdmin(address adminAddress, bool add) validAdmin public {

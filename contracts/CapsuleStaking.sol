@@ -101,6 +101,11 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
     }
 
     //update capsule Contract, treasury contract 
+    function getCapsuleStakeInfo(uint256 id) public view returns (address, uint256, uint256) {
+        return (_capsuleOwner[id], _capsuleStakeEndTime[id], _capsuleStakedAmount[id]);
+    }
+
+    //update capsule Contract, treasury contract 
     function setAddresses(address capsuleContract) public validAdmin {
         _capsuleToken = IERC1155(capsuleContract);
     }
