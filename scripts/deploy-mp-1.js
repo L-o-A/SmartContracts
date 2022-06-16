@@ -168,6 +168,8 @@ async function main() {
     console.log(9);
 
     await _LoANFTAttributes.setNFTAddress(_LoANFT.address);
+    await multiSigAdmin.setNFTAttributeAddress(_LoANFTAttributes.address);
+
     console.log(10);
     await _LoANFTAttributes.putNFTAttributeNames("PRANA,HP,ATTACK");
     console.log(11);
@@ -175,8 +177,8 @@ async function main() {
     /**
      * function putNFTAttributes (uint256[] memory ids, string[] memory attribs)
      */
-    await _LoANFTAttributes.putNFTAttributes([1,2,3,4,5,6,7,8,9,10], ["1-0-0", "1-2-0", "1-3-0", "1-4-0", "1-5-0", "2-0-1", "2-0-1", "2-0-1", "2-2-1", "2-0-2"]);
-    console.log(12);
+   //   await _LoANFTAttributes.putNFTAttributes([1,2,3,4,5,6,7,8,9,10], ["1-0-0", "1-2-0", "1-3-0", "1-4-0", "1-5-0", "2-0-1", "2-0-1", "2-0-1", "2-2-1", "2-0-2"]);
+   //   console.log(12);
 
 
     /**

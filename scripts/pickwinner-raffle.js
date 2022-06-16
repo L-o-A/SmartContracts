@@ -22,7 +22,7 @@ async function main() {
 
 
     const LoANFTAttributes = await ethers.getContractFactory("LoANFTAttributes");
-    const _LoANFTAttributes = await LoANFTAttributes.attach("0xfC0706c80c9523EFC1fD8B409cCa12886f89389f");
+    const _LoANFTAttributes = await LoANFTAttributes.attach("0xD2716C1e7e36e36921b1b12460295d2f1c7bC9E5");
     
     // await admin.modifyAdmin("0x36Ee9c4520F9E7C15A0Cba1e032627eDc2B4C50D", true);
 

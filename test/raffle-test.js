@@ -446,6 +446,20 @@ describe("RAFFLE ", function () {
     console.log("nft minted");
 
 
+    console.log(await _LoANFT.getUserNFTs());
+
+
+
+
+    const NFTMarket = await ethers.getContractFactory("NFTMarket");
+    const _NFTMarket = await NFTMarket.deploy(loa.address, _LoANFT.address, multiSigAdmin.address);
+    await _NFTMarket.deployed();
+
+    await _NFTMarket.updateFees([_LoANFT.address], ["1000"])
+    await _NFTMarket.list(_LoANFT.address, 60, "10000");
+
+    console.log(await _NFTMarket.fetchMarketItems());
+
   });
 
 
