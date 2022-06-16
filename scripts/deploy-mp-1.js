@@ -5,11 +5,14 @@ async function main() {
 
     const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce";
     const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
+    const admin2 = "0x36Ee9c4520F9E7C15A0Cba1e032627eDc2B4C50D";
 
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
     const multiSigAdmin = await MultiSigAdmin.deploy();
     await multiSigAdmin.deployed();
     console.log("multiSigAdmin.address :", multiSigAdmin.address);
+
+    await multiSigAdmin.modifyAdmin(admin2, true);
 
     // await multiSigAdmin.initialize();
     console.log(-2);
@@ -71,6 +74,14 @@ async function main() {
     console.log("_NFTMarket.address :", _NFTMarket.address);
     
     console.log(1);
+
+
+    await multiSigAdmin.setFusionAddress(_LoANFTFusion.address);
+    await multiSigAdmin.setMarketAddress(_NFTMarket.address);
+    await multiSigAdmin.setNFTAddress(_LoANFT.address);
+    await multiSigAdmin.setCapsuleAddress(capsule.address);
+    await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
+    await multiSigAdmin.setNFTAttributeAddress(_LoANFTAttributes.address);
     
     // const AxionSphere = await ethers.getContractFactory("AxionSphere");
     // const _AxionSphere = await AxionSphere.deploy(multiSigAdmin.address);
@@ -102,10 +113,6 @@ async function main() {
     await raffle.setRaffleData(1, 10, 199999999999, capsule.address, treasury);
     console.log(3);
 
-    /**
-     * function setAddresses(address loaNFTAddress, address nftMarketAddress, address capsuleStakingAddress)
-     */
-    await capsule.setAddresses(_LoANFT.address, _NFTMarket.address, capsuleStaking.address);
     console.log(4);
 
 
@@ -123,7 +130,7 @@ async function main() {
     /**
      * function setCapsuleStakingRule(uint8 capsuleType, uint32 stakingDays, uint256 loaTokens)
      */
-    await capsuleStaking.setCapsuleStakingRule(1, 0, 1000);
+    await capsuleStaking.setCapsuleStakingRule(1, 0, "1000000000000000000000");
     console.log(6);
 
     /**
@@ -146,7 +153,7 @@ async function main() {
         uint8[] memory capsuleTypes,
         uint256[] memory fees)
      */
-    await _LoANFT.updateAccessAddressAndFees(capsule.address, _NFTMarket.address, _LoANFTFusion.address, _LoANFTAttributes.address, [1, 2, 3], [1000, 2000, 3000]);
+    await _LoANFT.updateFees([1, 2, 3], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000"]);
     console.log(8);
 
     /**
@@ -193,6 +200,8 @@ async function main() {
     
     await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
     console.log(15);
+
+    await capsule.airdrop(1, admin2, 4);
 }
 
 main();

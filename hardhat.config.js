@@ -35,6 +35,10 @@ module.exports = {
       url: secret.BSC_TESTNET_URL,
       accounts: [secret.WALLET_PRI_KEY],
     },
+    mumbai: {
+      url: secret.POLYGON_MUMBAI_URL,
+      accounts: [secret.WALLET_PRI_KEY],
+    },
   },
 
   etherscan: {

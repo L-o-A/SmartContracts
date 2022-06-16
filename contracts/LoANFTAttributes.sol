@@ -6,12 +6,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./LoANFT.sol";
 
 
-
 interface LoaNFTContract {
     function balanceOf(address tokenOwner, uint256 id) external view returns (uint256);
     function burn(address tokenOwner, uint256 id) external;
     function getNFTDetail(uint256 id) external view returns (uint8, uint8, address, uint8);
 }
+
 
 contract LoANFTAttributes {
 

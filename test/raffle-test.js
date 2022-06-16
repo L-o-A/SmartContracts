@@ -428,6 +428,16 @@ describe("RAFFLE ", function () {
 
     await _LoANFT.modifyNFTs(true, [1,2,3,4,5,6,7,8,9,10], [1,1,1,1,1,1,1,1,1,1], [1,2,1,2,1,2,1,2,1,2],[1,1,1,1,1,1,1,1,1,1]);
 
+    const LoANFTAttributes = await ethers.getContractFactory("LoANFTAttributes");
+    const _LoANFTAttributes = await LoANFTAttributes.deploy(multiSigAdmin.address);
+    await _LoANFTAttributes.deployed();
+
+    await _LoANFTAttributes.setNFTAddress(_LoANFT.address);
+    await multiSigAdmin.setNFTAttributeAddress(_LoANFTAttributes.address);
+
+    await _LoANFTAttributes.putNFTAttributes([1,2,3,4,5,6,7,8,9,10], ["1-0-0", "1-2-0", "1-3-0", "1-4-0", "1-5-0", "2-0-1", "2-0-1", "2-0-1", "2-2-1", "2-0-2"]);
+    console.log(12);
+
     await loa.connect(addr1).approve(_LoANFT.address, 2000);
 
     console.log("ready to mint nft");

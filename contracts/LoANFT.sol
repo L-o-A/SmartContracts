@@ -4,7 +4,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-// import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+// import "hardhat/console.sol";
 
 interface IERC20Contract {
     function transfer(address recipient, uint256 amount)
@@ -65,6 +65,8 @@ interface Admin {
     function getCapsuleAddress() external view returns (address);
 
     function getNFTAttributeAddress() external view returns (address);
+
+    function getNFTAddress() external view returns (address);
 }
 
 contract LoANFT is ERC1155, Ownable {
