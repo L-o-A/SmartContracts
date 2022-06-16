@@ -34,7 +34,7 @@ interface IERC1155Contract {
         returns (
             uint8,
             uint8,
-            uint8
+            uint8, address, uint256, uint256
         );
 }
 
@@ -87,8 +87,8 @@ contract LoANFT is ERC1155, Ownable {
     Admin _admin;
 
     event NFTMinted(
-        uint256[] indexed itemIds,
-        uint256[] indexed capsuleIds,
+        uint256 indexed itemIds,
+        uint256 indexed capsuleIds,
         address indexed buyer,
         uint256 price
     );
@@ -192,14 +192,10 @@ contract LoANFT is ERC1155, Ownable {
         uint256 amount,
         bytes memory data
     ) public virtual override {
-        require(
-            _admins[msg.sender] == 1 ||
-                msg.sender == _admin.getMarketAddress() ||
-                to == address(0) ||
-                msg.sender == address(this) ||
-                to == _admin.getMarketAddress() ||
-                from == _admin.getMarketAddress(),
-            "Not authorized to transfer"
+        require(_admin.isValidMarketPlaceContract(from) 
+            || _admin.isValidMarketPlaceContract(to) 
+            || _admin.isValidMarketPlaceContract(msg.sender),
+                "Not authorized to transfer"
         );
 
         return super.safeTransferFrom(from, to, id, amount, data);
@@ -212,14 +208,10 @@ contract LoANFT is ERC1155, Ownable {
         uint256[] memory amounts,
         bytes memory data
     ) public virtual override {
-        require(
-            _admins[msg.sender] == 1 ||
-                msg.sender == _admin.getMarketAddress() ||
-                to == address(0) ||
-                msg.sender == address(this) ||
-                to == _admin.getMarketAddress() ||
-                from == _admin.getMarketAddress(),
-            "Not authorized to transfer"
+        require(_admin.isValidMarketPlaceContract(from) 
+            || _admin.isValidMarketPlaceContract(to) 
+            || _admin.isValidMarketPlaceContract(msg.sender),
+                "Not authorized to transfer"
         );
 
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);
@@ -257,58 +249,49 @@ contract LoANFT is ERC1155, Ownable {
         _user_holdings[owner].push(id);
         _nft_level_to_ids[_nft_level[id]].pop();
 
-        uint256[] memory mintedIds = new uint256[](1);
-        uint256[] memory capsuleIds = new uint256[](1);
-        ids[0] = id;
-        capsuleIds[0] = 0;
-        emit NFTMinted(mintedIds, capsuleIds, owner, price);
+        emit NFTMinted(id, 0, owner, price);
     }
 
-    function mint(uint256[] memory capsuleIds) public {
-        uint256[] memory mintedIds = new uint256[](capsuleIds.length);
-        for (uint256 i = 0; i < capsuleIds.length; i++) {
-            uint256 capsuleId = capsuleIds[i];
-            require(
-                IERC1155Contract(_admin.getCapsuleAddress()).balanceOf(
-                    msg.sender,
-                    capsuleId
-                ) > 0,
-                "Capsule is not owned by user"
-            );
-            (, uint8 capsuleLevel, ) = IERC1155Contract(
-                _admin.getCapsuleAddress()
-            ).getCapsuleDetail(capsuleId);
-
-            uint256 id = _nft_level_to_ids[capsuleLevel][
-                _nft_level_to_ids[capsuleLevel].length - 1
-            ];
-            require(_nft_status[id] == 1, "id is not available");
-
-            uint256 fee = _minting_fee[capsuleLevel];
-            require(
-                IERC20Contract(_loaAddress).balanceOf(msg.sender) >= fee,
-                "Not enough minting fee available"
-            );
-
-            _nft_owner[id] = msg.sender;
-            _nft_status[id] = 2;
-
-            _mint(msg.sender, id, 1, "");
-            _user_holdings[msg.sender].push(id);
-            IERC1155Contract(_admin.getCapsuleAddress()).burn(
+    function mint(uint256 capsuleId) public {
+        require(
+            IERC1155Contract(_admin.getCapsuleAddress()).balanceOf(
                 msg.sender,
                 capsuleId
-            );
-            _nft_level_to_ids[_nft_level[id]].pop();
+            ) > 0,
+            "Capsule is not owned by user"
+        );
+        (, uint8 capsuleLevel, ,,,) = IERC1155Contract(
+            _admin.getCapsuleAddress()
+        ).getCapsuleDetail(capsuleId);
 
-            IERC20Contract(_loaAddress).transferFrom(
-                msg.sender,
-                _admin.getTreasury(),
-                fee
-            );
-            mintedIds[i] = id;
-        }
-        emit NFTMinted(capsuleIds, capsuleIds, msg.sender, 0);
+        uint256 id = _nft_level_to_ids[capsuleLevel][
+            _nft_level_to_ids[capsuleLevel].length - 1
+        ];
+        require(_nft_status[id] == 1, "id is not available");
+
+        uint256 fee = _minting_fee[capsuleLevel];
+        require(
+            IERC20Contract(_loaAddress).balanceOf(msg.sender) >= fee,
+            "Not enough minting fee available"
+        );
+
+        _nft_owner[id] = msg.sender;
+        _nft_status[id] = 2;
+
+        _mint(msg.sender, id, 1, "");
+        _user_holdings[msg.sender].push(id);
+        IERC1155Contract(_admin.getCapsuleAddress()).burn(
+            msg.sender,
+            capsuleId
+        );
+        _nft_level_to_ids[_nft_level[id]].pop();
+
+        IERC20Contract(_loaAddress).transferFrom(
+            msg.sender,
+            _admin.getTreasury(),
+            fee
+        );
+        emit NFTMinted(id, capsuleId, msg.sender, 0);
     }
 
     function withdraw(address tokenAddress) public validAdmin {

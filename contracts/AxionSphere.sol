@@ -22,7 +22,7 @@ interface IERC20Contract {
 interface IERC1155Contract {
     function balanceOf(address tokenOwner, uint256 id) external view returns (uint256);
     function burn(address tokenOwner, uint256 id) external;
-    function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8);
+    function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
 }
 
 contract AxionSphere is ERC1155, Ownable {

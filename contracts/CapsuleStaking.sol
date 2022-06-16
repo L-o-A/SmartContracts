@@ -37,7 +37,7 @@ interface IERC1155 {
 
     function markStatus(uint256 capsuleId, bool vested, bool unlocked, bool unstaked) external;
 
-    function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8);
+    function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
 }
 
 
@@ -123,7 +123,7 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
         for (uint256 i = 0; i < capsuleIds.length; i++) {
             require(_capsuleToken.balanceOf(msg.sender, capsuleIds[i]) > 0, "Capsule doesnt belong to user");
-            (uint8 capsuleType, , uint8 capsuleStatus) = _capsuleToken.getCapsuleDetail(capsuleIds[i]);
+            (uint8 capsuleType, , uint8 capsuleStatus, , ,) = _capsuleToken.getCapsuleDetail(capsuleIds[i]);
             require(capsuleStatus  == 2, "Capsule not ready for staking.");
             stakedAmount += _capsuleStakeTypeLOATokens[capsuleType];
 
@@ -145,7 +145,7 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
         uint256 stakedAmount = 0;
         for (uint256 i = 0; i < capsuleIds.length; i++) {
-            (, , uint8 capsuleStatus) = _capsuleToken.getCapsuleDetail(capsuleIds[i]);
+            (, , uint8 capsuleStatus,,,) = _capsuleToken.getCapsuleDetail(capsuleIds[i]);
             require(capsuleStatus  == 3, "Capsule not staked.");
             require(_capsuleOwner[capsuleIds[i]] == msg.sender, "Capsule doesnt belong to user");
             if(!forced)
