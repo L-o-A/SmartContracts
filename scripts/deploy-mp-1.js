@@ -3,7 +3,8 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Deploying Market Place...");
 
-    const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce";
+   //  const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce";
+    const loa = "0xC322ae9307a054eDc6438Bd40E77f7d5Bca2b536";
     const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
     const admin2 = "0x36Ee9c4520F9E7C15A0Cba1e032627eDc2B4C50D";
 
@@ -82,6 +83,8 @@ async function main() {
     await multiSigAdmin.setCapsuleAddress(capsule.address);
     await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
     await multiSigAdmin.setNFTAttributeAddress(_LoANFTAttributes.address);
+
+    await multiSigAdmin.updateContractAddresses([capsuleStaking.address, raffle.address, _NFTMarket.address, _LoANFTFusion.address, _LoANFT.address])
     
     // const AxionSphere = await ethers.getContractFactory("AxionSphere");
     // const _AxionSphere = await AxionSphere.deploy(multiSigAdmin.address);
@@ -141,7 +144,7 @@ async function main() {
         uint8[] memory types
     )
      */
-    await capsuleStaking.setAddresses(capsuleStaking.address);
+    await capsuleStaking.setAddresses(capsule.address);
     console.log(7);
 
     /**
@@ -204,6 +207,58 @@ async function main() {
     console.log(15);
 
     await capsule.airdrop(1, admin2, 4);
+    console.log(15.1);
+
+   return;
+    ///---------------------------------------
+    const MYERC20 = await ethers.getContractFactory("MYERC20");
+    const _loa = await MYERC20.attach(loa);
+    
+    await _loa.approve(raffle.address, "10000000000000000000000")
+    console.log(15.2);
+    await raffle.buyTicket(10);
+    console.log(15.3);
+
+    await raffle.setRaffleData(1, 10, 100000, capsule.address, treasury);
+    console.log(16);
+    
+    await raffle.pickWinner(10);
+    console.log(17);
+    
+    await raffle.withdraw(loa);
+    console.log(18);
+    
+    const caps = await capsule.getUserCapsules(treasury);
+    console.log(caps);
+    console.log(19);
+    
+    await capsuleStaking.stake([caps[0], caps[1]]);
+    console.log(20);
+    
+    await capsuleStaking.reclaim([caps[0], caps[1]], false);
+    console.log(21);
+    
+    await _loa.approve(_LoANFT.address, "10000000000000000000000");
+    await _LoANFT.mint(caps[0]);
+    console.log(22);
+
+    await _LoANFT.mint(caps[1]);
+    console.log(23);
+    
+    const nfts = await _LoANFT.getUserNFTs(treasury);
+    console.log(nfts);
+   
+    await _loa.approve(_NFTMarket.address, "10000000000000000000000");
+
+    await _NFTMarket.list(_LoANFT.address, nfts[0], "200000000000000000000000");
+    console.log(24);
+    await _NFTMarket.list(_LoANFT.address, nfts[0], "200000000000000000000000");
+    console.log(25);
+
+//     await _NFTMarket.unlist(_LoANFT.address, nfts[0], "200000000000000000000000");
+//     console.log(26);
+//     await _NFTMarket.unlist(_LoANFT.address, nfts[0], "200000000000000000000000");
+//     console.log(27);
 }
 
 main();

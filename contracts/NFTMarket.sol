@@ -3,10 +3,7 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
-
-import "hardhat/console.sol";
 
 interface IERC1155 {
     
@@ -64,21 +61,22 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
     IERC20Contract public _erc20Token; // External BUSD contract
     IERC1155 _loaNFT;
 
-    mapping(uint256 => MarketItem) public _id_to_listed_item;
+    MarketItem[] public _id_to_listed_item;
     mapping(address => uint256[]) private _adddress_to_listed_item_ids;
-    mapping(address => uint256) private _user_balance;
+    mapping(address => uint256) public _user_balance;
     mapping(address => uint256) private _listingFee;
     uint256 public _totalLOAStaked;
 
     Admin _admin;
 
-    event MarketItemCreated(
+    event MarketItemAction(
         uint256 indexed itemId,
         address indexed nftContract,
         uint256 indexed tokenId,
         address seller,
         address owner,
-        uint256 price
+        uint256 price,
+        uint8 action
     );
 
     struct MarketItem {
@@ -128,8 +126,6 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         _itemIds.increment();
         uint256 itemId = _itemIds.current();
 
-        console.log("list.itemId :", itemId);
-
         _id_to_listed_item[itemId] = MarketItem(
             itemId,
             nftContract,
@@ -144,13 +140,14 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         
         _adddress_to_listed_item_ids[msg.sender].push(itemId);
 
-        emit MarketItemCreated(
+        emit MarketItemAction(
             itemId,
             nftContract,
             tokenId,
             msg.sender,
             address(0),
-            price
+            price,
+            1
         );
     }
 
@@ -174,14 +171,32 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             }
         }
 
-        delete _id_to_listed_item[itemId];
         erc1155.safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
+        emit MarketItemAction(
+            itemId,
+            _id_to_listed_item[itemId].nftContract,
+            tokenId,
+            msg.sender,
+            address(0),
+            0,
+            2
+        );
+        delete _id_to_listed_item[itemId];
     }
 
     function updatePrice(uint256 itemId, uint256 price) public {
         MarketItem storage marketItem = _id_to_listed_item[itemId];
         require(marketItem.seller == msg.sender, "You are not authorized");
         marketItem.price = price;
+        emit MarketItemAction(
+            itemId,
+            _id_to_listed_item[itemId].nftContract,
+            _id_to_listed_item[itemId].tokenId,
+            msg.sender,
+            address(0),
+            price,
+            3
+        );
     }
 
     function giftNFT(address to, uint256 id) public {
@@ -203,13 +218,10 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         uint256 tokenId = _id_to_listed_item[itemId].tokenId;
         address nftContract = _id_to_listed_item[itemId].nftContract;
 
-        console.log("Total Price :", price);
-        
         require(
             _erc20Token.balanceOf(msg.sender) >= price,
             "Required LOA balance is not available."
         );
-        console.log("LOA balance available");
         
         //Remove sender listed item ids
         uint256[] storage itemIds = _adddress_to_listed_item_ids[msg.sender];
@@ -222,10 +234,6 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             }
         }
 
-        delete _id_to_listed_item[itemId];
-        
-        console.log("LOA transferred from buyer initiated.");
-
         require(
             _erc20Token.transferFrom(msg.sender, address(this), price),
             "Transfer from buyer failed"
@@ -235,36 +243,43 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         //_id_to_listed_item[itemId].seller.transfer(price);
         uint256 listingFee = _listingFee[nftContract];
 
-        _user_balance[address(this)] = SafeMath.add(_user_balance[address(this)], listingFee);
-        _user_balance[_id_to_listed_item[itemId].seller] = SafeMath.add(_user_balance[_id_to_listed_item[itemId].seller], price);
+        _user_balance[address(this)] = _user_balance[address(this)] + listingFee;
+        _user_balance[_id_to_listed_item[itemId].seller] = _user_balance[_id_to_listed_item[itemId].seller] + price;
         
 
         IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
+
+        emit MarketItemAction(
+            itemId,
+            _id_to_listed_item[itemId].nftContract,
+            _id_to_listed_item[itemId].tokenId,
+            _id_to_listed_item[itemId].seller,
+            msg.sender,
+            price,
+            4
+        );
+        delete _id_to_listed_item[itemId];
     }
 
     function fetchMarketItems() public view returns (MarketItem[] memory) {
-        uint256 itemCount = _itemIds.current();
-        uint256 unsoldItemCount = _itemIds.current() - _itemsSold.current();
-        uint256 currentIndex = 0;
+        // uint256 itemCount = _itemIds.current();
+        // uint256 unsoldItemCount = _itemIds.current() - _itemsSold.current();
+        // uint256 currentIndex = 0;
 
-        MarketItem[] memory items = new MarketItem[](unsoldItemCount);
-        for (uint256 i = 0; i < itemCount; i++) {
-            if (_id_to_listed_item[i + 1].owner == address(0)) {
-                uint256 currentId = _id_to_listed_item[i + 1].itemId;
-                MarketItem storage currentItem = _id_to_listed_item[currentId];
-                items[currentIndex] = currentItem;
-                currentIndex += 1;
-            }
-        }
-
-        return items;
+        // MarketItem[] memory items = new MarketItem[](unsoldItemCount);
+        // for (uint256 i = 0; i < itemCount; i++) {
+        //     if (_id_to_listed_item[i + 1].owner == address(0)) {
+        //         uint256 currentId = _id_to_listed_item[i + 1].itemId;
+        //         MarketItem storage currentItem = _id_to_listed_item[currentId];
+        //         items[currentIndex] = currentItem;
+        //         currentIndex += 1;
+        //     }
+        // }
+        return _id_to_listed_item;
     }
 
     function fetchMyListings() public view returns (MarketItem[] memory) {
         uint256[] storage itemIds = _adddress_to_listed_item_ids[msg.sender];
-
-        console.log("itemIds:0 :", itemIds[0]);
-        console.log("itemIds:1 :", itemIds[1]);
 
         MarketItem[] memory items = new MarketItem[](itemIds.length);
         for (uint256 i = 0; i < itemIds.length; i++) {
@@ -273,14 +288,9 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         return items;
     }
 
-    function fetchMyBalance() public view returns(uint256) {
-        return _user_balance[msg.sender];
-    } 
-
     function withdraw() public {
         uint256 balance = _user_balance[msg.sender];
         require(balance > 0, "No balance present to withdraw." );
-
          _erc20Token.transfer(msg.sender, balance);
     } 
 

@@ -134,8 +134,8 @@ contract LoANFT is ERC1155, Ownable {
         return (_nft_hero[id], _nft_level[id], _nft_owner[id], _nft_status[id]);
     }
 
-    function getUserNFTs() public view returns (uint256[] memory) {
-        return _user_holdings[msg.sender];
+    function getUserNFTs(address sender) public view returns (uint256[] memory) {
+        return _user_holdings[sender];
     }
 
     function modifyNFTs(

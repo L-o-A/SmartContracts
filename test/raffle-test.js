@@ -284,19 +284,23 @@ describe("RAFFLE ", function () {
     // await raffle.setContractAddresses(capsule.address, raffleHelper.address);
 
     await raffle.setRaffleData(1, 10, 1999999999999, capsule.address,  owner.address);
-    await raffleHelper.putRafflePrices([10, 20], [100, 110, 115],  [2, 4, 20], [5, 7]);
+    // await raffleHelper.putRafflePrices([10, 20], [100, 110, 115],  [2, 4, 20], [5, 7]);
 
     // console.log('_raffle_price_range(0) :', await raffle._raffle_price_range(0));
     // console.log('_raffle_price_range(1) :',await raffle._raffle_price_range(1));
     // expect(await raffle._raffle_price_range(0)).to.equal(100);
     // expect(await raffle._raffle_price_range(1)).to.equal(110);
     
-    await raffleHelper.putRafflePrices([10, 20, 30], [10, 20, 30, 40], [2, 4, 20], [5, 7]);
+    // await raffleHelper.putRafflePrices([10, 20, 30], [10, 20, 30, 40], [2, 4, 20], [5, 7]);
+    await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [100, 200, 400], [150, 300]);
 
-    // console.log(await raffleHelper.calcPrice(10, 0));
-    // console.log(await raffleHelper.calcPrice(20, 0));
-    // console.log(await raffleHelper.calcPrice(30, 10));
-    // console.log(await raffleHelper.calcPrice(50, 30));
+    console.log(await raffleHelper.calcPrice(10, "10"));
+    console.log(await raffleHelper.calcPrice(20, "10"));
+    console.log(await raffleHelper.calcPrice(30, "10"));
+    console.log(await raffleHelper.calcPrice(40, "10"));
+    console.log(await raffleHelper.calcPrice(50, "10"));
+
+    
 
     
     // console.log('_raffle_price_range(0) :', await raffle._raffle_price_range(0));
@@ -320,10 +324,12 @@ describe("RAFFLE ", function () {
     
     expect(await raffle._raffle_status()).to.equal(1);
     
-    await loa.connect(owner).transfer(addr1.address, "200000000000000000");
-    await loa.connect(addr1).approve(raffle.address, "200000000000000000");
+    await loa.connect(owner).transfer(addr1.address, "2000000000000000000000");
+    await loa.connect(addr1).approve(raffle.address, "20000000000000000000");
+
     
     await raffle.connect(addr1).buyTicket(2);
+   
     
     
     // expect(await raffle._ticket_owner(1)).to.equal(addr1.address);
@@ -340,9 +346,9 @@ describe("RAFFLE ", function () {
     // await raffleHelper.putRafflePrices([10, 20, 30, 40, 50], [10, 11, 12, 13, 14, 15], [5, 7], [2, 4, 20]);
     
     console.log("getUserTickets :", await raffle.getUserTickets(addr1.address));
+
     
     await raffle.pickWinner(4);
-    
     
     console.log("after pick winner raffle.balanceOf(addr1, 1) :", await raffle.balanceOf(addr1.address, 1));
     const tickets = await raffle.getUserTickets(addr1.address)
@@ -351,6 +357,7 @@ describe("RAFFLE ", function () {
     await capsule.connect(addr1).claim(tickets, raffle.address, addr1.address);
 
     console.log(await capsule.getUserCapsules(addr1.address));
+
     
     try{
     //   await raffle.pickWinner(2);
@@ -375,9 +382,10 @@ describe("RAFFLE ", function () {
 
     // console.log(await raffle._user_tickets(addr1.address, 0));
     // console.log(await raffle._user_tickets(addr1.address, 1));
+
     
     await raffle.connect(addr1).withdraw(loa.address);
-    expect(await loa.balanceOf(addr1.address)).to.equal("199999999999999980");
+    // expect(await loa.balanceOf(addr1.address)).to.equal("199999999999999980");
     console.log(await capsule.balanceOf(addr1.address, 1));
     console.log(await capsule.balanceOf(addr1.address, 2));
     console.log(await capsule.balanceOf(addr1.address, 3));
@@ -438,7 +446,7 @@ describe("RAFFLE ", function () {
     await _LoANFTAttributes.putNFTAttributes([1,2,3,4,5,6,7,8,9,10], ["1-0-0", "1-2-0", "1-3-0", "1-4-0", "1-5-0", "2-0-1", "2-0-1", "2-0-1", "2-2-1", "2-0-2"]);
     console.log(12);
 
-    await loa.connect(addr1).approve(_LoANFT.address, 2000);
+    await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000");
 
     console.log("ready to mint nft");
     await _LoANFT.connect(addr1).mint(5);
@@ -446,19 +454,27 @@ describe("RAFFLE ", function () {
     console.log("nft minted");
 
 
-    console.log(await _LoANFT.getUserNFTs());
+    console.log(await _LoANFT.getUserNFTs(addr1.address));
 
-
-
-
+    
+    
     const NFTMarket = await ethers.getContractFactory("NFTMarket");
     const _NFTMarket = await NFTMarket.deploy(loa.address, _LoANFT.address, multiSigAdmin.address);
     await _NFTMarket.deployed();
 
-    await _NFTMarket.updateFees([_LoANFT.address], ["1000"])
-    await _NFTMarket.list(_LoANFT.address, 60, "10000");
-
+    await multiSigAdmin.updateContractAddresses([capsule.address, capsuleStaking.address, _NFTMarket.address]);
+    
+    await _NFTMarket.updateFees([_LoANFT.address], ["10000000000000000000"])
+    
+    await multiSigAdmin.setCapsuleAddress(capsule.address);
+    await _LoANFT.connect(addr1).setApprovalForAll(_NFTMarket.address, true);
+    await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
+    await _NFTMarket.connect(addr1).list(_LoANFT.address, 10, "2000000000000000000000");
+    
     console.log(await _NFTMarket.fetchMarketItems());
+    await _NFTMarket.connect(addr1).unlist(1);
+    console.log(await _NFTMarket.fetchMarketItems());
+    return;
 
   });
 

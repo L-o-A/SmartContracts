@@ -57,6 +57,7 @@ interface IERC20Contract {
         address to,
         uint256 amount
     ) external returns (bool);
+    function allowance(address _owner, address _spender) external view returns (uint256);
 }
 
 interface Admin {
@@ -135,6 +136,7 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
             _capsuleStakedAmount[capsuleIds[i]] = _capsuleStakeTypeLOATokens[capsuleType];
         }
 
+        require(_loaToken.allowance(msg.sender, address(this)) >= stakedAmount, "Not enough LOA permitted to spend.");
         require(_loaToken.transferFrom(msg.sender, address(this), stakedAmount), "Not enough LOA balance available.");
 
         emit Staked(msg.sender, capsuleIds, true, false);

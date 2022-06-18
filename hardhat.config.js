@@ -38,6 +38,8 @@ module.exports = {
     mumbai: {
       url: secret.POLYGON_MUMBAI_URL,
       accounts: [secret.WALLET_PRI_KEY],
+      // gas: 2100000,
+      // gasPrice: 8000000000
     },
   },
 
