@@ -3,8 +3,8 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Deploying Market Place...");
 
-   //  const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce";
-    const loa = "0xC322ae9307a054eDc6438Bd40E77f7d5Bca2b536";
+    const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce"; //BSC Testnet
+   //  const loa = "0xC322ae9307a054eDc6438Bd40E77f7d5Bca2b536"; //BSC Testnet
     const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
     const admin2 = "0x36Ee9c4520F9E7C15A0Cba1e032627eDc2B4C50D";
 
@@ -174,7 +174,7 @@ async function main() {
     await multiSigAdmin.setNFTAttributeAddress(_LoANFTAttributes.address);
 
     console.log(10);
-    await _LoANFTAttributes.putNFTAttributeNames("PRANA,HP,ATTACK");
+    await _LoANFTAttributes.putNFTAttributeNames("HER0,PRANA,HP,ATTACK");
     console.log(11);
 
     /**
@@ -206,7 +206,7 @@ async function main() {
     await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
     console.log(15);
 
-    await capsule.airdrop(1, admin2, 4);
+   //  await capsule.airdrop(1, admin2, 4);
     console.log(15.1);
 
    return;
