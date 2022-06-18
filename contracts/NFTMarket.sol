@@ -61,8 +61,8 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
     IERC20Contract public _erc20Token; // External BUSD contract
     IERC1155 _loaNFT;
 
-    MarketItem[] public _id_to_listed_item;
-    mapping(address => uint256[]) private _adddress_to_listed_item_ids;
+    MarketItem[] public _listed_items;
+    mapping(uint256 => uint256) public _listed_items_to_index;
     mapping(address => uint256) public _user_balance;
     mapping(address => uint256) private _listingFee;
     uint256 public _totalLOAStaked;
@@ -98,6 +98,15 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         _erc20Token = IERC20Contract(erc20Contract);
         _loaNFT = IERC1155(loaNFT);
         _admin = Admin(adminContractAddress);
+        //adding empty index
+        _listed_items.push(MarketItem(
+            0,
+            address(0),
+            0,
+            address(0),
+            address(0),
+            0
+        ));
     }
 
     function updateFees (
@@ -111,7 +120,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
     }
 
     function getMarketItem(uint256 marketItemId) public view returns (MarketItem memory) {
-        return _id_to_listed_item[marketItemId];
+        return _listed_items[_listed_items_to_index[marketItemId]];
     }
 
     function list( address nftContract, uint256 tokenId, uint256 price) public nonReentrant {
@@ -126,20 +135,19 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         _itemIds.increment();
         uint256 itemId = _itemIds.current();
 
-        _id_to_listed_item[itemId] = MarketItem(
+        _listed_items.push(MarketItem(
             itemId,
             nftContract,
             tokenId,
             msg.sender,
             address(0),
             price
-        );
+        ));
+        _listed_items_to_index[itemId] = _listed_items.length - 1;
         
         _erc20Token.transferFrom(msg.sender, _admin.getTreasury(), _listingFee[nftContract]);
         erc1155.safeTransferFrom(msg.sender, address(this), tokenId, 1, "0x00");
         
-        _adddress_to_listed_item_ids[msg.sender].push(itemId);
-
         emit MarketItemAction(
             itemId,
             nftContract,
@@ -153,45 +161,37 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
 
     function unlist(uint256 itemId) public  nonReentrant {
-        
-        uint256 tokenId = _id_to_listed_item[itemId].tokenId;
-        require( msg.sender == _id_to_listed_item[itemId].seller,  "Only NFT owner can unlist" );
+        uint256 index = _listed_items_to_index[itemId];
+        uint256 tokenId = _listed_items[index].tokenId;
+        require( msg.sender == _listed_items[index].seller,  "Only NFT owner can unlist" );
 
-        IERC1155 erc1155 = IERC1155(_id_to_listed_item[itemId].nftContract);
+        IERC1155 erc1155 = IERC1155(_listed_items[index].nftContract);
         require( erc1155.balanceOf(address(this), tokenId) == 1, "Contract doesn't have enought NFT Units.");
-
-        //Remove sender listed item ids
-        uint256[] storage itemIds = _adddress_to_listed_item_ids[msg.sender];
-
-        for (uint256 i = 0; i < itemIds.length; i++) {
-            if(itemIds[i] == itemId) {
-                itemIds[i] = itemIds[itemIds.length - 1];
-                itemIds.pop();
-                break;
-            }
-        }
 
         erc1155.safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
         emit MarketItemAction(
             itemId,
-            _id_to_listed_item[itemId].nftContract,
+            _listed_items[index].nftContract,
             tokenId,
             msg.sender,
             address(0),
             0,
             2
         );
-        delete _id_to_listed_item[itemId];
+        _listed_items[index] = _listed_items[_listed_items.length - 1];
+        _listed_items_to_index[_listed_items[index].itemId] = index;
+        _listed_items.pop();
+        delete _listed_items_to_index[itemId];
     }
 
     function updatePrice(uint256 itemId, uint256 price) public {
-        MarketItem storage marketItem = _id_to_listed_item[itemId];
+        MarketItem storage marketItem = _listed_items[_listed_items_to_index[itemId]];
         require(marketItem.seller == msg.sender, "You are not authorized");
         marketItem.price = price;
         emit MarketItemAction(
             itemId,
-            _id_to_listed_item[itemId].nftContract,
-            _id_to_listed_item[itemId].tokenId,
+            _listed_items[itemId].nftContract,
+            _listed_items[itemId].tokenId,
             msg.sender,
             address(0),
             price,
@@ -214,78 +214,44 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         payable
         nonReentrant
     {
-        uint256 price = _id_to_listed_item[itemId].price;
-        uint256 tokenId = _id_to_listed_item[itemId].tokenId;
-        address nftContract = _id_to_listed_item[itemId].nftContract;
+        uint256 index = _listed_items_to_index[itemId];
+        uint256 price = _listed_items[index].price;
+        uint256 tokenId = _listed_items[index].tokenId;
+        address nftContract = _listed_items[index].nftContract;
 
         require(
             _erc20Token.balanceOf(msg.sender) >= price,
             "Required LOA balance is not available."
         );
         
-        //Remove sender listed item ids
-        uint256[] storage itemIds = _adddress_to_listed_item_ids[msg.sender];
-
-        for (uint256 i = 0; i < itemIds.length; i++) {
-            if(itemIds[i] == itemId) {
-                itemIds[i] = itemIds[itemIds.length -1];
-                itemIds.pop();
-                break;
-            }
-        }
-
         require(
-            _erc20Token.transferFrom(msg.sender, address(this), price),
+            _erc20Token.transferFrom(msg.sender, _listed_items[itemId].seller, price),
             "Transfer from buyer failed"
         );
 
         //transfer seller amount
-        //_id_to_listed_item[itemId].seller.transfer(price);
-        uint256 listingFee = _listingFee[nftContract];
-
-        _user_balance[address(this)] = _user_balance[address(this)] + listingFee;
-        _user_balance[_id_to_listed_item[itemId].seller] = _user_balance[_id_to_listed_item[itemId].seller] + price;
-        
+        _user_balance[_listed_items[itemId].seller] = _user_balance[_listed_items[itemId].seller] + price;
 
         IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
 
         emit MarketItemAction(
             itemId,
-            _id_to_listed_item[itemId].nftContract,
-            _id_to_listed_item[itemId].tokenId,
-            _id_to_listed_item[itemId].seller,
+            _listed_items[itemId].nftContract,
+            _listed_items[itemId].tokenId,
+            _listed_items[itemId].seller,
             msg.sender,
             price,
             4
         );
-        delete _id_to_listed_item[itemId];
+
+        _listed_items[index] = _listed_items[_listed_items.length - 1];
+        _listed_items_to_index[_listed_items[index].itemId] = index;
+        _listed_items.pop();
+        delete _listed_items_to_index[itemId];
     }
 
     function fetchMarketItems() public view returns (MarketItem[] memory) {
-        // uint256 itemCount = _itemIds.current();
-        // uint256 unsoldItemCount = _itemIds.current() - _itemsSold.current();
-        // uint256 currentIndex = 0;
-
-        // MarketItem[] memory items = new MarketItem[](unsoldItemCount);
-        // for (uint256 i = 0; i < itemCount; i++) {
-        //     if (_id_to_listed_item[i + 1].owner == address(0)) {
-        //         uint256 currentId = _id_to_listed_item[i + 1].itemId;
-        //         MarketItem storage currentItem = _id_to_listed_item[currentId];
-        //         items[currentIndex] = currentItem;
-        //         currentIndex += 1;
-        //     }
-        // }
-        return _id_to_listed_item;
-    }
-
-    function fetchMyListings() public view returns (MarketItem[] memory) {
-        uint256[] storage itemIds = _adddress_to_listed_item_ids[msg.sender];
-
-        MarketItem[] memory items = new MarketItem[](itemIds.length);
-        for (uint256 i = 0; i < itemIds.length; i++) {
-            items[i] = _id_to_listed_item[itemIds[i]];
-        }
-        return items;
+        return _listed_items;
     }
 
     function withdraw() public {
