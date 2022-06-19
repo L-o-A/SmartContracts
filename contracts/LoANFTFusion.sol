@@ -111,7 +111,7 @@ contract LoANFTFusion {
             nft_prev_hero = nft_hero;
         }
 
-        _loaToken.transferFrom(msg.sender, address(this), _fusion_rule_price[ruleId]);
+        _loaToken.transferFrom(msg.sender, _admin.getTreasury(), _fusion_rule_price[ruleId]);
         _nftContract.fusion(msg.sender, ids, _fusion_rule_result[ruleId], _fusion_rule_price[ruleId]);
     }
 
