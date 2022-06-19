@@ -45,13 +45,18 @@ interface IERC20Contract {
     ) external returns (bool);
 }
 
-interface Admin {
+interface IAdmin {
     function isValidAdmin(address adminAddress) external pure returns (bool);
     function getTreasury() external view returns (address);
     function isValidRaffleAddress(address addr) external view returns (bool);
     function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
     function isValidMarketPlaceContract(address sender) external view returns (bool);
     function getNFTAddress() external view returns (address);
+    function getNFTAttributeAddress() external view returns (address);
+}
+
+interface INFTAttribute {
+    function getNFTAttributes(uint256 id) external view returns (string memory);
 }
 
 contract NFTMarket is ReentrancyGuard, ERC1155Holder{
@@ -70,7 +75,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
     uint256 public _totalLOAStaked;
     bool public _giftingEnabled = true; 
 
-    Admin _admin;
+    IAdmin _admin;
 
     event MarketItemAction(
         uint256 indexed itemId,
@@ -89,6 +94,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         address seller;
         address owner;
         uint256 price;
+        string attributes;
     }
 
     event NFTTransferred(
@@ -99,7 +105,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
     constructor(address erc20Contract, address adminContractAddress) payable {
         _erc20Token = IERC20Contract(erc20Contract);
-        _admin = Admin(adminContractAddress);
+        _admin = IAdmin(adminContractAddress);
         //adding empty index
         _listed_items.push(MarketItem(
             0,
@@ -107,7 +113,8 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             0,
             address(0),
             address(0),
-            0
+            0,
+            ""
         ));
     }
 
@@ -143,6 +150,10 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
         _itemIds.increment();
         uint256 itemId = _itemIds.current();
+        string memory attributes = "";
+        if(nftContract == _admin.getNFTAddress()) {
+            attributes = INFTAttribute(_admin.getNFTAttributeAddress()).getNFTAttributes(tokenId);
+        }
 
         _listed_items.push(MarketItem(
             itemId,
@@ -150,8 +161,10 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             tokenId,
             msg.sender,
             address(0),
-            price
+            price,
+            attributes
         ));
+
         _listed_items_to_index[itemId] = _listed_items.length - 1;
         _addess_to_id_to_itemId[nftContract][tokenId] = itemId;
         
