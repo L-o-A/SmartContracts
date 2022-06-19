@@ -250,15 +250,13 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             "Required LOA balance is not available."
         );
         
-        require(
-            _erc20Token.transferFrom(msg.sender, _listed_items[itemId].seller, price),
-            "Transfer from buyer failed"
-        );
-
         //transfer seller amount
         uint256 transFee = price * _transactionFee[nftContract] / 1000;
-        _erc20Token.transferFrom(msg.sender, _admin.getTreasury(), transFee);
-        _erc20Token.transferFrom(msg.sender, _listed_items[index].seller, price - transFee);
+        // _erc20Token.transferFrom(msg.sender, _admin.getTreasury(), transFee);
+        // _erc20Token.transferFrom(msg.sender, _listed_items[index].seller, price - transFee);
+        _erc20Token.transferFrom(msg.sender, address(this), price);
+        _erc20Token.transfer(_listed_items[index].seller, price - transFee);
+        _erc20Token.transfer(_admin.getTreasury(), transFee);
 
         IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
 

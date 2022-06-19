@@ -87,7 +87,7 @@ describe("RAFFLE ", function () {
     
     expect(await raffle._raffle_status()).to.equal(1);
     
-    await loa.connect(owner).transfer(addr1.address, "2000000000000000000000");
+    await loa.connect(owner).transfer(addr1.address, "200000000000000000000000");
     await loa.connect(addr1).approve(raffle.address, "20000000000000000000");
 
     
@@ -236,7 +236,8 @@ describe("RAFFLE ", function () {
     await _NFTMarket.connect(addr1).list(_LoANFT.address, 9, "2000000000000000000000");
     
     console.log("\n\n", await _NFTMarket.fetchMarketItems());
-    await _NFTMarket.connect(addr1).unlist(1);
+    await loa.connect(addr1).approve(_NFTMarket.address, "2000000000000000000000");
+    await _NFTMarket.connect(addr1).buy(1);
     console.log("\n\n", await _NFTMarket.fetchMarketItems());
     
     console.log("\n\n", await _NFTMarket.getMarketItem(2));
