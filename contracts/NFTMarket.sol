@@ -63,7 +63,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
     MarketItem[] public _listed_items;
     mapping(uint256 => uint256) public _listed_items_to_index;
-    mapping(uint256 => uint256) public _id_to_itemId;
+    mapping(address => mapping(uint256 => uint256)) public _addess_to_id_to_itemId;
     mapping(address => uint256) public _user_balance;
     mapping(address => uint256) public _listingFee;
     mapping(address => uint256) public _transactionFee;
@@ -153,7 +153,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             price
         ));
         _listed_items_to_index[itemId] = _listed_items.length - 1;
-        _id_to_itemId[tokenId] = itemId;
+        _addess_to_id_to_itemId[nftContract][tokenId] = itemId;
         
         _erc20Token.transferFrom(msg.sender, _admin.getTreasury(), _listingFee[nftContract]);
         erc1155.safeTransferFrom(msg.sender, address(this), tokenId, 1, "0x00");
@@ -188,7 +188,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             2
         );
 
-        delete _id_to_itemId[tokenId];
+        delete _addess_to_id_to_itemId[_listed_items[index].nftContract][tokenId];
 
         _listed_items[index] = _listed_items[_listed_items.length - 1];
         _listed_items_to_index[_listed_items[index].itemId] = index;
@@ -259,7 +259,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             4
         );
 
-        delete _id_to_itemId[tokenId];
+        delete _addess_to_id_to_itemId[_listed_items[itemId].nftContract][tokenId];
 
         _listed_items[index] = _listed_items[_listed_items.length - 1];
         _listed_items_to_index[_listed_items[index].itemId] = index;
