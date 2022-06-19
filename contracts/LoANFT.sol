@@ -252,41 +252,41 @@ contract LoANFT is ERC1155, Ownable {
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }
 
-    function fusion(
-        address owner,
-        uint256[] memory ids,
-        uint8 fusionLevel,
-        uint256 price
-    ) public {
-        require(msg.sender == _admin.getFusionAddress(), "Not authorized");
+    // function fusion(
+    //     address owner,
+    //     uint256[] memory ids,
+    //     uint8 fusionLevel,
+    //     uint256 price
+    // ) public {
+    //     require(msg.sender == _admin.getFusionAddress(), "Not authorized");
 
-        for (uint8 i = 0; i < ids.length; i++) {
-            _burn(owner, ids[i], 1);
-            for (uint256 j = 0; j < _user_holdings[owner].length; j++) {
-                if (_user_holdings[owner][j] == ids[i]) {
-                    _user_holdings[owner][j] = _user_holdings[owner][
-                        _user_holdings[owner].length - 1
-                    ];
-                    _user_holdings[owner].pop();
-                    break;
-                }
-            }
-        }
+    //     for (uint8 i = 0; i < ids.length; i++) {
+    //         _burn(owner, ids[i], 1);
+    //         for (uint256 j = 0; j < _user_holdings[owner].length; j++) {
+    //             if (_user_holdings[owner][j] == ids[i]) {
+    //                 _user_holdings[owner][j] = _user_holdings[owner][
+    //                     _user_holdings[owner].length - 1
+    //                 ];
+    //                 _user_holdings[owner].pop();
+    //                 break;
+    //             }
+    //         }
+    //     }
 
-        uint256 id = _nft_level_to_ids[fusionLevel][
-            _nft_level_to_ids[fusionLevel].length - 1
-        ];
-        require(_nft_status[id] == 1, "id is not available");
+    //     uint256 id = _nft_level_to_ids[fusionLevel][
+    //         _nft_level_to_ids[fusionLevel].length - 1
+    //     ];
+    //     require(_nft_status[id] == 1, "id is not available");
 
-        _nft_owner[id] = owner;
-        _nft_status[id] = 2;
+    //     _nft_owner[id] = owner;
+    //     _nft_status[id] = 2;
 
-        _mint(owner, id, 1, "");
-        _user_holdings[owner].push(id);
-        _nft_level_to_ids[_nft_level[id]].pop();
+    //     _mint(owner, id, 1, "");
+    //     _user_holdings[owner].push(id);
+    //     _nft_level_to_ids[_nft_level[id]].pop();
 
-        emit NFTMinted(id, 0, owner, price);
-    }
+    //     emit NFTMinted(id, 0, owner, price);
+    // }
 
     function mint(uint256 capsuleId) public {
         require(
