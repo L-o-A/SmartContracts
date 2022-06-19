@@ -862,7 +862,7 @@ library strings {
 library Integers {
 
     function parseInt(string memory _value)
-        public
+        internal
         pure
         returns (uint _ret) {
         bytes memory _bytesValue = bytes(_value);
@@ -891,12 +891,12 @@ library Integers {
 contract StringUtil {
     using strings for *;
 
-    function split(string memory str) public pure returns (uint256[] memory) {
+    function split(string memory str) public pure returns (string[] memory) {
         strings.slice memory s = str.toSlice();
         strings.slice memory delim = "-".toSlice();
-        uint256[] memory parts = new uint256[](s.count(delim));
+        string[] memory parts = new string[](s.count(delim));
         for (uint256 i = 0; i < parts.length; i++) {
-            parts[i] = Integers.parseInt(s.split(delim).toString());
+            parts[i] = s.split(delim).toString();
         }
         return parts;
     }

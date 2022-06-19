@@ -15,7 +15,6 @@ interface LoaNFTContract {
 
 contract LoANFTAttributes {
 
-    address _loaNFTAddress;
     mapping(uint256 => string) _nft_attributes;
     string public _nft_attribute_names;
     mapping(address => uint8) _axionAddresses; // Axion Contract
@@ -32,10 +31,6 @@ contract LoANFTAttributes {
         _;
     }
 
-    function setNFTAddress(address loaNFTAddress) public validAdmin {
-        _loaNFTAddress = loaNFTAddress;
-    }
-
     function modifyAxionAddresses(address axionAddress, bool add) public validAdmin {
         if(add)
             _axionAddresses[axionAddress] = 1;
@@ -49,7 +44,7 @@ contract LoANFTAttributes {
     }
 
     function getNFTAttributes(uint256 id) public view returns (string memory) {
-        (,,,uint8 nft_status) = LoaNFTContract(_loaNFTAddress).getNFTDetail(id);
+        (,,,uint8 nft_status) = LoaNFTContract(_admin.getNFTAddress()).getNFTDetail(id);
 
         require(nft_status == 2, "Id is not minted");
         return (_nft_attributes[id]);
@@ -62,11 +57,11 @@ contract LoANFTAttributes {
     function putNFTAttributes (uint256[] memory ids, string[] memory attribs) public validAdmin {
 
         require(ids.length ==  attribs.length, "Args length not matching");
-            for (uint256 i = 0; i < ids.length; i++) {
-                (,,,uint8 nft_status) = LoaNFTContract(_loaNFTAddress).getNFTDetail(ids[i]);
-                require(nft_status == 1, "Id is not published");
+        for (uint256 i = 0; i < ids.length; i++) {
+            (,,,uint8 nft_status) = LoaNFTContract(_admin.getNFTAddress()).getNFTDetail(ids[i]);
+            require(nft_status == 1, "Id is not published");
 
-                _nft_attributes[ids[i]] = attribs[i];
+            _nft_attributes[ids[i]] = attribs[i];
         }
     }
 

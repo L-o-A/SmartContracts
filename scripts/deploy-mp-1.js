@@ -28,17 +28,6 @@ async function main() {
     console.log("raffleHelper.address :", raffleHelper.address);
 
 
-    /**
-     *  function putRafflePrices(
-        uint256[] memory supply,
-        uint256[] memory prices,
-        uint64[] memory reward_amount,
-        uint256[] memory reward_range
-        
-    )
-     */
-    await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [100, 200, 400], [150, 300]);
-
     const Raffle = await ethers.getContractFactory("Raffle");
     const raffle = await Raffle.deploy(loa, raffleHelper.address);
     await raffle.deployed();
@@ -70,7 +59,7 @@ async function main() {
     console.log("_LoANFTFusion.address :", _LoANFTFusion.address);
     
     const NFTMarket = await ethers.getContractFactory("NFTMarket");
-    const _NFTMarket = await NFTMarket.deploy(loa, _LoANFT.address, multiSigAdmin.address);
+    const _NFTMarket = await NFTMarket.deploy(loa, multiSigAdmin.address);
     await _NFTMarket.deployed()
     console.log("_NFTMarket.address :", _NFTMarket.address);
     
@@ -91,15 +80,17 @@ async function main() {
     // await _AxionSphere.deployed()
     // console.log("_AxionSphere.address :", _AxionSphere.address);
 
-
     /**
-     * function putRafflePrices(
+     *  function putRafflePrices(
         uint256[] memory supply,
         uint256[] memory prices,
         uint64[] memory reward_amount,
         uint256[] memory reward_range
+        
     )
      */
+    await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [100, 200, 400], [150, 300]);
+
 
     await raffleHelper.setRaffle(raffle.address);
     console.log(2);
@@ -170,11 +161,11 @@ async function main() {
     await _LoANFT.modifyNFTs(true, [1,2,3,4,5,6,7,8,9,10], [1,1,1,1,1,1,1,1,1,1], [1,2,1,2,1,2,1,2,1,2],[1,1,1,1,1,1,1,1,1,1]);
     console.log(9);
 
-    await _LoANFTAttributes.setNFTAddress(_LoANFT.address);
     await multiSigAdmin.setNFTAttributeAddress(_LoANFTAttributes.address);
 
     console.log(10);
-    await _LoANFTAttributes.putNFTAttributeNames("HER0,PRANA,HP,ATTACK");
+    await _LoANFTAttributes.putNFTAttributeNames("HERO,HASH-POWER,MAX-HP,MAX-PRANA,MAXSPEED,HP-REGEN,PRANA-REGEN,ATTACK-DAMAGE,ATTACK-SPEED,CRITICAL-DAMAGE,ARMOUR,MAGIC-DEFENCE");
+
     console.log(11);
 
     /**
@@ -200,7 +191,7 @@ async function main() {
         address[] memory contractAddresses, 
         uint256[] memory fees)
      */
-    await _NFTMarket.updateFees([_LoANFT.address], ["100000000000000000000"]);
+    await _NFTMarket.updateFees([_LoANFT.address, capsule.address], ["200000000000000000000", "100000000000000000000"], [50, 50]);
     console.log(14);
     
     await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
