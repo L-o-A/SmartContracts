@@ -69,6 +69,10 @@ interface Admin {
     function getNFTAddress() external view returns (address);
 }
 
+interface INFTAttribute {
+    function getNFTAttributes(uint256 id) external view returns (string memory);
+}
+
 contract LoANFT is ERC1155, Ownable {
     address _loaAddress;
     mapping(address => uint8) _admins;
@@ -125,13 +129,18 @@ contract LoANFT is ERC1155, Ownable {
             uint8,
             uint8,
             address,
-            uint8
+            uint8,
+            string memory
         )
     {
         if (msg.sender != _admin.getNFTAttributeAddress())
             require(_nft_status[id] == 2, "Id is not minted");
-
-        return (_nft_hero[id], _nft_level[id], _nft_owner[id], _nft_status[id]);
+        string memory attributes = "";
+        if(_nft_status[id] == 2) {
+            attributes = INFTAttribute(_admin.getNFTAttributeAddress()).getNFTAttributes(id);
+        }
+        return (_nft_hero[id], _nft_level[id], _nft_owner[id], _nft_status[id], attributes);
+        // return (_nft_hero[id], _nft_level[id], _nft_owner[id], _nft_status[id]);
     }
 
     function getUserNFTs(address sender) public view returns (uint256[] memory) {
@@ -199,6 +208,17 @@ contract LoANFT is ERC1155, Ownable {
             || _admin.isValidMarketPlaceContract(msg.sender),
                 "Not authorized to transfer"
         );
+        
+        for (uint256 j = 0; j < _user_holdings[from].length; j++) {
+            if (_user_holdings[from][j] == id) {
+                _user_holdings[from][j] = _user_holdings[from][
+                    _user_holdings[from].length - 1
+                ];
+                _user_holdings[from].pop();
+                break;
+            }
+        }
+        _user_holdings[to].push(id);
 
         return super.safeTransferFrom(from, to, id, amount, data);
     }
@@ -215,6 +235,19 @@ contract LoANFT is ERC1155, Ownable {
             || _admin.isValidMarketPlaceContract(msg.sender),
                 "Not authorized to transfer"
         );
+        for(uint256 i =0; i < ids.length; i++){
+            uint256 id = ids[i];
+            for (uint256 j = 0; j < _user_holdings[from].length; j++) {
+                if (_user_holdings[from][j] == id) {
+                    _user_holdings[from][j] = _user_holdings[from][
+                        _user_holdings[from].length - 1
+                    ];
+                    _user_holdings[from].pop();
+                    break;
+                }
+            }
+            _user_holdings[to].push(id);
+        }
 
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }
@@ -229,12 +262,13 @@ contract LoANFT is ERC1155, Ownable {
 
         for (uint8 i = 0; i < ids.length; i++) {
             _burn(owner, ids[i], 1);
-            for (uint256 j = 0; j <= _user_holdings[owner].length; j++) {
+            for (uint256 j = 0; j < _user_holdings[owner].length; j++) {
                 if (_user_holdings[owner][j] == ids[i]) {
                     _user_holdings[owner][j] = _user_holdings[owner][
                         _user_holdings[owner].length - 1
                     ];
                     _user_holdings[owner].pop();
+                    break;
                 }
             }
         }

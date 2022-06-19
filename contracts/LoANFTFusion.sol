@@ -22,7 +22,7 @@ interface IERC20Contract {
 interface IERC1155Contract {
     function balanceOf(address tokenOwner, uint256 id) external view returns (uint256);
     function burn(address tokenOwner, uint256 id) external;
-    function getNFTDetail(uint256 id) external view returns (uint8, uint8, address, uint8) ;
+    function getNFTDetail(uint256 id) external view returns (uint8, uint8, address, uint8, string memory) ;
     function fusion(address owner, uint256[] memory ids, uint8 fusionLevel, uint256 price) external;
 }
 
@@ -100,7 +100,7 @@ contract LoANFTFusion {
         uint256 nft_prev_hero = 0;
 
         for (uint256 i = 0; i < ids.length; i++) {
-             (uint8 nft_hero, uint8 nft_level, address nft_owner, uint8 nft_status) = _nftContract.getNFTDetail(ids[i]);
+             (uint8 nft_hero, uint8 nft_level, address nft_owner, uint8 nft_status, ) = _nftContract.getNFTDetail(ids[i]);
 
             require(msg.sender == nft_owner && nft_status == 2, "Token doesnt belong to sender.");
             require(nft_level == _fusion_rule_levels[ruleId][i], "Level type not matching.");

@@ -106,7 +106,7 @@ contract Capsule is ERC1155, Ownable {
         require(msg.sender == _admin.getNFTAddress(), "You are not authorized to burn");
         _capsule_status[id] = 6;
         _burn(owner, id, 1);
-        for(uint256 j = 0; j <= _user_holdings[owner].length; j++) {
+        for(uint256 j = 0; j < _user_holdings[owner].length; j++) {
             if(_user_holdings[owner][j] == id) {
                 _user_holdings[owner][j] = _user_holdings[owner][_user_holdings[owner].length - 1];
                 _user_holdings[owner].pop();

@@ -111,7 +111,7 @@ contract Raffle is ERC1155, Ownable {
 
         _ticket_status[id] = 4;
         _burn(owner, id, 1);
-        for(uint256 j = 0; j <= _user_tickets[owner].length; j++) {
+        for(uint256 j = 0; j < _user_tickets[owner].length; j++) {
             if(_user_tickets[owner][j] == id) {
                 _user_tickets[owner][j] = _user_tickets[owner][_user_tickets[owner].length - 1];
                 _user_tickets[owner].pop();
@@ -218,7 +218,7 @@ contract Raffle is ERC1155, Ownable {
 
                 _burn(_ticket_owner[ticketIds[i]], ticketIds[i], 1);
 
-                for(uint256 j = 0; j <= _user_tickets[_ticket_owner[ticketIds[i]]].length; j++) {
+                for(uint256 j = 0; j < _user_tickets[_ticket_owner[ticketIds[i]]].length; j++) {
                     if(_user_tickets[_ticket_owner[ticketIds[i]]][j] == ticketIds[i]) {
                         _user_tickets[_ticket_owner[ticketIds[i]]][j] = _user_tickets[_ticket_owner[ticketIds[i]]][_user_tickets[_ticket_owner[ticketIds[i]]].length - 1];
                         _user_tickets[_ticket_owner[ticketIds[i]]].pop();

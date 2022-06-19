@@ -9,7 +9,7 @@ import "./LoANFT.sol";
 interface LoaNFTContract {
     function balanceOf(address tokenOwner, uint256 id) external view returns (uint256);
     function burn(address tokenOwner, uint256 id) external;
-    function getNFTDetail(uint256 id) external view returns (uint8, uint8, address, uint8);
+    function getNFTDetail(uint256 id) external view returns (uint8, uint8, address, uint8, string memory);
 }
 
 
@@ -44,9 +44,7 @@ contract LoANFTAttributes {
     }
 
     function getNFTAttributes(uint256 id) public view returns (string memory) {
-        (,,,uint8 nft_status) = LoaNFTContract(_admin.getNFTAddress()).getNFTDetail(id);
-
-        require(nft_status == 2, "Id is not minted");
+        require(_admin.isValidMarketPlaceContract(msg.sender), "Not authorized");
         return (_nft_attributes[id]);
     }
 
@@ -58,7 +56,7 @@ contract LoANFTAttributes {
 
         require(ids.length ==  attribs.length, "Args length not matching");
         for (uint256 i = 0; i < ids.length; i++) {
-            (,,,uint8 nft_status) = LoaNFTContract(_admin.getNFTAddress()).getNFTDetail(ids[i]);
+            (,,,uint8 nft_status, ) = LoaNFTContract(_admin.getNFTAddress()).getNFTDetail(ids[i]);
             require(nft_status == 1, "Id is not published");
 
             _nft_attributes[ids[i]] = attribs[i];
