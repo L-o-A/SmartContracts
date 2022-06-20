@@ -3,10 +3,10 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Closing Raffle...");
 
-    const RAFFLE_ADDRESS = "0x2f095725205b8B5eED43D4De10d33888a64CBcd1";
+    const RAFFLE_ADDRESS = "0x09fc2cc0B9a34e75E564ebE60D53aF4189288493";
 
-    // const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
-    // const capsule = "0x6cE6a3b07a1182dE44a43cd566Ff88Fd4a72aC60";
+    const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
+    const capsule = "0x6cE6a3b07a1182dE44a43cd566Ff88Fd4a72aC60";
     // const capsuleStaking = "0x33dfA3020363cDC4DF91A26A2D618F5A64EE1532";
     // const _NFTMarket = "0x632F468665629654C6923c38fEbD037e440e3a6B";
     // const _LoANFTFusion = "0xE31eEca0abE6f7f35d1f207ab2BE9f756026e255";
@@ -23,12 +23,16 @@ async function main() {
     
     // await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
     console.log("raffle closed")
-    // await raffle.pickWinner(5);
+    await raffle.pickWinner(5);
+    await raffle.pickWinner(5);
+    await raffle.pickWinner(5);
+    
+
     
     // console.log("winners declared")
     
     // await multiSigAdmin.updateContractAddresses([capsule ,capsuleStaking, raffle.address, _NFTMarket, _LoANFTFusion, _LoANFT, "0xcb2BE4cA194486C4176C4e028658dBb02de4AE0b"])
-    await multiSigAdmin.modifyRaffleAddress([ raffle.address , 1])
+    // await multiSigAdmin.modifyRaffleAddress([ raffle.address , 1])
 
 
 
