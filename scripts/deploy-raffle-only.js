@@ -7,10 +7,10 @@ async function main() {
     const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
 
     
-    const capsule = "0x2a243A016E0DdCeE477685F7800730848Ea543AE";
+    const capsule = "0x6cE6a3b07a1182dE44a43cd566Ff88Fd4a72aC60";
 
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-    const multiSigAdmin = await MultiSigAdmin.attach("0xbe10acc4aDbBB710C52F31203635DC87f1Dee556");
+    const multiSigAdmin = await MultiSigAdmin.attach("0x79252080824088e2beb8BbDD8F635db9FA1b96a8");
     
 
     const RaffleHelper = await ethers.getContractFactory("RaffleHelper");

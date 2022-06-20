@@ -3,8 +3,8 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Deploying Market Place...");
 
-    const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce"; //BSC Testnet
-   //  const loa = "0xC322ae9307a054eDc6438Bd40E77f7d5Bca2b536"; //BSC Testnet
+   //  const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce"; //BSC Testnet
+    const loa = "0xcc631F7362A60213589E84D598F7dDD8630b525b"; //ROSTEN
     const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
     const admin2 = "0x36Ee9c4520F9E7C15A0Cba1e032627eDc2B4C50D";
 
@@ -73,7 +73,7 @@ async function main() {
     await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
     await multiSigAdmin.setNFTAttributeAddress(_LoANFTAttributes.address);
 
-    await multiSigAdmin.updateContractAddresses([capsuleStaking.address, raffle.address, _NFTMarket.address, _LoANFTFusion.address, _LoANFT.address])
+    await multiSigAdmin.updateContractAddresses([capsule.address ,capsuleStaking.address, raffle.address, _NFTMarket.address, _LoANFTFusion.address, _LoANFT.address])
     
     // const AxionSphere = await ethers.getContractFactory("AxionSphere");
     // const _AxionSphere = await AxionSphere.deploy(multiSigAdmin.address);
@@ -171,7 +171,23 @@ async function main() {
     /**
      * function putNFTAttributes (uint256[] memory ids, string[] memory attribs)
      */
-   //   await _LoANFTAttributes.putNFTAttributes([1,2,3,4,5,6,7,8,9,10], ["1-0-0", "1-2-0", "1-3-0", "1-4-0", "1-5-0", "2-0-1", "2-0-1", "2-0-1", "2-2-1", "2-0-2"]);
+     await _LoANFTAttributes.putNFTAttributes([1,2,3,4,5], 
+      [
+          "1-3-4-1-0-0-0-0-6-7-8", 
+          "2-4-0-0-0-0-4-5-6-7-8", 
+          "3-5-6-3-0-0-0-0-7-8-2", 
+          "4-6-7-4-2-3-0-0-0-0-3", 
+          "5-7-8-5-2-3-4-0-0-0-0", 
+      ]);
+
+      await _LoANFTAttributes.putNFTAttributes([1,2,3,4,5], 
+         [
+             "1-3-0-0-0-0-4-5-6-7-8", 
+             "2-4-5-0-0-0-0-5-6-7-8", 
+             "3-5-6-3-2-0-0-0-0-8-1", 
+             "4-6-7-4-0-0-0-0-7-8-1", 
+             "5-7-8-5-2-3-0-0-0-0-2", 
+         ]);
    //   console.log(12);
 
 
