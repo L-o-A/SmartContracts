@@ -20,13 +20,13 @@ async function main() {
     
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
     const multiSigAdmin = await MultiSigAdmin.attach(multiSigAdminAddr);
-    await multiSigAdmin.updateContractAddresses(["0x09fc2cc0B9a34e75E564ebE60D53aF4189288493", 
-    "0x6cE6a3b07a1182dE44a43cd566Ff88Fd4a72aC60", 
-    "0x33dfA3020363cDC4DF91A26A2D618F5A64EE1532", 
-    "0x723da64fB4Eda7A89f5Ce7D42A39f2385325ff11",
-    "0x632F468665629654C6923c38fEbD037e440e3a6B",
-    "0x2f095725205b8B5eED43D4De10d33888a64CBcd1"
-    ])
+    // await multiSigAdmin.updateContractAddresses(["0x09fc2cc0B9a34e75E564ebE60D53aF4189288493", 
+    // "0x6cE6a3b07a1182dE44a43cd566Ff88Fd4a72aC60", 
+    // "0x33dfA3020363cDC4DF91A26A2D618F5A64EE1532", 
+    // "0x723da64fB4Eda7A89f5Ce7D42A39f2385325ff11",
+    // "0x632F468665629654C6923c38fEbD037e440e3a6B",
+    // "0x2f095725205b8B5eED43D4De10d33888a64CBcd1"
+    // ])
     
 
 }

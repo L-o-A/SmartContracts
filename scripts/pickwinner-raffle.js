@@ -3,12 +3,12 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Picking Raffle Winners...");
 
-    // const RAFFLE_ADDRESS = "0x9E39644DC0DFAc95096904B5314Ec483dF92Ef7F";
+    // const RAFFLE_ADDRESS = "0x047e85AA34624AC46ce7A99AcCe8Fe09557E8F66";
 
     // const Raffle = await ethers.getContractFactory("Raffle");
     // const raffle = await Raffle.attach(RAFFLE_ADDRESS);
-    
-    // await raffle.pickWinner(100);
+
+    // await raffle.pickWinner(5);
 
     // const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
     // const multiSigAdmin = await MultiSigAdmin.attach("0x131BE3C41ACa0Cc12D6f6B7B14eD515871E70986");

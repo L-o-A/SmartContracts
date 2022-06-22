@@ -73,7 +73,7 @@ async function main() {
     await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
     await multiSigAdmin.setNFTAttributeAddress(_LoANFTAttributes.address);
 
-    await multiSigAdmin.updateContractAddresses([capsule.address ,capsuleStaking.address, raffle.address, _NFTMarket.address, _LoANFTFusion.address, _LoANFT.address])
+   //  await multiSigAdmin.updateContractAddresses([capsule.address ,capsuleStaking.address, raffle.address, _NFTMarket.address, _LoANFTFusion.address, _LoANFT.address])
     
     // const AxionSphere = await ethers.getContractFactory("AxionSphere");
     // const _AxionSphere = await AxionSphere.deploy(multiSigAdmin.address);

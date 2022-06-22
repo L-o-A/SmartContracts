@@ -3,10 +3,10 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Closing Raffle...");
 
-    const RAFFLE_ADDRESS = "0x09fc2cc0B9a34e75E564ebE60D53aF4189288493";
+    const RAFFLE_ADDRESS = "0x01cACDA94578396419b6b47953042fffa4a396aa";
 
     const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
-    const capsule = "0x6cE6a3b07a1182dE44a43cd566Ff88Fd4a72aC60";
+    const capsule = "0x23B9fc91679796c042F64c94737626c50e2F6eDD";
     // const capsuleStaking = "0x33dfA3020363cDC4DF91A26A2D618F5A64EE1532";
     // const _NFTMarket = "0x632F468665629654C6923c38fEbD037e440e3a6B";
     // const _LoANFTFusion = "0xE31eEca0abE6f7f35d1f207ab2BE9f756026e255";
@@ -15,13 +15,13 @@ async function main() {
     const Raffle = await ethers.getContractFactory("Raffle");
     const raffle = await Raffle.attach(RAFFLE_ADDRESS);
 
-    const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-    const multiSigAdmin = await MultiSigAdmin.attach("0x79252080824088e2beb8BbDD8F635db9FA1b96a8");
+    // const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
+    // const multiSigAdmin = await MultiSigAdmin.attach("0x4653F36f5e6c7C5B31570B59c7994B66f2DA34D9");
     
     const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
     const oneDayAgo = parseInt(new Date().getTime()/1000 - 86400  + "");
     
-    // await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
+    await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
     console.log("raffle closed")
     await raffle.pickWinner(5);
     await raffle.pickWinner(5);

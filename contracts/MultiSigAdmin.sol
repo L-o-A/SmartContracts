@@ -131,24 +131,32 @@ contract MultiSigAdmin {
             delete _raffleAddresses[raffleAddress];
     }
 
-    function updateContractAddresses(address[] memory contractAddresses) public validAdmin {
-        delete _contractAddresses;
-        _contractAddresses = contractAddresses;
-    }
+    // function updateContractAddresses(address[] memory contractAddresses) public validAdmin {
+    //     delete _contractAddresses;
+    //     _contractAddresses = contractAddresses;
+    // }
 
     function isValidMarketPlaceContract(address sender) public view returns (bool) {
-        for(uint256 i = 0; i < _contractAddresses.length; i++) {
-            if(sender == _contractAddresses[i])
-                return true;
-        }
+        if(_raffleAddresses[sender] == 1)
+            return true;
+
+        if(_capsuleStakingAddress == sender 
+                || _capsuleAddress == sender 
+                || _nftAddress == sender 
+                || _marketAddress == sender 
+                || _nftFusionAddress == sender 
+                || _axionAddress == sender 
+                || _nftAttributeAddress == sender)
+            return true;
+
         return false;
     }
 
     function isValidCapsuleTransfer(address sender, address from, address to) public view returns (bool) {
-        for(uint256 i = 0; i < _contractAddresses.length; i++) {
-            if(sender == _contractAddresses[i] || from == _contractAddresses[i] || to == _contractAddresses[i])
-                return true;
-        }
+        if(isValidMarketPlaceContract(sender)
+                || isValidMarketPlaceContract(from)
+                || isValidMarketPlaceContract(to))
+            return true;
         return false;
     }
 }
