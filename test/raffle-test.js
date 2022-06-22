@@ -164,8 +164,7 @@ describe("RAFFLE ", function () {
 
     await capsuleStaking.setAddresses(capsule.address);
 
-    await multiSigAdmin.updateContractAddresses([capsule.address, capsuleStaking.address]);
-
+    await multiSigAdmin.setCapsuleAddress(capsule.address);
     await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
 
     console.log(await capsule.getUserCapsules(addr1.address));
@@ -191,7 +190,10 @@ describe("RAFFLE ", function () {
     const _LoANFT = await LoANFT.deploy(loa.address, multiSigAdmin.address);
     await _LoANFT.deployed();
 
-    await multiSigAdmin.updateContractAddresses([capsule.address, capsuleStaking.address, _LoANFT.address]);
+    await multiSigAdmin.setCapsuleAddress(capsule.address);
+    await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
+    
+
     await multiSigAdmin.setNFTAddress(_LoANFT.address);
 
     await _LoANFT.updateFees([1,2,3], [1000,2000, 3000]);
@@ -224,7 +226,10 @@ describe("RAFFLE ", function () {
     const _NFTMarket = await NFTMarket.deploy(loa.address, multiSigAdmin.address);
     await _NFTMarket.deployed();
 
-    await multiSigAdmin.updateContractAddresses([capsule.address, capsuleStaking.address, _NFTMarket.address]);
+    await multiSigAdmin.setCapsuleAddress(capsule.address);
+    await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
+    await multiSigAdmin.setMarketAddress(_NFTMarket.address);
+    // await multiSigAdmin.updateContractAddresses([capsule.address, capsuleStaking.address, _NFTMarket.address]);
     
     await _NFTMarket.updateFees([_LoANFT.address, capsule.address], ["20000000000000000000", "10000000000000000000"], [50, 40]);
     

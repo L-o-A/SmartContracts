@@ -252,7 +252,7 @@ async function main() {
     console.log(19.-3);
     await capsuleStaking.setCapsuleStakingRule(1, 0, "1000000000000000000000");
     console.log(19.-2);
-    await multiSigAdmin.updateContractAddresses([capsuleStaking.address, raffle.address, _NFTMarket.address, _LoANFTFusion.address, _LoANFT.address])
+    // await multiSigAdmin.updateContractAddresses([capsuleStaking.address, raffle.address, _NFTMarket.address, _LoANFTFusion.address, _LoANFT.address])
     console.log(19.-1);
     
     const caps = await capsule.getUserCapsules(treasury);
