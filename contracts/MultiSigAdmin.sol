@@ -8,7 +8,6 @@ contract MultiSigAdmin {
     mapping(address=> uint8) public _admins;
     address _treasury;
     mapping(address => uint8) _raffleAddresses; // Raffale Contract
-    address[] public _contractAddresses;
     address[] public _adminList;
     address _capsuleStakingAddress;
     address _capsuleAddress;
@@ -130,11 +129,6 @@ contract MultiSigAdmin {
         else
             delete _raffleAddresses[raffleAddress];
     }
-
-    // function updateContractAddresses(address[] memory contractAddresses) public validAdmin {
-    //     delete _contractAddresses;
-    //     _contractAddresses = contractAddresses;
-    // }
 
     function isValidMarketPlaceContract(address sender) public view returns (bool) {
         if(_raffleAddresses[sender] == 1)
