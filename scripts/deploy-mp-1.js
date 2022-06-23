@@ -3,10 +3,11 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Deploying Market Place...");
 
-   //  const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce"; //BSC Testnet
-    const loa = "0xcc631F7362A60213589E84D598F7dDD8630b525b"; //ROSTEN
+    const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce"; //BSC Testnet
+   //  const loa = "0xcc631F7362A60213589E84D598F7dDD8630b525b"; //ROSTEN
     const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
     const admin2 = "0x36Ee9c4520F9E7C15A0Cba1e032627eDc2B4C50D";
+    const admin3 = "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da";
 
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
     const multiSigAdmin = await MultiSigAdmin.deploy();
@@ -14,6 +15,7 @@ async function main() {
     console.log("multiSigAdmin.address :", multiSigAdmin.address);
 
     await multiSigAdmin.modifyAdmin(admin2, true);
+    await multiSigAdmin.modifyAdmin(admin3, true);
 
     // await multiSigAdmin.initialize();
     console.log(-2);

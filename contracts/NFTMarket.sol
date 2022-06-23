@@ -55,8 +55,8 @@ interface IAdmin {
     function getNFTAttributeAddress() external view returns (address);
 }
 
-interface INFTAttribute {
-    function getNFTAttributes(uint256 id) external view returns (string memory);
+interface INFT {
+    function getNFTDetail(uint256 id) external view returns ( uint8, uint8, address, uint8, string memory);
 }
 
 contract NFTMarket is ReentrancyGuard, ERC1155Holder{
@@ -95,6 +95,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         address owner;
         uint256 price;
         string attributes;
+        uint8 level;
     }
 
     event NFTTransferred(
@@ -114,7 +115,8 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             address(0),
             address(0),
             0,
-            ""
+            "",
+            0
         ));
     }
 
@@ -150,20 +152,32 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
         _itemIds.increment();
         uint256 itemId = _itemIds.current();
-        string memory attributes = "";
         if(nftContract == _admin.getNFTAddress()) {
-            attributes = INFTAttribute(_admin.getNFTAttributeAddress()).getNFTAttributes(tokenId);
-        }
+            (uint8 hero, uint8 level, , , string memory attributes) = INFT(_admin.getNFTAddress()).getNFTDetail(tokenId);
+            
+            _listed_items.push(MarketItem(
+                itemId,
+                nftContract,
+                tokenId,
+                msg.sender,
+                address(0),
+                price,
+                attributes,
+                level
+            ));
 
-        _listed_items.push(MarketItem(
-            itemId,
-            nftContract,
-            tokenId,
-            msg.sender,
-            address(0),
-            price,
-            attributes
-        ));
+        } else {
+            _listed_items.push(MarketItem(
+                itemId,
+                nftContract,
+                tokenId,
+                msg.sender,
+                address(0),
+                price,
+                "",
+                0
+            ));
+        }
 
         _listed_items_to_index[itemId] = _listed_items.length - 1;
         _addess_to_id_to_itemId[nftContract][tokenId] = itemId;
