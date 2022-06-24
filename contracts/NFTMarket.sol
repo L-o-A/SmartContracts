@@ -255,6 +255,8 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         nonReentrant
     {
         uint256 index = _listed_items_to_index[itemId];
+        require(index != 0, "Item not present");
+
         uint256 price = _listed_items[index].price;
         uint256 tokenId = _listed_items[index].tokenId;
         address nftContract = _listed_items[index].nftContract;
@@ -276,15 +278,15 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
         emit MarketItemAction(
             itemId,
-            _listed_items[itemId].nftContract,
-            _listed_items[itemId].tokenId,
-            _listed_items[itemId].seller,
+            _listed_items[index].nftContract,
+            _listed_items[index].tokenId,
+            _listed_items[index].seller,
             msg.sender,
             price,
             4
         );
 
-        delete _addess_to_id_to_itemId[_listed_items[itemId].nftContract][tokenId];
+        delete _addess_to_id_to_itemId[_listed_items[index].nftContract][tokenId];
 
         _listed_items[index] = _listed_items[_listed_items.length - 1];
         _listed_items_to_index[_listed_items[index].itemId] = index;

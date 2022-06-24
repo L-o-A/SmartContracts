@@ -146,7 +146,7 @@ contract Raffle is ERC1155, Ownable {
         require(_raffle_status == 1, "Raffle is not open." );
         require(_raffle_start_time < block.timestamp, "Raffle is not open." );
         require(_raffle_end_time > block.timestamp, "Raffle is closed." );
-        require(units > 1, "Invalid units provided." );
+        require(units > 0, "Invalid units provided." );
 
         uint256 amount = _helper.calcPrice(units, _raffle_supply);
 

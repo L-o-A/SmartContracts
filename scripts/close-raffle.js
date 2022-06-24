@@ -3,10 +3,10 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Closing Raffle...");
 
-    const RAFFLE_ADDRESS = "0x01cACDA94578396419b6b47953042fffa4a396aa";
+    const RAFFLE_ADDRESS = "0xAF3AA341055bD6FD449de97BB88Fa1C4bAB3fa56";
 
     const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
-    const capsule = "0x23B9fc91679796c042F64c94737626c50e2F6eDD";
+    const capsule = "0xb53A259A5B7C30e3954DAe521c05c599d178046a";
     // const capsuleStaking = "0x33dfA3020363cDC4DF91A26A2D618F5A64EE1532";
     // const _NFTMarket = "0x632F468665629654C6923c38fEbD037e440e3a6B";
     // const _LoANFTFusion = "0xE31eEca0abE6f7f35d1f207ab2BE9f756026e255";
@@ -15,14 +15,16 @@ async function main() {
     const Raffle = await ethers.getContractFactory("Raffle");
     const raffle = await Raffle.attach(RAFFLE_ADDRESS);
 
-    // const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-    // const multiSigAdmin = await MultiSigAdmin.attach("0x4653F36f5e6c7C5B31570B59c7994B66f2DA34D9");
+    const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
+    const multiSigAdmin = await MultiSigAdmin.attach("0x830fd6c2686813084eE5C762cfcdfe91E794319b");
     
     const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
     const oneDayAgo = parseInt(new Date().getTime()/1000 - 86400  + "");
     
-    await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
+    // await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
+
     console.log("raffle closed")
+    await raffle.pickWinner(5);
     await raffle.pickWinner(5);
     await raffle.pickWinner(5);
     await raffle.pickWinner(5);
@@ -31,8 +33,7 @@ async function main() {
     
     // console.log("winners declared")
     
-    // await multiSigAdmin.updateContractAddresses([capsule ,capsuleStaking, raffle.address, _NFTMarket, _LoANFTFusion, _LoANFT, "0xcb2BE4cA194486C4176C4e028658dBb02de4AE0b"])
-    // await multiSigAdmin.modifyRaffleAddress([ raffle.address , 1])
+    await multiSigAdmin.modifyRaffleAddress([ raffle.address , 1])
 
 
 
