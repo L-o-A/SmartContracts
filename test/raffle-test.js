@@ -9,7 +9,7 @@ describe("RAFFLE ", function () {
 
   it("RAFFLE Test -5", async function () {
 
-    const [owner, addr1, addr2] = await ethers.getSigners();
+    const [owner, addr1, addr2, addr3] = await ethers.getSigners();
     
     const LOA = await ethers.getContractFactory("MYERC20");
     const loa = await LOA.deploy("LOA", "LOA");
@@ -88,6 +88,8 @@ describe("RAFFLE ", function () {
     expect(await raffle._raffle_status()).to.equal(1);
     
     await loa.connect(owner).transfer(addr1.address, "200000000000000000000000");
+    await loa.connect(owner).transfer(addr2.address, "200000000000000000000000");
+    await loa.connect(owner).transfer(addr3.address, "200000000000000000000000");
     await loa.connect(addr1).approve(raffle.address, "20000000000000000000");
 
     
@@ -241,11 +243,21 @@ describe("RAFFLE ", function () {
     await _NFTMarket.connect(addr1).list(_LoANFT.address, 9, "2000000000000000000000");
     
     console.log("\n\n", await _NFTMarket.fetchMarketItems());
-    await loa.connect(addr1).approve(_NFTMarket.address, "2000000000000000000000");
-    await _NFTMarket.connect(addr1).buy(1);
+    await loa.connect(addr2).approve(_NFTMarket.address, "2000000000000000000000");
+    await _NFTMarket.connect(addr2).buy(1);
     console.log("\n\n", await _NFTMarket.fetchMarketItems());
     
     console.log("\n\n", await _NFTMarket.getMarketItem(2));
+
+
+    await loa.connect(addr2).approve(_NFTMarket.address, "20000000000000000000");
+    await _LoANFT.connect(addr2).setApprovalForAll(_NFTMarket.address, true);
+    await _NFTMarket.connect(addr2).list(_LoANFT.address, 10, "2000000000000000000000");
+
+
+    console.log("\n\n", await _NFTMarket.fetchMarketItems());
+    await loa.connect(addr3).approve(_NFTMarket.address, "2000000000000000000000");
+    await _NFTMarket.connect(addr3).buy(3);
 
   });
 

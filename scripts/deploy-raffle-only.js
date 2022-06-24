@@ -7,10 +7,10 @@ async function main() {
     const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
 
     
-    const capsule = "0x6cE6a3b07a1182dE44a43cd566Ff88Fd4a72aC60";
+    const capsule = "0xb53A259A5B7C30e3954DAe521c05c599d178046a";
 
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-    const multiSigAdmin = await MultiSigAdmin.attach("0x79252080824088e2beb8BbDD8F635db9FA1b96a8");
+    const multiSigAdmin = await MultiSigAdmin.attach("0x830fd6c2686813084eE5C762cfcdfe91E794319b");
     
 
     const RaffleHelper = await ethers.getContractFactory("RaffleHelper");
@@ -48,7 +48,10 @@ async function main() {
         address treasury
     )
      */
-    await raffle.setRaffleData(1, 10, 199999999999, capsule, treasury);
+    const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
+    const oneDayAgo = parseInt(new Date().getTime()/1000 + 2* 86400  + "");
+    
+    await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
     console.log(2);
     
     multiSigAdmin.modifyRaffleAddress(raffle.address, true);

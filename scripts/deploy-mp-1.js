@@ -106,7 +106,11 @@ async function main() {
         address treasury
     )
      */
-    await raffle.setRaffleData(1, 10, 199999999999, capsule.address, treasury);
+    const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
+    const oneDayAgo = parseInt(new Date().getTime()/1000 + 2* 86400  + "");
+    
+    await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
+  
     console.log(3);
 
     console.log(4);
