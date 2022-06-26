@@ -62,12 +62,12 @@ interface INFT {
 contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
     using Counters for Counters.Counter;
-    Counters.Counter private _itemIds;
-    Counters.Counter private _itemsSold;
-    IERC20Contract public _erc20Token; // External BUSD contract
+    Counters.Counter _itemIds;
+    Counters.Counter _itemsSold;
+    IERC20Contract _erc20Token; // External BUSD contract
 
-    MarketItem[] public _listed_items;
-    mapping(uint256 => uint256) public _listed_items_to_index;
+    MarketItem[] _listed_items;
+    mapping(uint256 => uint256) _listed_items_to_index;
     mapping(address => mapping(uint256 => uint256)) public _addess_to_id_to_itemId;
     mapping(address => uint256) public _user_balance;
     mapping(address => uint256) public _listingFee;
@@ -84,7 +84,10 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         address seller,
         address owner,
         uint256 price,
-        uint8 action
+        uint8 action,
+        string attributes,
+        uint8 hero,
+        uint8 level
     );
 
     struct MarketItem {
@@ -95,14 +98,15 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         address owner;
         uint256 price;
         string attributes;
+        uint8 hero;
         uint8 level;
     }
 
-    event NFTTransferred(
-        uint256 indexed itemId,
-        address from,
-        address to
-    );
+    // event NFTTransferred(
+    //     uint256 indexed itemId,
+    //     address from,
+    //     address to
+    // );
 
     constructor(address erc20Contract, address adminContractAddress) payable {
         _erc20Token = IERC20Contract(erc20Contract);
@@ -116,6 +120,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             address(0),
             0,
             "",
+            0,
             0
         ));
     }
@@ -163,8 +168,22 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
                 address(0),
                 price,
                 attributes,
+                hero,
                 level
             ));
+
+            emit MarketItemAction(
+            itemId,
+            nftContract,
+            tokenId,
+            msg.sender,
+            address(0),
+            price,
+            1,
+            attributes,
+            hero,
+            level
+        );
 
         } else {
             _listed_items.push(MarketItem(
@@ -175,8 +194,22 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
                 address(0),
                 price,
                 "",
+                0,
                 0
             ));
+
+            emit MarketItemAction(
+            itemId,
+            nftContract,
+            tokenId,
+            msg.sender,
+            address(0),
+            price,
+            1,
+            "",
+            0,
+            0
+        );
         }
 
         _listed_items_to_index[itemId] = _listed_items.length - 1;
@@ -185,15 +218,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         _erc20Token.transferFrom(msg.sender, _admin.getTreasury(), _listingFee[nftContract]);
         erc1155.safeTransferFrom(msg.sender, address(this), tokenId, 1, "0x00");
         
-        emit MarketItemAction(
-            itemId,
-            nftContract,
-            tokenId,
-            msg.sender,
-            address(0),
-            price,
-            1
-        );
+        
     }
 
     function unlist(uint256 itemId) public  nonReentrant {
@@ -205,15 +230,36 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         require( erc1155.balanceOf(address(this), tokenId) == 1, "Contract doesn't have enought NFT Units.");
 
         erc1155.safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
-        emit MarketItemAction(
-            itemId,
-            _listed_items[index].nftContract,
-            tokenId,
-            msg.sender,
-            address(0),
-            0,
-            2
-        );
+
+        // if(_listed_items[index].nftContract == _admin.getNFTAddress()) {
+        //     (uint8 hero, uint8 level, , , string memory attributes) = INFT(_admin.getNFTAddress()).getNFTDetail(tokenId);
+        //     emit MarketItemAction(
+        //         itemId,
+        //         _listed_items[index].nftContract,
+        //         tokenId,
+        //         msg.sender,
+        //         address(0),
+        //         0,
+        //         2,
+        //         attributes,
+        //         hero,
+        //         level
+        //     );
+        // }else {
+            emit MarketItemAction(
+                itemId,
+                _listed_items[index].nftContract,
+                tokenId,
+                msg.sender,
+                address(0),
+                0,
+                2,
+                "",
+                0,
+                0
+            );
+
+        // }
 
         delete _addess_to_id_to_itemId[_listed_items[index].nftContract][tokenId];
 
@@ -227,15 +273,36 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         MarketItem storage marketItem = _listed_items[_listed_items_to_index[itemId]];
         require(marketItem.seller == msg.sender, "You are not authorized");
         marketItem.price = price;
-        emit MarketItemAction(
-            itemId,
-            _listed_items[itemId].nftContract,
-            _listed_items[itemId].tokenId,
-            msg.sender,
-            address(0),
-            price,
-            3
-        );
+
+        if(marketItem.nftContract == _admin.getNFTAddress()) {
+            (uint8 hero, uint8 level, , , string memory attributes) = INFT(_admin.getNFTAddress()).getNFTDetail(marketItem.tokenId);
+            emit MarketItemAction(
+                itemId,
+                _listed_items[itemId].nftContract,
+                _listed_items[itemId].tokenId,
+                msg.sender,
+                address(0),
+                price,
+                3,
+                attributes,
+                hero,
+                level
+            ); 
+         } else {
+            emit MarketItemAction(
+                itemId,
+                _listed_items[itemId].nftContract,
+                _listed_items[itemId].tokenId,
+                msg.sender,
+                address(0),
+                price,
+                3,
+                "",
+                0,
+                0
+            ); 
+
+         }
     }
 
     function giftNFT(address to, uint256 id) public {
@@ -245,7 +312,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         IERC1155(_admin.getNFTAddress()).safeTransferFrom(msg.sender, address(this), id, 1, "");
         IERC1155(_admin.getNFTAddress()).safeTransferFrom(address(this), to, id, 1, "");
 
-        emit NFTTransferred(id, msg.sender, to);
+        // emit NFTTransferred(id, msg.sender, to);
     }
     
 
@@ -276,16 +343,36 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
         IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
 
-        emit MarketItemAction(
-            itemId,
-            _listed_items[index].nftContract,
-            _listed_items[index].tokenId,
-            _listed_items[index].seller,
-            msg.sender,
-            price,
-            4
-        );
+        if(_listed_items[index].nftContract == _admin.getNFTAddress()) {
+            (uint8 hero, uint8 level, , , string memory attributes) = INFT(_admin.getNFTAddress()).getNFTDetail(tokenId);
+    
+            emit MarketItemAction(
+                itemId,
+                _listed_items[index].nftContract,
+                _listed_items[index].tokenId,
+                _listed_items[index].seller,
+                msg.sender,
+                price,
+                4,
+                attributes,
+                hero,
+                level
+            );
+        } else {
+            emit MarketItemAction(
+                itemId,
+                _listed_items[index].nftContract,
+                _listed_items[index].tokenId,
+                _listed_items[index].seller,
+                msg.sender,
+                price,
+                4,
+                "",
+                0,
+                0
+            );
 
+        }
         delete _addess_to_id_to_itemId[_listed_items[index].nftContract][tokenId];
 
         _listed_items[index] = _listed_items[_listed_items.length - 1];
