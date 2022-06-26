@@ -250,6 +250,19 @@ contract Capsule is ERC1155, Ownable {
         bytes memory data
     ) public virtual override {
         require(_admin.isValidCapsuleTransfer(msg.sender, from, to), "Not permitted to transfer");
+
+        for (uint256 j = 0; j < _user_holdings[from].length; j++) {
+            if (_user_holdings[from][j] == id) {
+                _user_holdings[from][j] = _user_holdings[from][
+                    _user_holdings[from].length - 1
+                ];
+                _user_holdings[from].pop();
+                break;
+            }
+        }
+        _user_holdings[to].push(id);
+
+
         return super.safeTransferFrom(from, to, id, amount, data);
     }
 
@@ -261,6 +274,21 @@ contract Capsule is ERC1155, Ownable {
         bytes memory data
     ) public virtual override {
         require(_admin.isValidCapsuleTransfer(msg.sender, from, to), "Not permitted to transfer");
+
+        for(uint256 i =0; i < ids.length; i++){
+            uint256 id = ids[i];
+            for (uint256 j = 0; j < _user_holdings[from].length; j++) {
+                if (_user_holdings[from][j] == id) {
+                    _user_holdings[from][j] = _user_holdings[from][
+                        _user_holdings[from].length - 1
+                    ];
+                    _user_holdings[from].pop();
+                    break;
+                }
+            }
+            _user_holdings[to].push(id);
+        }
+        
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }
 
