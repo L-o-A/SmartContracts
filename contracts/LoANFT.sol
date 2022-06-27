@@ -67,10 +67,16 @@ interface Admin {
     function getNFTAttributeAddress() external view returns (address);
 
     function getNFTAddress() external view returns (address);
+
+    function getCapsuleDataAddress() external view returns (address);
 }
 
 interface INFTAttribute {
     function getNFTAttributes(uint256 id) external view returns (string memory);
+}
+
+interface ICapsuleDataContract {
+    function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
 }
 
 contract LoANFT is ERC1155, Ownable {
@@ -295,9 +301,7 @@ contract LoANFT is ERC1155, Ownable {
             ) > 0,
             "Capsule is not owned by user"
         );
-        (, uint8 capsuleLevel, ,,,) = IERC1155Contract(
-            _admin.getCapsuleAddress()
-        ).getCapsuleDetail(capsuleId);
+        (, uint8 capsuleLevel, ,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleId);
 
         uint256 id = _nft_level_to_ids[capsuleLevel][
             _nft_level_to_ids[capsuleLevel].length - 1

@@ -40,6 +40,12 @@ async function main() {
     await capsule.deployed()
     console.log("capsule.address :", capsule.address);
 
+
+    const CapsuleData = await ethers.getContractFactory("CapsuleData");
+    const capsuleData = await CapsuleData.deploy(multiSigAdmin.address);
+    await capsuleData.deployed()
+    console.log("capsuleData.address :", capsuleData.address);
+
     const CapsuleStaking = await ethers.getContractFactory("CapsuleStaking");
     const capsuleStaking = await CapsuleStaking.deploy(loa, multiSigAdmin.address);
     await capsuleStaking.deployed()
@@ -124,7 +130,7 @@ async function main() {
         uint8[] memory types
     )
      */
-    await capsule.modifyCapsules(true, [1, 2, 3, 4, 5, 6, 7, 8, 9 ,10], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+    await capsuleData.modifyCapsules(true, [1, 2, 3, 4, 5, 6, 7, 8, 9 ,10], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
     console.log(5);
     
     /**

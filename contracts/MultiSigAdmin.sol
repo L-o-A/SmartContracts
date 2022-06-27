@@ -10,6 +10,7 @@ contract MultiSigAdmin {
     mapping(address => uint8) _raffleAddresses; // Raffale Contract
     address[] public _adminList;
     address _capsuleStakingAddress;
+    address _capsuleDataAddress;
     address _capsuleAddress;
     address _nftAddress;
     address _marketAddress;
@@ -96,6 +97,14 @@ contract MultiSigAdmin {
 
     function getCapsuleStakingAddress() public view returns (address) {
         return _capsuleStakingAddress;
+    }
+
+    function setCapsuleDataAddress(address capsuleDataAddress) public validAdmin {
+        _capsuleDataAddress = capsuleDataAddress;
+    }
+
+    function getCapsuleDataAddress() public view returns (address) {
+        return _capsuleDataAddress;
     }
 
     function setNFTAttributeAddress(address nftAttributeAddress) public validAdmin {

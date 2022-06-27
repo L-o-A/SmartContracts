@@ -39,7 +39,14 @@ describe("RAFFLE ", function () {
     const capsule = await Capsule.deploy(multiSigAdmin.address);
     await capsule.deployed();
 
-    await capsule.modifyCapsules(true, [1, 2, 4, 5],  [1,1,1,1], [1,1,1,1]);
+    const CapsuleData = await ethers.getContractFactory("CapsuleData");
+    const capsuleData = await CapsuleData.deploy(multiSigAdmin.address);
+    await capsuleData.deployed();
+
+    await multiSigAdmin.setCapsuleDataAddress(capsuleData.address);
+    await multiSigAdmin.setCapsuleAddress(capsule.address);
+
+    await capsuleData.modifyCapsules(true, [1, 2, 4, 5],  [1,1,1,1], [1,1,1,1]);
     await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
 
     
@@ -121,7 +128,7 @@ describe("RAFFLE ", function () {
 
     await capsule.connect(addr1).claim(tickets, raffle.address, addr1.address);
 
-    console.log(await capsule.getUserCapsules(addr1.address));
+    console.log(await capsuleData.getUserCapsules(addr1.address));
 
     
     try{
@@ -169,23 +176,23 @@ describe("RAFFLE ", function () {
     await multiSigAdmin.setCapsuleAddress(capsule.address);
     await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
 
-    console.log(await capsule.getUserCapsules(addr1.address));
+    console.log(await capsuleData.getUserCapsules(addr1.address));
 
     await capsule.connect(addr1).setApprovalForAll(capsuleStaking.address, true);
 
     await loa.connect(addr1).approve(capsuleStaking.address, 2000);
 
-    console.log("_capsule_status[5] :", await capsule._capsule_status(5));
-    await capsuleStaking.connect(addr1).stake([5, 4]);
+    // console.log("_capsule_status[5] :", await capsule._capsule_status(5));
+    await capsuleStaking.connect(addr1).stake([1, 2]);
     
-    console.log("_capsule_status[5] :", await capsule._capsule_status(5));
+    // console.log("_capsule_status[5] :", await capsule._capsule_status(5));
 
-    console.log("User capsules after staking:", await capsule.balanceOf(addr1.address, 5));
+    console.log("User capsules after staking:", await capsule.balanceOf(addr1.address, 1));
     
-    await capsuleStaking.connect(addr1).reclaim([5, 4], false);
+    await capsuleStaking.connect(addr1).reclaim([1, 2], false);
     console.log("reclaimed");
-    console.log("_capsule_status[5] :", await capsule._capsule_status(5));
-    console.log("User capsules after reclaim:", await capsule.balanceOf(addr1.address, 5));
+    // console.log("_capsule_status[5] :", await capsule._capsule_status(5));
+    console.log("User capsules after reclaim:", await capsule.balanceOf(addr1.address, 2));
 
 
     const LoANFT = await ethers.getContractFactory("LoANFT");
@@ -215,8 +222,8 @@ describe("RAFFLE ", function () {
     await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000");
 
     console.log("ready to mint nft");
-    await _LoANFT.connect(addr1).mint(5);
-    await _LoANFT.connect(addr1).mint(4);
+    await _LoANFT.connect(addr1).mint(1);
+    await _LoANFT.connect(addr1).mint(2);
     console.log("nft minted");
 
 
