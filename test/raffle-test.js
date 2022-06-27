@@ -158,11 +158,11 @@ describe("RAFFLE ", function () {
     
     await raffle.connect(addr1).withdraw(loa.address);
     // expect(await loa.balanceOf(addr1.address)).to.equal("199999999999999980");
-    console.log(await capsule.balanceOf(addr1.address, 1));
-    console.log(await capsule.balanceOf(addr1.address, 2));
-    console.log(await capsule.balanceOf(addr1.address, 3));
-    console.log(await capsule.balanceOf(addr1.address, 4));
-    console.log(await capsule.balanceOf(addr1.address, 5));
+    // console.log(await capsule.balanceOf(addr1.address, 1));
+    // console.log(await capsule.balanceOf(addr1.address, 2));
+    // console.log(await capsule.balanceOf(addr1.address, 3));
+    // console.log(await capsule.balanceOf(addr1.address, 4));
+    // console.log(await capsule.balanceOf(addr1.address, 5));
 
 
     const CapsuleStaking = await ethers.getContractFactory("CapsuleStaking");
@@ -180,16 +180,29 @@ describe("RAFFLE ", function () {
 
     await capsule.connect(addr1).setApprovalForAll(capsuleStaking.address, true);
 
-    await loa.connect(addr1).approve(capsuleStaking.address, 2000);
-
+    await loa.connect(addr1).approve(capsuleStaking.address, 10000);
+    
+    console.log("user Capsules -0", await capsuleData.getUserCapsules(addr1.address));
     // console.log("_capsule_status[5] :", await capsule._capsule_status(5));
-    await capsuleStaking.connect(addr1).stake([1, 2]);
+    await capsuleStaking.connect(addr1).stake([1,2,3,4,5]);
     
     // console.log("_capsule_status[5] :", await capsule._capsule_status(5));
-
+    
     console.log("User capsules after staking:", await capsule.balanceOf(addr1.address, 1));
+    console.log("user Capsules -1", await capsuleData.getUserCapsules(addr1.address));
+    console.log("fetchStakedCapsules -1", await capsuleStaking.fetchStakedCapsules(addr1.address));
     
-    await capsuleStaking.connect(addr1).reclaim([1, 2], false);
+    await capsuleStaking.connect(addr1).reclaim([1,2,3], false);
+    console.log("fetchStakedCapsules -2", await capsuleStaking.fetchStakedCapsules(addr1.address));
+    await capsuleStaking.connect(addr1).reclaim([4,5], false);
+    console.log("fetchStakedCapsules -3", await capsuleStaking.fetchStakedCapsules(addr1.address));
+    
+    await loa.connect(addr1).approve(capsuleStaking.address, 10000);
+    await capsuleStaking.connect(addr1).stake([6,7,8,9,10]);
+
+    await capsuleStaking.connect(addr1).reclaim([6,7,8,9,10], false);
+
+    console.log("user Capsules - 2", await capsuleData.getUserCapsules(addr1.address));
     console.log("reclaimed");
     // console.log("_capsule_status[5] :", await capsule._capsule_status(5));
     console.log("User capsules after reclaim:", await capsule.balanceOf(addr1.address, 2));
@@ -246,12 +259,17 @@ describe("RAFFLE ", function () {
     await _LoANFT.connect(addr1).setApprovalForAll(_NFTMarket.address, true);
     await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
     await _NFTMarket.connect(addr1).list(_LoANFT.address, 10, "2000000000000000000000");
+    console.log("\n\n before unlist", await _NFTMarket.fetchMarketItems());
+    await _NFTMarket.connect(addr1).unlist(1);
+    await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
+    await _NFTMarket.connect(addr1).list(_LoANFT.address, 10, "2000000000000000000000");
+    
     await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
     await _NFTMarket.connect(addr1).list(_LoANFT.address, 9, "2000000000000000000000");
     
     console.log("\n\n", await _NFTMarket.fetchMarketItems());
     await loa.connect(addr2).approve(_NFTMarket.address, "2000000000000000000000");
-    await _NFTMarket.connect(addr2).buy(1);
+    await _NFTMarket.connect(addr2).buy(2);
     console.log("\n\n", await _NFTMarket.fetchMarketItems());
     
     console.log("\n\n", await _NFTMarket.getMarketItem(2));

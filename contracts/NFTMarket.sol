@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 
+import "hardhat/console.sol";
+
 interface IERC1155 {
     
     event TransferSingle(address indexed _operator, address indexed _from, address indexed _to, uint256 _id, uint256 _value);
@@ -212,6 +214,8 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         );
         }
 
+
+
         _listed_items_to_index[itemId] = _listed_items.length - 1;
         _addess_to_id_to_itemId[nftContract][tokenId] = itemId;
         
@@ -223,6 +227,9 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
     function unlist(uint256 itemId) public  nonReentrant {
         uint256 index = _listed_items_to_index[itemId];
+        console.log("index:", index);
+        console.log("_listed_items:", _listed_items.length);
+
         uint256 tokenId = _listed_items[index].tokenId;
         require( msg.sender == _listed_items[index].seller,  "Only NFT owner can unlist" );
 

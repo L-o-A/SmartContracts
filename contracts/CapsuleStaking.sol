@@ -92,6 +92,9 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
     mapping(uint8 => uint32) public _capsuleStakeTypeDuration; // mapping of a capsule staked type
     mapping(uint8 => uint256) public _capsuleStakeTypeLOATokens; // mapping of a capsule staked LOA token
 
+    mapping(address => uint256[]) _user_capsules;
+    mapping(address => mapping(uint256=> uint256)) _user_capsule_id_to_index_mapping;
+
     event Staked(
         address owner,
         uint256[] capsuleIds,
@@ -138,6 +141,9 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
             _capsuleStakeEndTime[capsuleIds[i]] = block.timestamp + _capsuleStakeTypeDuration[capsuleType] * 86400;
             _capsuleOwner[capsuleIds[i]] = msg.sender;
             _capsuleStakedAmount[capsuleIds[i]] = _capsuleStakeTypeLOATokens[capsuleType];
+
+            _user_capsules[msg.sender].push(capsuleIds[i]);
+            _user_capsule_id_to_index_mapping[msg.sender][capsuleIds[i]] = _user_capsules[msg.sender].length -1;
         }
 
         require(_loaToken.allowance(msg.sender, address(this)) >= stakedAmount, "Not enough LOA permitted to spend.");
@@ -168,6 +174,13 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
             delete _capsuleStakeEndTime[capsuleIds[i]];
             delete _capsuleOwner[capsuleIds[i]];
             delete _capsuleStakedAmount[capsuleIds[i]];
+
+            uint256 index = _user_capsule_id_to_index_mapping[msg.sender][capsuleIds[i]];
+
+            _user_capsule_id_to_index_mapping[msg.sender][_user_capsules[msg.sender][_user_capsules[msg.sender].length -1]] = index;
+            delete _user_capsule_id_to_index_mapping[msg.sender][capsuleIds[i]];
+            _user_capsules[msg.sender][index] = _user_capsules[msg.sender][ _user_capsules[msg.sender].length -1];
+            _user_capsules[msg.sender].pop();
         }
         if(!forced) {
             _loaToken.transfer(msg.sender, stakedAmount);
@@ -177,6 +190,10 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
                 _loaToken.transfer(msg.sender, stakedAmount);
             emit Staked(msg.sender, capsuleIds, false, false);
         }
+    }
+
+    function fetchStakedCapsules(address owner) public view returns (uint256[] memory) {
+        return _user_capsules[owner];
     }
 
     function withdraw(address tokenAddress) validAdmin public {
