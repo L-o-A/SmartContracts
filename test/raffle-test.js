@@ -171,8 +171,6 @@ describe("RAFFLE ", function () {
 
     await capsuleStaking.setCapsuleStakingRule(1, 0, 1000);
 
-    await capsuleStaking.setAddresses(capsule.address);
-
     await multiSigAdmin.setCapsuleAddress(capsule.address);
     await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
 

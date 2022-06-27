@@ -182,16 +182,6 @@ async function main() {
     await capsuleStaking.setCapsuleStakingRule(1, 0, "1000000000000000000000");
     console.log(6);
 
-    /**
-     * function modifyCapsules(
-        bool add,
-        uint256[] memory ids,
-        uint8[] memory levels,
-        uint8[] memory types
-    )
-     */
-    await capsuleStaking.setAddresses(capsule.address);
-    console.log(7);
 
     /**
      * function updateAccessAddressAndFees (
