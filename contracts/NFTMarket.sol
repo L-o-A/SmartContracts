@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 interface IERC1155 {
     
@@ -227,8 +227,6 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
     function unlist(uint256 itemId) public  nonReentrant {
         uint256 index = _listed_items_to_index[itemId];
-        console.log("index:", index);
-        console.log("_listed_items:", _listed_items.length);
 
         uint256 tokenId = _listed_items[index].tokenId;
         require( msg.sender == _listed_items[index].seller,  "Only NFT owner can unlist" );
@@ -278,6 +276,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
     function updatePrice(uint256 itemId, uint256 price) public {
         MarketItem storage marketItem = _listed_items[_listed_items_to_index[itemId]];
+        
         require(marketItem.seller == msg.sender, "You are not authorized");
         marketItem.price = price;
 
@@ -285,8 +284,8 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             (uint8 hero, uint8 level, , , string memory attributes) = INFT(_admin.getNFTAddress()).getNFTDetail(marketItem.tokenId);
             emit MarketItemAction(
                 itemId,
-                _listed_items[itemId].nftContract,
-                _listed_items[itemId].tokenId,
+                marketItem.nftContract,
+                marketItem.tokenId,
                 msg.sender,
                 address(0),
                 price,
@@ -298,8 +297,8 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
          } else {
             emit MarketItemAction(
                 itemId,
-                _listed_items[itemId].nftContract,
-                _listed_items[itemId].tokenId,
+                marketItem.nftContract,
+                marketItem.tokenId,
                 msg.sender,
                 address(0),
                 price,

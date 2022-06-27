@@ -279,6 +279,9 @@ describe("RAFFLE ", function () {
 
 
     console.log("\n\n", await _NFTMarket.fetchMarketItems());
+    await _NFTMarket.connect(addr2).updatePrice(4, "4000000000000000000000");
+
+
     await loa.connect(addr3).approve(_NFTMarket.address, "2000000000000000000000");
     await _NFTMarket.connect(addr3).buy(3);
 

@@ -9,13 +9,13 @@ async function main() {
     const nft = "0x6257a3b49977df3F936E935FC3755ab14bB0Ce76";
     const capsule = "0x3E1dA04d9B960083999B7AD148A19590B8b1Bce9";
 
-    // const NFTMarket = await ethers.getContractFactory("NFTMarket");
-    // const _NFTMarket = await NFTMarket.deploy(loa, multiSigAdminAddr);
-    // await _NFTMarket.deployed()
-    // console.log("_NFTMarket.address :", _NFTMarket.address);
-
     const NFTMarket = await ethers.getContractFactory("NFTMarket");
-    const _NFTMarket = await NFTMarket.attach("0xAc2ade0186B144882E11C8e4Ed591e3bd8350535");
+    const _NFTMarket = await NFTMarket.deploy(loa, multiSigAdminAddr);
+    await _NFTMarket.deployed()
+    console.log("_NFTMarket.address :", _NFTMarket.address);
+
+    // const NFTMarket = await ethers.getContractFactory("NFTMarket");
+    // const _NFTMarket = await NFTMarket.attach("0xAc2ade0186B144882E11C8e4Ed591e3bd8350535");
     await _NFTMarket.updateFees([nft, capsule], ["200000000000000000000", "100000000000000000000"], [50, 50]);
     
     // const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
