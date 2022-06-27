@@ -3,10 +3,10 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Closing Raffle...");
 
-    const RAFFLE_ADDRESS = "0xAF3AA341055bD6FD449de97BB88Fa1C4bAB3fa56";
+    const RAFFLE_ADDRESS = "0xe5f0696c40Ff4A5C5ad42F69d79b27015dec6fC8";
 
     const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
-    const capsule = "0xb53A259A5B7C30e3954DAe521c05c599d178046a";
+    const capsule = "0x3E1dA04d9B960083999B7AD148A19590B8b1Bce9";
     // const capsuleStaking = "0x33dfA3020363cDC4DF91A26A2D618F5A64EE1532";
     // const _NFTMarket = "0x632F468665629654C6923c38fEbD037e440e3a6B";
     // const _LoANFTFusion = "0xE31eEca0abE6f7f35d1f207ab2BE9f756026e255";
@@ -16,24 +16,25 @@ async function main() {
     const raffle = await Raffle.attach(RAFFLE_ADDRESS);
 
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-    const multiSigAdmin = await MultiSigAdmin.attach("0x830fd6c2686813084eE5C762cfcdfe91E794319b");
+    const multiSigAdmin = await MultiSigAdmin.attach("0x2cB56ca188e99986E6D709433a96C957c01Edd71");
     
     const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
     const oneDayAgo = parseInt(new Date().getTime()/1000 - 86400  + "");
     
-    // await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
+    await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
 
     console.log("raffle closed")
     await raffle.pickWinner(5);
     await raffle.pickWinner(5);
-    await raffle.pickWinner(5);
-    await raffle.pickWinner(5);
-    
+    // await raffle.pickWinner(5);
+    // await raffle.pickWinner(5);
+    // await raffle.pickWinner(5);
 
-    
+
+
     // console.log("winners declared")
-    
-    await multiSigAdmin.modifyRaffleAddress([ raffle.address , 1])
+
+    // await multiSigAdmin.modifyRaffleAddress(raffle.address, true)
 
 
 

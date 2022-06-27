@@ -3,24 +3,24 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Deploying Market...");
 
-    const multiSigAdminAddr = "0x830fd6c2686813084eE5C762cfcdfe91E794319b";
+    const multiSigAdminAddr = "0x2cB56ca188e99986E6D709433a96C957c01Edd71";
     loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce"
 
-    const nft = "0xDb55845EA253A5a22Ce194b147ef6F0bF111E747";
-    const capsule = "0xb53A259A5B7C30e3954DAe521c05c599d178046a";
+    const nft = "0x6257a3b49977df3F936E935FC3755ab14bB0Ce76";
+    const capsule = "0x3E1dA04d9B960083999B7AD148A19590B8b1Bce9";
+
+    // const NFTMarket = await ethers.getContractFactory("NFTMarket");
+    // const _NFTMarket = await NFTMarket.deploy(loa, multiSigAdminAddr);
+    // await _NFTMarket.deployed()
+    // console.log("_NFTMarket.address :", _NFTMarket.address);
 
     const NFTMarket = await ethers.getContractFactory("NFTMarket");
-    const _NFTMarket = await NFTMarket.deploy(loa, multiSigAdminAddr);
-    await _NFTMarket.deployed()
-    console.log("_NFTMarket.address :", _NFTMarket.address);
-
-    // // const NFTMarket = await ethers.getContractFactory("NFTMarket");
-    // // const _NFTMarket = await NFTMarket.attach("0x52c7A18758a01E588562aBbb7Fb87195D2414074");
+    const _NFTMarket = await NFTMarket.attach("0xAc2ade0186B144882E11C8e4Ed591e3bd8350535");
     await _NFTMarket.updateFees([nft, capsule], ["200000000000000000000", "100000000000000000000"], [50, 50]);
     
-    const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-    const multiSigAdmin = await MultiSigAdmin.attach(multiSigAdminAddr);
-    await multiSigAdmin.setMarketAddress(_NFTMarket.address);
+    // const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
+    // const multiSigAdmin = await MultiSigAdmin.attach(multiSigAdminAddr);
+    // await multiSigAdmin.setMarketAddress(_NFTMarket.address);
 
     // await multiSigAdmin.updateContractAddresses(["0x09fc2cc0B9a34e75E564ebE60D53aF4189288493", 
     // "0x6cE6a3b07a1182dE44a43cd566Ff88Fd4a72aC60", 
