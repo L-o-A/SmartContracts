@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import "hardhat/console.sol";
 
 interface Admin {
     function isValidAdmin(address adminAddress) external pure returns (bool);
@@ -50,7 +51,6 @@ contract CapsuleData {
     mapping(uint256 => uint8) public _capsule_types; //keeps mapping of type value of each capsule. It is defined while adding data
     mapping(uint256 => uint8) _capsule_level; // keeps mapping of level of each capsule
     mapping(uint8 => uint256[]) _capsule_type_to_ids; // keeps mapping of id list of capsule ids by their type
-    mapping(uint8 => uint256) _capsule_type_next_id;
 
     mapping(address => uint256[]) _user_holdings;
     mapping(address => mapping(uint256 => uint256)) _user_holdings_id_index_mapping;
@@ -97,10 +97,9 @@ contract CapsuleData {
         _capsule_types[id] = val;
     }
 
-    function getNewCapsuleIdByType(uint8 capsuleType) public validCapsule returns (uint256) {
+    function getNewCapsuleIdByType(uint8 capsuleType) public view validCapsule returns (uint256) {
         require(_capsule_type_to_ids[capsuleType].length > 0, "No capsule published");
-        _capsule_type_next_id[capsuleType] = _capsule_type_next_id[capsuleType] + 1;
-        return _capsule_type_to_ids[capsuleType][_capsule_type_next_id[capsuleType] - 1];
+        return _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length - 1];
     }
 
     function hasCapsuleTypeToIds(uint8 kind) public view validCapsule returns (bool) {

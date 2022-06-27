@@ -9,9 +9,13 @@ async function main() {
     const admin2 = "0x36Ee9c4520F9E7C15A0Cba1e032627eDc2B4C50D";
     const admin3 = "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da";
 
+    // const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
+    // const multiSigAdmin = await MultiSigAdmin.deploy();
+    // await multiSigAdmin.deployed();
+    // console.log("multiSigAdmin.address :", multiSigAdmin.address);
+
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-    const multiSigAdmin = await MultiSigAdmin.deploy();
-    await multiSigAdmin.deployed();
+    const multiSigAdmin = await MultiSigAdmin.attach("0x2cB56ca188e99986E6D709433a96C957c01Edd71");
     console.log("multiSigAdmin.address :", multiSigAdmin.address);
 
     await multiSigAdmin.modifyAdmin(admin2, true);
@@ -24,51 +28,89 @@ async function main() {
     await multiSigAdmin.setTreasury(treasury);
     console.log(0);
 
+    // const RaffleHelper = await ethers.getContractFactory("RaffleHelper");
+    // const raffleHelper = await RaffleHelper.deploy(multiSigAdmin.address);
+    // await raffleHelper.deployed();
+    // console.log("raffleHelper.address :", raffleHelper.address);
+
     const RaffleHelper = await ethers.getContractFactory("RaffleHelper");
-    const raffleHelper = await RaffleHelper.deploy(multiSigAdmin.address);
-    await raffleHelper.deployed();
+    const raffleHelper = await RaffleHelper.attach("0x018aDF19F4220cB34AB9A0E6Fa5027a240923a9f");
     console.log("raffleHelper.address :", raffleHelper.address);
 
 
+    // const Raffle = await ethers.getContractFactory("Raffle");
+    // const raffle = await Raffle.deploy(loa, raffleHelper.address);
+    // await raffle.deployed();
+    // console.log("raffle.address :", raffle.address);
+
     const Raffle = await ethers.getContractFactory("Raffle");
-    const raffle = await Raffle.deploy(loa, raffleHelper.address);
-    await raffle.deployed();
+    const raffle = await Raffle.attach("0xE2dF354cF0D4524366BDc5240d79E9FA8C96A452");
     console.log("raffle.address :", raffle.address);
 
+    // const Capsule = await ethers.getContractFactory("Capsule");
+    // const capsule = await Capsule.deploy(multiSigAdmin.address);
+    // await capsule.deployed()
+    // console.log("capsule.address :", capsule.address);
+
     const Capsule = await ethers.getContractFactory("Capsule");
-    const capsule = await Capsule.deploy(multiSigAdmin.address);
-    await capsule.deployed()
+    const capsule = await Capsule.attach("0xE2875B017F932755c7aa574b979467A7EA995269");
     console.log("capsule.address :", capsule.address);
 
 
+    // const CapsuleData = await ethers.getContractFactory("CapsuleData");
+    // const capsuleData = await CapsuleData.deploy(multiSigAdmin.address);
+    // await capsuleData.deployed()
+    // console.log("capsuleData.address :", capsuleData.address);
+
     const CapsuleData = await ethers.getContractFactory("CapsuleData");
-    const capsuleData = await CapsuleData.deploy(multiSigAdmin.address);
-    await capsuleData.deployed()
+    const capsuleData = await CapsuleData.attach("0xDccD858a020f1e98f89cFe88190f0ea98e5cE20B");
     console.log("capsuleData.address :", capsuleData.address);
 
+    // const CapsuleStaking = await ethers.getContractFactory("CapsuleStaking");
+    // const capsuleStaking = await CapsuleStaking.deploy(loa, multiSigAdmin.address);
+    // await capsuleStaking.deployed()
+    // console.log("capsuleStaking.address :", capsuleStaking.address);
+
     const CapsuleStaking = await ethers.getContractFactory("CapsuleStaking");
-    const capsuleStaking = await CapsuleStaking.deploy(loa, multiSigAdmin.address);
-    await capsuleStaking.deployed()
+    const capsuleStaking = await CapsuleStaking.attach("0xfEaB83d679ADb3cB212f77973A719d690e33960e");
     console.log("capsuleStaking.address :", capsuleStaking.address);
 
+
+    // const LoANFT = await ethers.getContractFactory("LoANFT");
+    // const _LoANFT = await LoANFT.deploy(loa, multiSigAdmin.address);
+    // await _LoANFT.deployed()
+    // console.log("_LoANFT.address :", _LoANFT.address);
+
     const LoANFT = await ethers.getContractFactory("LoANFT");
-    const _LoANFT = await LoANFT.deploy(loa, multiSigAdmin.address);
-    await _LoANFT.deployed()
+    const _LoANFT = await LoANFT.attach("0x6257a3b49977df3F936E935FC3755ab14bB0Ce76");
     console.log("_LoANFT.address :", _LoANFT.address);
     
+    // const LoANFTAttributes = await ethers.getContractFactory("LoANFTAttributes");
+    // const _LoANFTAttributes = await LoANFTAttributes.deploy(multiSigAdmin.address);
+    // await _LoANFTAttributes.deployed()
+    // console.log("_LoANFTAttributes.address :", _LoANFTAttributes.address);
+
     const LoANFTAttributes = await ethers.getContractFactory("LoANFTAttributes");
-    const _LoANFTAttributes = await LoANFTAttributes.deploy(multiSigAdmin.address);
-    await _LoANFTAttributes.deployed()
+    const _LoANFTAttributes = await LoANFTAttributes.attach("0xe3403c2B12E5f7585b2Adc4D362859bB764E064F");
     console.log("_LoANFTAttributes.address :", _LoANFTAttributes.address);
     
+    // const LoANFTFusion = await ethers.getContractFactory("LoANFTFusion");
+    // const _LoANFTFusion = await LoANFTFusion.deploy(loa, _LoANFT.address, multiSigAdmin.address);
+    // await _LoANFTFusion.deployed()
+    // console.log("_LoANFTFusion.address :", _LoANFTFusion.address);
+
     const LoANFTFusion = await ethers.getContractFactory("LoANFTFusion");
-    const _LoANFTFusion = await LoANFTFusion.deploy(loa, _LoANFT.address, multiSigAdmin.address);
-    await _LoANFTFusion.deployed()
+    const _LoANFTFusion = await LoANFTFusion.attach("0x3B9403397bEEfFd99Fc8c49ae22649Be574Dd9Ae");
     console.log("_LoANFTFusion.address :", _LoANFTFusion.address);
     
+    
+    // const NFTMarket = await ethers.getContractFactory("NFTMarket");
+    // const _NFTMarket = await NFTMarket.deploy(loa, multiSigAdmin.address);
+    // await _NFTMarket.deployed()
+    // console.log("_NFTMarket.address :", _NFTMarket.address);
+
     const NFTMarket = await ethers.getContractFactory("NFTMarket");
-    const _NFTMarket = await NFTMarket.deploy(loa, multiSigAdmin.address);
-    await _NFTMarket.deployed()
+    const _NFTMarket = await NFTMarket.attach("0xAc2ade0186B144882E11C8e4Ed591e3bd8350535");
     console.log("_NFTMarket.address :", _NFTMarket.address);
     
     console.log(1);
@@ -79,6 +121,7 @@ async function main() {
     await multiSigAdmin.setNFTAddress(_LoANFT.address);
     await multiSigAdmin.setCapsuleAddress(capsule.address);
     await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
+    await multiSigAdmin.setCapsuleDataAddress(capsuleData.address);
     await multiSigAdmin.setNFTAttributeAddress(_LoANFTAttributes.address);
 
    //  await multiSigAdmin.updateContractAddresses([capsule.address ,capsuleStaking.address, raffle.address, _NFTMarket.address, _LoANFTFusion.address, _LoANFT.address])
@@ -115,7 +158,7 @@ async function main() {
     const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
     const oneDayAgo = parseInt(new Date().getTime()/1000 + 2* 86400  + "");
     
-    await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
+    await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule.address, treasury);
   
     console.log(3);
 

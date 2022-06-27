@@ -46,7 +46,7 @@ describe("RAFFLE ", function () {
     await multiSigAdmin.setCapsuleDataAddress(capsuleData.address);
     await multiSigAdmin.setCapsuleAddress(capsule.address);
 
-    await capsuleData.modifyCapsules(true, [1, 2, 4, 5],  [1,1,1,1], [1,1,1,1]);
+    await capsuleData.modifyCapsules(true, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],  [1,1,1,1,1,1,1,1,1,1], [1,1,1,1,1,1,1,1,1,1]);
     await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
 
     
@@ -97,10 +97,10 @@ describe("RAFFLE ", function () {
     await loa.connect(owner).transfer(addr1.address, "200000000000000000000000");
     await loa.connect(owner).transfer(addr2.address, "200000000000000000000000");
     await loa.connect(owner).transfer(addr3.address, "200000000000000000000000");
-    await loa.connect(addr1).approve(raffle.address, "20000000000000000000");
+    await loa.connect(addr1).approve(raffle.address, "20000000000000000000000");
 
     
-    await raffle.connect(addr1).buyTicket(2);
+    await raffle.connect(addr1).buyTicket(10);
    
     
     
@@ -120,7 +120,7 @@ describe("RAFFLE ", function () {
     console.log("getUserTickets :", await raffle.getUserTickets(addr1.address));
 
     
-    await raffle.pickWinner(4);
+    await raffle.pickWinner(20);
     
     console.log("after pick winner raffle.balanceOf(addr1, 1) :", await raffle.balanceOf(addr1.address, 1));
     const tickets = await raffle.getUserTickets(addr1.address)
