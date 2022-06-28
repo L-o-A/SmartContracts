@@ -12,34 +12,26 @@ async function main() {
     const multiSigAdmin = await MultiSigAdmin.attach("0x2cB56ca188e99986E6D709433a96C957c01Edd71");
     
 
-    // const RaffleHelper = await ethers.getContractFactory("RaffleHelper");
-    // const raffleHelper = await RaffleHelper.deploy(multiSigAdmin.address);
-    // await raffleHelper.deployed();
-    // console.log("raffleHelper.address :", raffleHelper.address);
     const RaffleHelper = await ethers.getContractFactory("RaffleHelper");
-    const raffleHelper = await RaffleHelper.attach("0x3D8ac6D97571dD2EAf20B9Fe6d25e4beA5D0C4ef");
-    console.log("raffle.address :", raffleHelper.address);
+    const raffleHelper = await RaffleHelper.deploy(multiSigAdmin.address);
+    await raffleHelper.deployed();
+    console.log("raffleHelper.address :", raffleHelper.address);
+    // const RaffleHelper = await ethers.getContractFactory("RaffleHelper");
+    // const raffleHelper = await RaffleHelper.attach("0x3D8ac6D97571dD2EAf20B9Fe6d25e4beA5D0C4ef");
+    // console.log("raffle.address :", raffleHelper.address);
 
-    /**
-     *  function putRafflePrices(
-        uint256[] memory supply,
-        uint256[] memory prices,
-        uint64[] memory reward_amount,
-        uint256[] memory reward_range
-    )
-     */
-    // await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [100, 200, 400], [150, 300]);
+    await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [100, 200, 400], [150, 300]);
 
-    // const Raffle = await ethers.getContractFactory("Raffle");
-    // const raffle = await Raffle.deploy(loa, raffleHelper.address);
-    // await raffle.deployed();
-    // console.log("raffle.address :", raffle.address);
     const Raffle = await ethers.getContractFactory("Raffle");
-    const raffle = await Raffle.attach("0xe5f0696c40Ff4A5C5ad42F69d79b27015dec6fC8");
+    const raffle = await Raffle.deploy(loa, raffleHelper.address);
+    await raffle.deployed();
     console.log("raffle.address :", raffle.address);
+    // const Raffle = await ethers.getContractFactory("Raffle");
+    // const raffle = await Raffle.attach("0xe5f0696c40Ff4A5C5ad42F69d79b27015dec6fC8");
+    // console.log("raffle.address :", raffle.address);
 
 
-    // await raffleHelper.setRaffle(raffle.address);
+    await raffleHelper.setRaffle(raffle.address);
     // console.log(1);
 
     /**
