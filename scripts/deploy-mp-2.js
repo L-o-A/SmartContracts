@@ -119,15 +119,13 @@ async function main() {
    //  console.log(2);
 
    //  /**
-   //   * function setRaffleData(
+   //   * function setRaffleInfo(
    //      uint8 category,
    //      uint256 startTime,
-   //      uint256 endTime,
-   //      address capsuleAddress,
-   //      address treasury
+   //      uint256 endTime
    //  )
    //   */
-   //  await raffle.setRaffleData(1, 10, 199999999999, capsule.address, treasury);
+   //  await raffle.setRaffleInfo(1, 10, 199999999999, 199999999999);
    //  console.log(3);
 
    //  console.log(4);
@@ -228,7 +226,7 @@ async function main() {
    ///---------------------------------------
    const MYERC20 = await ethers.getContractFactory("MYERC20");
    const _loa = await MYERC20.attach(loa);
-   // await raffle.setRaffleData(1, 10, 1999999999999, capsule.address, treasury);
+   // await raffle.setRaffleInfo(1, 10, 1999999999999, 1999999999999);
     
    //  await _loa.approve(raffle.address, "10000000000000000000000")
    //  console.log(15.2);
@@ -236,7 +234,7 @@ async function main() {
    //  console.log(15.3);
    //  console.log(await raffle.getUserTickets(treasury));
     
-    //  await raffle.setRaffleData(1, 10, 100000, capsule.address, treasury);
+    //  await raffle.setRaffleInfo(1, 10, 100000, 100000);
     //  console.log(16);
     
     //  await raffle.pickWinner(5);

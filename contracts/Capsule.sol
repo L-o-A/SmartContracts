@@ -3,6 +3,7 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./IAdmin.sol";
 // import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 // import "hardhat/console.sol";
@@ -38,22 +39,10 @@ interface IERC20Contract {
     ) external returns (bool);
 }
 
-interface IERC1155Contract {
+interface IRaffle {
     function balanceOf(address tokenOwner, uint256 id) external view returns (uint256);
     function burn(address tokenOwner, uint256 id) external;
     function getTicketDetail(uint256 id) external view returns (uint8 , uint256, address, uint8);
-}
-
-interface Admin {
-    function isValidAdmin(address adminAddress) external pure returns (bool);
-    function getTreasury() external view returns (address);
-    function isValidRaffleAddress(address addr) external view returns (bool);
-    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
-    function isValidMarketPlaceContract(address sender) external view returns (bool);
-    function getCapsuleStakingAddress() external view returns (address) ;
-    function getCapsuleDataAddress() external view returns (address);
-    function getNFTAddress() external view returns (address) ;
-    function getMarketAddress() external view returns (address);
 }
 
 
@@ -95,7 +84,7 @@ contract Capsule is ERC1155, Ownable {
     // mapping(address => uint256[]) _user_holdings;
     // mapping(address => mapping(uint256 => uint256)) _user_holdings_id_index_mapping;
 
-    Admin _admin;
+    IAdmin _admin;
 
 
     event CapsuleMinted(
@@ -105,7 +94,7 @@ contract Capsule is ERC1155, Ownable {
     );
 
     constructor(address adminContractAddress) ERC1155("https://capsule.leagueofancients.com/api/capsule/{id}.json") {
-        _admin = Admin(adminContractAddress);
+        _admin = IAdmin(adminContractAddress);
     }
 
     // Modifier
@@ -153,7 +142,7 @@ contract Capsule is ERC1155, Ownable {
 
     function claim(uint256[] memory ticketIds, address raffleAddress, address owner) public {
         require(_admin.isValidRaffleAddress(raffleAddress), "Invalid Raffle contract");
-        IERC1155Contract _raffleContract = IERC1155Contract(raffleAddress);
+        IRaffle _raffleContract = IRaffle(raffleAddress);
 
         uint256[] memory capsuleIdsMinted = new uint256[](ticketIds.length);
 

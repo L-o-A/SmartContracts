@@ -21,7 +21,7 @@ async function main() {
     const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
     const oneDayAgo = parseInt(new Date().getTime()/1000 - 86400  + "");
     
-    // await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
+    // await raffle.setRaffleInfo(1, twoDaysAgo + "", oneDayAgo + "", oneDayAgo + "");
 
     console.log("raffle closed")
     await raffle.pickWinner(10);

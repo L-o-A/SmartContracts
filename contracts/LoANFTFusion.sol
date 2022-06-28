@@ -4,6 +4,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "./IAdmin.sol";
 
 interface IERC20Contract {
     function transfer(address recipient, uint256 amount)
@@ -26,12 +27,6 @@ interface IERC1155Contract {
     function fusion(address owner, uint256[] memory ids, uint8 fusionLevel, uint256 price) external;
 }
 
-interface Admin {
-    function isValidAdmin(address adminAddress) external pure returns (bool);
-    function getTreasury() external view returns (address);
-    function isValidRaffleAddress(address addr) external view returns (bool);
-    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
-}
 
 contract LoANFTFusion {
 
@@ -51,7 +46,7 @@ contract LoANFTFusion {
     mapping(uint256 => uint256) public _fusion_rule_price;
     mapping(uint256 => uint8) public _fusion_rule_result;
     mapping(uint256 => uint8[]) public _fusion_rule_levels;
-    Admin _admin;
+    IAdmin _admin;
     
 
     event NFTMinted(
@@ -64,7 +59,7 @@ contract LoANFTFusion {
     constructor(address loaContract, address loaNFTContract, address adminContractAddress) {
         _loaToken = IERC20Contract(loaContract);
         _nftContract = IERC1155Contract(loaNFTContract);
-        _admin = Admin(adminContractAddress);
+        _admin = IAdmin(adminContractAddress);
     }
 
     // Modifier

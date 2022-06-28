@@ -95,16 +95,7 @@ async function main() {
     await raffleHelper.setRaffle(raffle.address);
     console.log(2);
 
-    /**
-     * function setRaffleData(
-        uint8 category,
-        uint256 startTime,
-        uint256 endTime,
-        address capsuleAddress,
-        address treasury
-    )
-     */
-    await raffle.setRaffleData(1, 10, 199999999999, capsule.address, treasury);
+    await raffle.setRaffleInfo(1, 10, 199999999999, 199999999999);
     console.log(3);
 
     /**
@@ -257,7 +248,7 @@ async function main() {
     await raffle.buyTicket(10);
     console.log(15.3);
 
-    await raffle.setRaffleData(1, 10, 100000, capsule.address, treasury);
+    await raffle.setRaffleInfo(1, 10, 100000, 100000);
     console.log(16);
 
     await raffle.pickWinner(10);

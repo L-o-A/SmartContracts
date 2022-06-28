@@ -34,20 +34,10 @@ async function main() {
     await raffleHelper.setRaffle(raffle.address);
     // console.log(1);
 
-    /**
-     * function setRaffleData(
-        uint8 category,
-        uint256 startTime,
-        uint256 endTime,
-        address capsuleAddress,
-        address treasury
-    )
-     */
-
     const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
     const oneDayAgo = parseInt(new Date().getTime()/1000 + 2* 86400  + "");
     
-    await raffle.setRaffleData(1, twoDaysAgo + "", oneDayAgo + "", capsule, treasury);
+    await raffle.setRaffleInfo(1, twoDaysAgo + "", oneDayAgo + "", oneDayAgo + "");
     console.log(2);
     
     multiSigAdmin.modifyRaffleAddress(raffle.address, true);

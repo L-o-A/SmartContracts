@@ -1,19 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import "./IAdmin.sol";
 import "hardhat/console.sol";
-
-interface Admin {
-    function isValidAdmin(address adminAddress) external pure returns (bool);
-    function getTreasury() external view returns (address);
-    function isValidRaffleAddress(address addr) external view returns (bool);
-    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
-    function isValidMarketPlaceContract(address sender) external view returns (bool);
-    function getCapsuleAddress() external view returns (address);
-    function getCapsuleStakingAddress() external view returns (address);
-    function getNFTAddress() external view returns (address) ;
-    function getMarketAddress() external view returns (address);
-}
 
 interface ICapsuleStaking {
     function getCapsuleStakeInfo(uint256 id) external view returns (address, uint256, uint256);
@@ -55,10 +44,10 @@ contract CapsuleData {
     mapping(address => uint256[]) _user_holdings;
     mapping(address => mapping(uint256 => uint256)) _user_holdings_id_index_mapping;
 
-    Admin _admin;
+    IAdmin _admin;
 
     constructor(address adminContractAddress) {
-        _admin = Admin(adminContractAddress);
+        _admin = IAdmin(adminContractAddress);
     }
 
     // Modifier

@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "./IAdmin.sol";
 // import "hardhat/console.sol";
 
 /**
@@ -63,25 +64,16 @@ interface IERC20Contract {
     function allowance(address _owner, address _spender) external view returns (uint256);
 }
 
-interface Admin {
-    function isValidAdmin(address adminAddress) external pure returns (bool);
-    function getTreasury() external view returns (address);
-    function isValidRaffleAddress(address addr) external view returns (bool);
-    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
-    function getCapsuleDataAddress() external view returns (address);
-    function getCapsuleAddress() external view returns (address);
-}
-
 /**
  * Smart contract for capsule staking
  */
 contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
     IERC20Contract public _loaToken;
-    Admin _admin;
+    IAdmin _admin;
 
     constructor(address erc20Contract, address adminContractAddress) {
-        _admin = Admin(adminContractAddress);
+        _admin = IAdmin(adminContractAddress);
         _loaToken = IERC20Contract(erc20Contract);
     }
 
