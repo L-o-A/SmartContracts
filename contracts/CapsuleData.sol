@@ -43,6 +43,8 @@ contract CapsuleData {
 
     mapping(address => uint256[]) _user_holdings;
     mapping(address => mapping(uint256 => uint256)) _user_holdings_id_index_mapping;
+    mapping(uint8 => uint256) public _total_locked;
+    mapping(uint8 => uint256) public _total_unlocked;
 
     IAdmin _admin;
 
@@ -124,6 +126,7 @@ contract CapsuleData {
                 _capsule_status[ids[i]] = 1;
                 _capsule_level[ids[i]] = levels[i];
                 _capsule_types[ids[i]] = types[i];
+                _total_locked[types[i]]++;
             }
         } else {
 
@@ -135,6 +138,7 @@ contract CapsuleData {
                         if(cids[j] == ids[i]) {
                             cids[j] = cids[cids.length -1];
                             cids.pop();
+                            _total_locked[types[i]]--;
                             break;
                         }
                     }
@@ -173,6 +177,7 @@ contract CapsuleData {
     function airdrop(uint256 capsuleId, address dropTo) public  validCapsule {
         _user_holdings[dropTo].push(capsuleId);
         _user_holdings_id_index_mapping[dropTo][capsuleId] = _user_holdings[dropTo].length -1;
+        _total_unlocked[_capsule_types[capsuleId]]++;
     }
 
 

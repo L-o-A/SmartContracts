@@ -67,25 +67,7 @@ interface ICapsuleData {
  */
 contract Capsule is ERC1155, Ownable {
 
-    // /**
-    //  * Status values
-    //  */
-    // // 0 : unpublished
-    // // 1 : published
-    // // 2 : owned
-    // // 3 : staked
-    // // 4 : unlocked
-    // // 5 : minted
-    // // 6 : burned
-    // mapping(uint256 => uint8) public _capsule_status; //keeps mapping of status of each capsule
-    // mapping(uint256 => uint8) public _capsule_types; //keeps mapping of type value of each capsule. It is defined while adding data
-    // mapping(uint256 => uint8) _capsule_level; // keeps mapping of level of each capsule
-    // mapping(uint8 => uint256[]) _capsule_type_to_ids; // keeps mapping of id list of capsule ids by their type
-    // mapping(address => uint256[]) _user_holdings;
-    // mapping(address => mapping(uint256 => uint256)) _user_holdings_id_index_mapping;
-
     IAdmin _admin;
-
 
     event CapsuleMinted(
         uint256[] indexed itemId,

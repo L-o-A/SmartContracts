@@ -13,7 +13,7 @@ async function main() {
     const raffleHelper_addr = "0x6cf3b524DB469e0EC78e8Ec93d971b3816044a5c";
     const raffle_addr = "0xdb39e69dD83DC48251290afbA08f80D2CD38860C";
     const capsule_addr = "0xcf42951d10D9BeAd202f335278A0fF8b6Fbfb24b";
-    const capsuleData_addr =  "0x3324C0C6d5D27e85FdB7E13A68cf931fA244c3E5";
+    const capsuleData_addr =  null;
     const capsuleStaking_addr =  "0xe790207bA0512Ef30D6B5A1ECbCA0FEbA9aD06d4";
     const _LoANFTData_addr = "0x83269D6eCcb57b988a91fe3265ac427Febc543b7";
     const _LoANFT_addr =  "0xCE4dd123e774a2fe0bbE909f29A33196d4f53c9e";
@@ -153,48 +153,48 @@ async function main() {
     console.log(1);
 
 
-    // await multiSigAdmin.setFusionAddress(_LoANFTFusion.address);
-    // await multiSigAdmin.setMarketAddress(_NFTMarket.address);
-    // await multiSigAdmin.setNFTAddress(_LoANFT.address);
-    // await multiSigAdmin.setCapsuleAddress(capsule.address);
-    // await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
-    // await multiSigAdmin.setCapsuleDataAddress(capsuleData.address);
-    // await multiSigAdmin.setNFTDataAddress(_LoANFTData.address);
+    await multiSigAdmin.setFusionAddress(_LoANFTFusion.address);
+    await multiSigAdmin.setMarketAddress(_NFTMarket.address);
+    await multiSigAdmin.setNFTAddress(_LoANFT.address);
+    await multiSigAdmin.setCapsuleAddress(capsule.address);
+    await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
+    await multiSigAdmin.setCapsuleDataAddress(capsuleData.address);
+    await multiSigAdmin.setNFTDataAddress(_LoANFTData.address);
 
 
-    // await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [100, 200, 400], [150, 300]);
+    await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [100, 200, 400], [150, 300]);
 
 
-    // await raffleHelper.setRaffle(raffle.address);
-    // console.log(2);
+    await raffleHelper.setRaffle(raffle.address);
+    console.log(2);
 
-    // const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
-    // const tomorrow = parseInt(new Date().getTime()/1000 + 2* 86400  + "");
-    // const future = parseInt(new Date().getTime()/1000 + 20* 86400  + "");
+    const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
+    const tomorrow = parseInt(new Date().getTime()/1000 + 2* 86400  + "");
+    const future = parseInt(new Date().getTime()/1000 + 20* 86400  + "");
     
-    // await raffle.setRaffleInfo(1, twoDaysAgo + "", tomorrow + "", future + "");
+    await raffle.setRaffleInfo(1, twoDaysAgo + "", tomorrow + "", future + "");
   
-    // console.log(3);
+    console.log(3);
 
-    // console.log(4);
+    console.log(4);
 
 
-    // await capsuleData.modifyCapsules(true, [1, 2, 3, 4, 5, 6, 7, 8, 9 ,10], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
-    // console.log(5);
+    await capsuleData.modifyCapsules(true, [1, 2, 3, 4, 5, 6, 7, 8, 9 ,10], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+    console.log(5);
     
-    // await capsuleStaking.setCapsuleStakingRule(1, 0, "1000000000000000000000");
-    // console.log(6);
+    await capsuleStaking.setCapsuleStakingRule(1, 0, "1000000000000000000000");
+    console.log(6);
 
 
-    // await _LoANFTData.updateFees([1, 2, 3], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000"]);
-    // console.log(8);
+    await _LoANFTData.updateFees([1, 2, 3], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000"]);
+    console.log(8);
 
-    // await _LoANFTData.modifyNFTs(true, [1,2,3,4,5,6,7,8,9,10], [1,1,1,1,1,1,1,1,1,1], [1,2,1,2,1,2,1,2,1,2],[1,1,1,1,1,1,1,1,1,1]);
-    // console.log(9);
+    await _LoANFTData.modifyNFTs(true, [1,2,3,4,5,6,7,8,9,10], [1,1,1,1,1,1,1,1,1,1], [1,2,1,2,1,2,1,2,1,2],[1,1,1,1,1,1,1,1,1,1]);
+    console.log(9);
 
-    // await _LoANFTData.putNFTAttributeNames("HERO,HASH-POWER,MAX-HP,MAX-PRANA,MAXSPEED,HP-REGEN,PRANA-REGEN,ATTACK-DAMAGE,ATTACK-SPEED,CRITICAL-DAMAGE,ARMOUR,MAGIC-DEFENCE");
+    await _LoANFTData.putNFTAttributeNames("HERO,HASH-POWER,MAX-HP,MAX-PRANA,MAXSPEED,HP-REGEN,PRANA-REGEN,ATTACK-DAMAGE,ATTACK-SPEED,CRITICAL-DAMAGE,ARMOUR,MAGIC-DEFENCE");
 
-    // console.log(11);
+    console.log(11);
 
     /**
      * function putNFTAttributes (uint256[] memory ids, string[] memory attribs)
