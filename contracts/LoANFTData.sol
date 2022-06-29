@@ -23,6 +23,8 @@ contract LoANFTData {
     string public _nft_attribute_names;
     mapping(uint256 => string) _nft_attributes;
     mapping(address => uint8) _axionAddresses; // Axion Contract
+    mapping(uint8 => uint256) _nft_level_to_total_added;
+    mapping(uint8 => uint256) _nft_level_to_total_minted;
 
     IAdmin _admin;
 
@@ -100,6 +102,7 @@ contract LoANFTData {
                 _nft_status[ids[i]] = 1;
                 _nft_level[ids[i]] = levels[i];
                 _nft_hero[ids[i]] = heroes[i];
+                _nft_level_to_total_added[levels[i]]++;
             }
         } else {
             for (uint256 i = 0; i < ids.length; i++) {
@@ -122,6 +125,7 @@ contract LoANFTData {
                 delete _nft_status[ids[i]];
                 delete _nft_level[ids[i]];
                 delete _nft_hero[ids[i]];
+                _nft_level_to_total_added[levels[i]]--;
             }
         }
     }
@@ -185,6 +189,8 @@ contract LoANFTData {
             }
         }
 
+        
+
         uint256 id = _nft_level_to_ids[fusionLevel][
             _nft_level_to_ids[fusionLevel].length - 1
         ];
@@ -195,6 +201,8 @@ contract LoANFTData {
 
         _user_holdings[owner].push(id);
         _nft_level_to_ids[_nft_level[id]].pop();
+
+        _nft_level_to_total_minted[fusionLevel]++;
 
         return id;
     }
@@ -212,6 +220,7 @@ contract LoANFTData {
         _nft_status[id] = 2;
         _user_holdings[owner].push(id);
         _nft_level_to_ids[_nft_level[id]].pop();
+        _nft_level_to_total_minted[capsuleLevel]++;
 
         return (id, fee);
     }
