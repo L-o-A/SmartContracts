@@ -53,7 +53,7 @@ describe("RAFFLE ", function () {
 
     // await raffle.setContractAddresses(capsule.address, raffleHelper.address);
 
-    await raffle.setRaffleInfo(1, 10, 1999999999999, 1999999999999);
+    await raffle.setRaffleInfo(1, 10, 1999999999999, 2999999999999);
     // await raffleHelper.putRafflePrices([10, 20], [100, 110, 115],  [2, 4, 20], [5, 7]);
 
     // console.log('_raffle_price_range(0) :', await raffle._raffle_price_range(0));
@@ -62,7 +62,7 @@ describe("RAFFLE ", function () {
     // expect(await raffle._raffle_price_range(1)).to.equal(110);
     
     // await raffleHelper.putRafflePrices([10, 20, 30], [10, 20, 30, 40], [2, 4, 20], [5, 7]);
-    await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [5, 200, 400], [150, 300]);
+    await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [100, 200, 400], [150, 300]);
 
     console.log(await raffleHelper.calcPrice(10, "10"));
     console.log(await raffleHelper.calcPrice(20, "10"));
@@ -112,7 +112,7 @@ describe("RAFFLE ", function () {
     
 
 
-    await raffle.setRaffleInfo(1, 10, 100, 100);
+    await raffle.setRaffleInfo(1, 10, 100, 102);
     // await raffleHelper.putRafflePrices([10, 20, 30, 40, 50], [10, 11, 12, 13, 14, 15], [5, 7], [2, 4, 20]);
     
     console.log("getUserTickets :", await raffle.getUserTickets(addr1.address));
@@ -124,7 +124,6 @@ describe("RAFFLE ", function () {
     await raffle.connect(addr1).withdraw(loa.address);
     await raffle.connect(addr1).withdraw(loa.address);
 
-    return;
     
     const tickets = await raffle.getUserTickets(addr1.address)
     console.log("getUserTickets :", tickets);
@@ -181,6 +180,8 @@ describe("RAFFLE ", function () {
     await capsule.connect(addr1).setApprovalForAll(capsuleStaking.address, true);
 
     await loa.connect(addr1).approve(capsuleStaking.address, 10000);
+
+    const userCapsules = await capsuleData.getUserCapsules(addr1.address);
     
     console.log("user Capsules -0", await capsuleData.getUserCapsules(addr1.address));
     // console.log("_capsule_status[5] :", await capsule._capsule_status(5));
@@ -237,8 +238,9 @@ describe("RAFFLE ", function () {
     console.log("nft minted");
 
 
-    console.log(await _LoANFTData.getUserNFTs(addr1.address));
+    console.log("getUserNFTs :", await _LoANFTData.getUserNFTs(addr1.address));
 
+    return;
     
     const NFTMarket = await ethers.getContractFactory("NFTMarket");
     const _NFTMarket = await NFTMarket.deploy(loa.address, multiSigAdmin.address);

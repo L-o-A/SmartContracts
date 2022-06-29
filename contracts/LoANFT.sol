@@ -134,7 +134,7 @@ contract LoANFT is ERC1155, Ownable {
         );
         (, uint8 capsuleLevel, ,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleId);
 
-        (uint256 id, uint256 fee) = _nftData.mint(capsuleLevel);
+        (uint256 id, uint256 fee) = _nftData.mint(capsuleLevel, msg.sender);
 
         require(IERC20Contract(_loaAddress).balanceOf(msg.sender) >= fee, "Not enough minting fee available");
         IERC20Contract(_loaAddress).transferFrom(msg.sender, _admin.getTreasury(), fee);

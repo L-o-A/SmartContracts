@@ -199,7 +199,7 @@ contract LoANFTData {
         return id;
     }
 
-    function mint(uint8 capsuleLevel) public returns (uint256, uint256) {
+    function mint(uint8 capsuleLevel, address owner) public returns (uint256, uint256) {
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
 
         uint256 id = _nft_level_to_ids[capsuleLevel][_nft_level_to_ids[capsuleLevel].length - 1];
@@ -208,9 +208,9 @@ contract LoANFTData {
         uint256 fee = _minting_fee[capsuleLevel];
        
 
-        _nft_owner[id] = msg.sender;
+        _nft_owner[id] = owner;
         _nft_status[id] = 2;
-        _user_holdings[msg.sender].push(id);
+        _user_holdings[owner].push(id);
         _nft_level_to_ids[_nft_level[id]].pop();
 
         return (id, fee);

@@ -10,13 +10,13 @@ async function main() {
     const admin3 = "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da";
 
     const multiSigAdmin_addr = "0xb1E95C89893354C5A0Dbff233d56cB072E03ce78";
-    const raffleHelper_addr = "0x6cf3b524DB469e0EC78e8Ec93d971b3816044a5c";
-    const raffle_addr = "0xdb39e69dD83DC48251290afbA08f80D2CD38860C";
+    const raffleHelper_addr = "0xD80c8CF37afc5072B09dF4FFa12db6Cdbce7D8D4";
+    const raffle_addr = "0x5cE83Ac8aCA49F4De192ed7923e8f63B28cD4891";
     const capsule_addr = "0xcf42951d10D9BeAd202f335278A0fF8b6Fbfb24b";
-    const capsuleData_addr =  null;
+    const capsuleData_addr =  "0x8C6e22139134796C081327fba53489aA5B9167fc";
     const capsuleStaking_addr =  "0xe790207bA0512Ef30D6B5A1ECbCA0FEbA9aD06d4";
-    const _LoANFTData_addr = "0x83269D6eCcb57b988a91fe3265ac427Febc543b7";
-    const _LoANFT_addr =  "0xCE4dd123e774a2fe0bbE909f29A33196d4f53c9e";
+    const _LoANFTData_addr = "0xf2b06066cc6f82170505FB030C1FED23F9c09340";
+    const _LoANFT_addr =  "0x0EA1DF81BdeE611C5a3606C8ABec377B0C432a52";
     const _LoANFTFusion_addr = "0xe4f8c694daad6b229F634a3a818d416F269EC42C";
     const _NFTMarket_addr = "0x6D48f14933668360E0a0892291E37E5bB8e24376";
 
@@ -32,12 +32,7 @@ async function main() {
         await multiSigAdmin.deployed();
         console.log("multiSigAdmin.address :", multiSigAdmin.address);
     }
-    
 
-    await multiSigAdmin.modifyAdmin(admin2, true);
-    await multiSigAdmin.modifyAdmin(admin3, true);
-    await multiSigAdmin.modifyAdmin(treasury, true);
-    await multiSigAdmin.setTreasury(treasury);
 
     let raffleHelper;
     if(raffleHelper_addr  == null) {
@@ -59,7 +54,7 @@ async function main() {
         await raffle.deployed();
         console.log("raffle.address :", raffle.address);
     } else {
-        const Raffle = await ethers.getContractFactory("RaffleHelper");
+        const Raffle = await ethers.getContractFactory("Raffle");
         raffle = await Raffle.attach(raffle_addr);
         console.log("raffle.address :", raffle.address);
     }
@@ -152,14 +147,23 @@ async function main() {
 
     console.log(1);
 
+    
+
+    await multiSigAdmin.modifyAdmin(admin2, true);
+    await multiSigAdmin.modifyAdmin(admin3, true);
+    await multiSigAdmin.modifyAdmin(treasury, true);
+    await multiSigAdmin.setTreasury(treasury);
+
 
     await multiSigAdmin.setFusionAddress(_LoANFTFusion.address);
     await multiSigAdmin.setMarketAddress(_NFTMarket.address);
-    await multiSigAdmin.setNFTAddress(_LoANFT.address);
     await multiSigAdmin.setCapsuleAddress(capsule.address);
     await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
     await multiSigAdmin.setCapsuleDataAddress(capsuleData.address);
     await multiSigAdmin.setNFTDataAddress(_LoANFTData.address);
+    await multiSigAdmin.setNFTAddress(_LoANFT.address);
+
+    await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
 
 
     await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [100, 200, 400], [150, 300]);
@@ -179,17 +183,17 @@ async function main() {
     console.log(4);
 
 
-    await capsuleData.modifyCapsules(true, [1, 2, 3, 4, 5, 6, 7, 8, 9 ,10], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+    // await capsuleData.modifyCapsules(true, [1, 2, 3, 4, 5, 6, 7, 8, 9 ,10], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
     console.log(5);
     
     await capsuleStaking.setCapsuleStakingRule(1, 0, "1000000000000000000000");
     console.log(6);
 
 
-    await _LoANFTData.updateFees([1, 2, 3], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000"]);
+    await _LoANFTData.updateFees([1, 2, 3, 4, 5], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000", "3000000000000000000000", "3000000000000000000000"]);
     console.log(8);
 
-    await _LoANFTData.modifyNFTs(true, [1,2,3,4,5,6,7,8,9,10], [1,1,1,1,1,1,1,1,1,1], [1,2,1,2,1,2,1,2,1,2],[1,1,1,1,1,1,1,1,1,1]);
+    // await _LoANFTData.modifyNFTs(true, [1,2,3,4,5,6,7,8,9,10], [1,1,1,1,1,1,1,1,1,1], [1,2,1,2,1,2,1,2,1,2],[1,1,1,1,1,1,1,1,1,1]);
     console.log(9);
 
     await _LoANFTData.putNFTAttributeNames("HERO,HASH-POWER,MAX-HP,MAX-PRANA,MAXSPEED,HP-REGEN,PRANA-REGEN,ATTACK-DAMAGE,ATTACK-SPEED,CRITICAL-DAMAGE,ARMOUR,MAGIC-DEFENCE");
@@ -238,8 +242,6 @@ async function main() {
     await _NFTMarket.updateFees([_LoANFT.address, capsule.address], ["200000000000000000000", "100000000000000000000"], [50, 50]);
     console.log(14);
     
-    await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
-    console.log(15);
 
    //  await capsule.airdrop(1, admin2, 4);
     console.log(15.1);

@@ -237,23 +237,7 @@ contract Raffle {
         IERC20Contract(_loaContract).transfer(_admin.getTreasury(), winnerFees);
 
         if(rewards <= _raffle_winner_count) {
-                _raffle_status = 3;
-            
-            // for(uint256 i = 0; i < ticketIds.length; i++) {
-            //     _ticket_status[ticketIds[i]] = 2;
-            //     _refund_address_to_amount[_ticket_owner[ticketIds[i]]] += _ticket_price[ticketIds[i]];
-            //     _raffle_tickets_count[_ticket_owner[ticketIds[i]]] = 0;
-
-            //     delete _user_ticket_balance[_ticket_owner[ticketIds[i]]][ticketIds[i]];
-
-            //     for(uint256 j = 0; j < _user_tickets[_ticket_owner[ticketIds[i]]].length; j++) {
-            //         if(_user_tickets[_ticket_owner[ticketIds[i]]][j] == ticketIds[i]) {
-            //             _user_tickets[_ticket_owner[ticketIds[i]]][j] = _user_tickets[_ticket_owner[ticketIds[i]]][_user_tickets[_ticket_owner[ticketIds[i]]].length - 1];
-            //             _user_tickets[_ticket_owner[ticketIds[i]]].pop();
-            //             break;
-            //         }
-            //     }
-            // }
+            _raffle_status = 3;
         }
         emit WinnersDeclared(winners);
     }
@@ -271,6 +255,12 @@ contract Raffle {
             payable(_admin.getTreasury()).transfer(address(this).balance);
             return;
         }
+        if(_raffle_status == 3){
+            if(_user_winning_tickets[msg.sender].length > 0){
+                CapsuleInterface(_admin.getCapsuleAddress()).claim(_user_winning_tickets[msg.sender], address(this), msg.sender);
+            }
+            cleanup();
+        }
         if(_refund_address_to_amount[msg.sender] > 0) {
             require( IERC20Contract(_loaContract).balanceOf(address(this)) >= _refund_address_to_amount[msg.sender], "Low tresury balance");
             IERC20Contract(_loaContract).transfer(msg.sender, _refund_address_to_amount[msg.sender]);
@@ -280,28 +270,22 @@ contract Raffle {
         if(_admin.isValidAdmin(msg.sender)) {
             IERC20Contract(tokenAddress).transfer(_admin.getTreasury(), IERC20Contract(tokenAddress).balanceOf(address(this)) - _total_loa_staked);
         }
-        if(_raffle_status == 3){
-            if(_user_winning_tickets[msg.sender].length > 0){
-                CapsuleInterface(_admin.getCapsuleAddress()).claim(_user_winning_tickets[msg.sender], address(this), msg.sender);
-            }
-            cleanup();
-        }
     }
 
     function cleanup() public {
-        require(_raffle_status == 3, "Raffle winners are not declared");
-        
-        uint256[] storage ticketIds = _user_tickets[msg.sender];
-        if(ticketIds.length > 0){
-            uint256 loop_end = ticketIds.length > 30 ? (ticketIds.length - 30) : 0;
-            for(uint256 j = ticketIds.length ; j > loop_end; j--) {
+        if(_raffle_status == 3) {
+            uint256[] storage ticketIds = _user_tickets[msg.sender];
+            if(ticketIds.length > 0){
+                uint256 loop_end = ticketIds.length > 30 ? (ticketIds.length - 30) : 0;
+                for(uint256 j = ticketIds.length ; j > loop_end; j--) {
 
-                if(_ticket_status[ticketIds[j-1]] != 3) {
-                    _ticket_status[ticketIds[j-1]] = 2;
-                    _refund_address_to_amount[msg.sender] += _ticket_price[ticketIds[j-1]];
-                    _raffle_tickets_count[_ticket_owner[ticketIds[j-1]]]--;
-                    delete _user_ticket_balance[msg.sender][ticketIds[j-1]];
-                    _user_tickets[msg.sender].pop();
+                    if(_ticket_status[ticketIds[j-1]] != 3) {
+                        _ticket_status[ticketIds[j-1]] = 2;
+                        _refund_address_to_amount[msg.sender] += _ticket_price[ticketIds[j-1]];
+                        _raffle_tickets_count[msg.sender]--;
+                        delete _user_ticket_balance[msg.sender][ticketIds[j-1]];
+                        _user_tickets[msg.sender].pop();
+                    }
                 }
             }
         }
