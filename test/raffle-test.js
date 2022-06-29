@@ -233,8 +233,7 @@ describe("RAFFLE ", function () {
     await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000");
 
     console.log("ready to mint nft");
-    await _LoANFT.connect(addr1).mint(1);
-    await _LoANFT.connect(addr1).mint(2);
+    await _LoANFT.connect(addr1).mint([1,2]);
     console.log("nft minted");
 
 
