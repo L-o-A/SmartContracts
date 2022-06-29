@@ -66,13 +66,8 @@ contract LoANFTData {
             string memory
         )
     {
-        if (msg.sender != _admin.getNFTDataAddress())
-            require(_nft_status[id] == 2, "Id is not minted");
-        string memory attributes = "";
-        if(_nft_status[id] == 2) {
-            attributes = getNFTAttributes(id);
-        }
-        return (_nft_hero[id], _nft_level[id], _nft_owner[id], _nft_status[id], attributes);
+        require(_nft_status[id] == 2, "Id is not minted");
+        return (_nft_hero[id], _nft_level[id], _nft_owner[id], _nft_status[id], _nft_attributes[id]);
     }
 
     function getUserNFTs(address sender) public view returns (uint256[] memory) {
