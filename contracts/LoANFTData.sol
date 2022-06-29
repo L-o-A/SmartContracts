@@ -23,8 +23,8 @@ contract LoANFTData {
     string public _nft_attribute_names;
     mapping(uint256 => string) _nft_attributes;
     mapping(address => uint8) _axionAddresses; // Axion Contract
-    mapping(uint8 => uint256) _nft_level_to_total_added;
-    mapping(uint8 => uint256) _nft_level_to_total_minted;
+    mapping(uint8 => uint256) public _nft_level_to_total_added;
+    mapping(uint8 => uint256) public _nft_level_to_total_minted;
 
     IAdmin _admin;
 
