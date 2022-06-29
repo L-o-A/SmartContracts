@@ -124,23 +124,26 @@ contract LoANFT is ERC1155, Ownable {
         emit NFTMinted(id, 0, owner, price);
     }
 
-    function mint(uint256 capsuleId) public {
-        require(
-            IERC1155Contract(_admin.getCapsuleAddress()).balanceOf(
-                msg.sender,
-                capsuleId
-            ) > 0,
-            "Capsule is not owned by user"
-        );
-        (, uint8 capsuleLevel, ,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleId);
+    function mint(uint256[] memory capsuleIds) public {
+        for(uint256 i = 0; i < capsuleIds.length; i++) {
+            uint256 capsuleId = capsuleIds[i];
+            require(
+                IERC1155Contract(_admin.getCapsuleAddress()).balanceOf(
+                    msg.sender,
+                    capsuleId
+                ) > 0,
+                "Capsule is not owned by user"
+            );
+            (, uint8 capsuleLevel, ,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleId);
 
-        (uint256 id, uint256 fee) = _nftData.mint(capsuleLevel, msg.sender);
+            (uint256 id, uint256 fee) = _nftData.mint(capsuleLevel, msg.sender);
 
-        require(IERC20Contract(_loaAddress).balanceOf(msg.sender) >= fee, "Not enough minting fee available");
-        IERC20Contract(_loaAddress).transferFrom(msg.sender, _admin.getTreasury(), fee);
-        IERC1155Contract(_admin.getCapsuleAddress()).burn(  msg.sender, capsuleId);
-        _mint(msg.sender, id, 1, "");
-        emit NFTMinted(id, capsuleId, msg.sender, 0);
+            require(IERC20Contract(_loaAddress).balanceOf(msg.sender) >= fee, "Not enough minting fee available");
+            IERC20Contract(_loaAddress).transferFrom(msg.sender, _admin.getTreasury(), fee);
+            IERC1155Contract(_admin.getCapsuleAddress()).burn(  msg.sender, capsuleId);
+            _mint(msg.sender, id, 1, "");
+            emit NFTMinted(id, capsuleId, msg.sender, 0);
+        }
     }
 
     function withdraw(address tokenAddress) public validAdmin {

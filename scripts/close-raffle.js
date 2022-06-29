@@ -3,10 +3,8 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Closing Raffle...");
 
-    const RAFFLE_ADDRESS = "0x36BE072F998Bff41F721d982f22ff652430278C7";
+    const RAFFLE_ADDRESS = "0x620C9Fc52562860c04BA3bafD0E29ED2b6839047";
 
-    const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
-    const capsule = "0x3E1dA04d9B960083999B7AD148A19590B8b1Bce9";
     // const capsuleStaking = "0x33dfA3020363cDC4DF91A26A2D618F5A64EE1532";
     // const _NFTMarket = "0x632F468665629654C6923c38fEbD037e440e3a6B";
     // const _LoANFTFusion = "0xE31eEca0abE6f7f35d1f207ab2BE9f756026e255";
@@ -16,12 +14,13 @@ async function main() {
     const raffle = await Raffle.attach(RAFFLE_ADDRESS);
 
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-    const multiSigAdmin = await MultiSigAdmin.attach("0x2cB56ca188e99986E6D709433a96C957c01Edd71");
+    const multiSigAdmin = await MultiSigAdmin.attach("0xb1E95C89893354C5A0Dbff233d56cB072E03ce78");
     
     const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
     const oneDayAgo = parseInt(new Date().getTime()/1000 - 86400  + "");
+    const now = parseInt(new Date().getTime()/1000);
     
-    // await raffle.setRaffleInfo(1, twoDaysAgo + "", oneDayAgo + "", oneDayAgo + "");
+    // await raffle.setRaffleInfo(1, twoDaysAgo + "", oneDayAgo + "", now + "");
 
     console.log("raffle closed")
     await raffle.pickWinner(10);
