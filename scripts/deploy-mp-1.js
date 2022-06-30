@@ -18,7 +18,7 @@ async function main() {
     const _LoANFTData_addr = "0xAaDDe1Bde72bf8B0D2f56815088201568566470d";
     const _LoANFT_addr = "0x6c73041c14fffbd1deD66466C3F4Af7306fCd0B6";
     const _LoANFTFusion_addr = "0xe4f8c694daad6b229F634a3a818d416F269EC42C";
-    const _NFTMarket_addr = "0x6D48f14933668360E0a0892291E37E5bB8e24376";
+    const _NFTMarket_addr = "0x1D1e4CdB8c65dB73f2Fd0C9bDF5b8f87e4676541";
 
 
     let multiSigAdmin;
