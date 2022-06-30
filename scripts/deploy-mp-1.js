@@ -189,6 +189,10 @@ async function main() {
     console.log(5);
     
     await capsuleStaking.setCapsuleStakingRule(1, 0, "1000000000000000000000");
+    await capsuleStaking.setCapsuleStakingRule(2, 0, "2000000000000000000000");
+    await capsuleStaking.setCapsuleStakingRule(3, 0, "3000000000000000000000");
+    await capsuleStaking.setCapsuleStakingRule(4, 0, "4000000000000000000000");
+    await capsuleStaking.setCapsuleStakingRule(5, 0, "5000000000000000000000");
     console.log(6);
 
 

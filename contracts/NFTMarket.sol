@@ -52,6 +52,10 @@ interface INFTData {
     function getNFTDetail(uint256 id) external view returns ( uint8, uint8, address, uint8, string memory);
 }
 
+interface ICapsuleDataContract {
+    function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
+}
+
 contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
     using Counters for Counters.Counter;
@@ -179,6 +183,8 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         );
 
         } else {
+
+            (uint8 capsuleType, , , , ,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(tokenId);
             _listed_items.push(MarketItem(
                 itemId,
                 nftContract,
@@ -188,7 +194,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
                 price,
                 "",
                 0,
-                0
+                capsuleType
             ));
 
             emit MarketItemAction(
