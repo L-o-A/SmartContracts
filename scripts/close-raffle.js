@@ -3,7 +3,7 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Closing Raffle...");
 
-    const RAFFLE_ADDRESS = "0x620C9Fc52562860c04BA3bafD0E29ED2b6839047";
+    const RAFFLE_ADDRESS = "0xb184900a7002623D7D0EFACF3f75DF87746b4E0b";
 
     // const capsuleStaking = "0x33dfA3020363cDC4DF91A26A2D618F5A64EE1532";
     // const _NFTMarket = "0x632F468665629654C6923c38fEbD037e440e3a6B";

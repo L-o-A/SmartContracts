@@ -2,7 +2,7 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+// import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import '@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol';
 import "./IAdmin.sol";
 
@@ -56,7 +56,7 @@ interface ICapsuleDataContract {
     function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
 }
 
-contract NFTMarket is ReentrancyGuard, ERC1155Holder{
+contract NFTMarket is ERC1155Holder {
 
     using Counters for Counters.Counter;
     Counters.Counter _itemIds;
@@ -84,7 +84,8 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         uint8 action,
         string attributes,
         uint8 hero,
-        uint8 level
+        uint8 level,
+        uint8 status
     );
 
     struct MarketItem {
@@ -97,6 +98,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         string attributes;
         uint8 hero;
         uint8 level;
+        uint8 status;
     }
 
     // event NFTTransferred(
@@ -117,6 +119,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
             address(0),
             0,
             "",
+            0,
             0,
             0
         ));
@@ -143,7 +146,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         return _listed_items[_listed_items_to_index[marketItemId]];
     }
 
-    function list( address nftContract, uint256 tokenId, uint256 price) public nonReentrant {
+    function list( address nftContract, uint256 tokenId, uint256 price) public {
         require(price > 0, "Price must be at least 1 wei");
         require(_listingFee[nftContract] > 0, "This NFT is not permitted to be listed.");
 
@@ -166,25 +169,27 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
                 price,
                 attributes,
                 hero,
-                level
+                level,
+                0
             ));
 
             emit MarketItemAction(
-            itemId,
-            nftContract,
-            tokenId,
-            msg.sender,
-            address(0),
-            price,
-            1,
-            attributes,
-            hero,
-            level
-        );
+                itemId,
+                nftContract,
+                tokenId,
+                msg.sender,
+                address(0),
+                price,
+                1,
+                attributes,
+                hero,
+                level,
+                0
+            );
 
         } else {
 
-            (uint8 capsuleType, , , , ,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(tokenId);
+            (uint8 capsuleType, ,uint8 capsuleStatus , , ,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(tokenId);
             _listed_items.push(MarketItem(
                 itemId,
                 nftContract,
@@ -194,21 +199,23 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
                 price,
                 "",
                 0,
-                capsuleType
+                capsuleType,
+                capsuleStatus
             ));
 
             emit MarketItemAction(
-            itemId,
-            nftContract,
-            tokenId,
-            msg.sender,
-            address(0),
-            price,
-            1,
-            "",
-            0,
-            0
-        );
+                itemId,
+                nftContract,
+                tokenId,
+                msg.sender,
+                address(0),
+                price,
+                1,
+                "",
+                0,
+                capsuleType,
+                capsuleStatus
+            );
         }
 
 
@@ -222,7 +229,7 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
         
     }
 
-    function unlist(uint256 itemId) public  nonReentrant {
+    function unlist(uint256 itemId) public {
         uint256 index = _listed_items_to_index[itemId];
 
         uint256 tokenId = _listed_items[index].tokenId;
@@ -233,35 +240,19 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
 
         erc1155.safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
 
-        // if(_listed_items[index].nftContract == _admin.getNFTAddress()) {
-        //     (uint8 hero, uint8 level, , , string memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
-        //     emit MarketItemAction(
-        //         itemId,
-        //         _listed_items[index].nftContract,
-        //         tokenId,
-        //         msg.sender,
-        //         address(0),
-        //         0,
-        //         2,
-        //         attributes,
-        //         hero,
-        //         level
-        //     );
-        // }else {
-            emit MarketItemAction(
-                itemId,
-                _listed_items[index].nftContract,
-                tokenId,
-                msg.sender,
-                address(0),
-                0,
-                2,
-                "",
-                0,
-                0
-            );
-
-        // }
+        emit MarketItemAction(
+            itemId,
+            _listed_items[index].nftContract,
+            tokenId,
+            msg.sender,
+            address(0),
+            _listed_items[index].price,
+            2,
+            _listed_items[index].attributes,
+            _listed_items[index].hero,
+            _listed_items[index].level,
+            _listed_items[index].status
+        );
 
         delete _addess_to_id_to_itemId[_listed_items[index].nftContract][tokenId];
 
@@ -272,40 +263,25 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
     }
 
     function updatePrice(uint256 itemId, uint256 price) public {
-        MarketItem storage marketItem = _listed_items[_listed_items_to_index[itemId]];
+        uint256 index = _listed_items_to_index[itemId];
+        MarketItem storage marketItem = _listed_items[index];
         
         require(marketItem.seller == msg.sender, "You are not authorized");
         marketItem.price = price;
 
-        if(marketItem.nftContract == _admin.getNFTAddress()) {
-            (uint8 hero, uint8 level, , , string memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(marketItem.tokenId);
-            emit MarketItemAction(
-                itemId,
-                marketItem.nftContract,
-                marketItem.tokenId,
-                msg.sender,
-                address(0),
-                price,
-                3,
-                attributes,
-                hero,
-                level
-            ); 
-         } else {
-            emit MarketItemAction(
-                itemId,
-                marketItem.nftContract,
-                marketItem.tokenId,
-                msg.sender,
-                address(0),
-                price,
-                3,
-                "",
-                0,
-                0
-            ); 
-
-         }
+        emit MarketItemAction(
+            itemId,
+            marketItem.nftContract,
+            marketItem.tokenId,
+            msg.sender,
+            address(0),
+            price,
+            3,
+            _listed_items[index].attributes,
+            _listed_items[index].hero,
+            _listed_items[index].level,
+            _listed_items[index].status
+        ); 
     }
 
     function giftNFT(address to, uint256 id) public {
@@ -322,7 +298,6 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
     function buy(uint256 itemId)
         external
         payable
-        nonReentrant
     {
         uint256 index = _listed_items_to_index[itemId];
         require(index != 0, "Item not present");
@@ -359,9 +334,11 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
                 4,
                 attributes,
                 hero,
-                level
+                level,
+                0
             );
         } else {
+
             emit MarketItemAction(
                 itemId,
                 _listed_items[index].nftContract,
@@ -372,7 +349,8 @@ contract NFTMarket is ReentrancyGuard, ERC1155Holder{
                 4,
                 "",
                 0,
-                0
+                _listed_items[index].level,
+                _listed_items[index].status
             );
 
         }
