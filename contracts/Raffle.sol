@@ -142,7 +142,6 @@ contract Raffle {
                 break;
             }
         }
-        //IERC20Contract(_loaContract).transfer(_admin.getTreasury(), _ticket_price[id]);
     }
     
 
