@@ -103,22 +103,18 @@ contract Raffle {
     }
 
     function getTicketDetail(uint256 id) public view returns (uint8 , uint256, address, uint8) {
-        require(_raffle_status != 4, "Raffle is terminated");
         return (_ticket_status[id], _ticket_price[id], _ticket_owner[id], _raffle_type);
     }
 
     function getUserTickets(address userAddress) public view returns (uint256[] memory) {
-        require(_raffle_status != 4, "Raffle is terminated");
         return _user_tickets[userAddress];
     }
 
     function getUserWinningTickets(address userAddress) public view returns (uint256[] memory) {
-        require(_raffle_status != 4, "Raffle is terminated");
         return _user_winning_tickets[userAddress];
     }
 
     function balanceOf(address tokenOwner, uint256 id) public view returns (uint256) {
-        require(_raffle_status != 4, "Raffle is terminated");
         return _user_ticket_balance[tokenOwner][id];
     }
 
