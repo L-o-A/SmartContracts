@@ -8,19 +8,25 @@ async function main() {
     const LoANFTData = await ethers.getContractFactory("LoANFTData");
     const _LoANFTData = await LoANFTData.attach(LOANFT_ATTRIBUTE_ADDRESS);
 
-    console.log(await _LoANFTData._nft_level_to_total_added(1));
+    const level = 1;
+
+    console.log(await _LoANFTData._nft_level_to_total_added(level));
 
     console.log(0);
 
     await _LoANFTData.updateFees([1, 2, 3, 4, 5], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000", "3000000000000000000000", "3000000000000000000000"]);
 
-    // await _LoANFTData.modifyNFTs(true, [1,2,3,4,5,6,7,8,9,10], [1,1,1,1,1,1,1,1,1,1], [1,2,1,2,1,2,1,2,1,2],[1,1,1,1,1,1,1,1,1,1]);
+    const BASE_ID = await _LoANFTData._nft_level_to_total_added(level);
+
+    await _LoANFTData.modifyNFTs(true, [BASE_ID + 1, BASE_ID + 2, BASE_ID + 3,BASE_ID + 4,BASE_ID + 5,BASE_ID + 6,BASE_ID + 7,BASE_ID + 8,BASE_ID + 9,BASE_ID + 10], 
+        [ level, level, level, level, level, level, level, level, level, level], 
+        [1,2,1,2,1,2,1,2,1,2],
+        [1,1,1,1,1,1,1,1,1,1]);
 
     console.log(1);
 
-    var idPassed = 0;
     // for (let i = 0; i < 10; i++) {
-        // await _LoANFTData.putNFTAttributes([idPassed + 1, idPassed + 2, idPassed + 3, idPassed + 4, idPassed + 5, idPassed + 6, idPassed + 7, idPassed + 8],
+        // await _LoANFTData.putNFTAttributes([BASE_ID + 1, BASE_ID + 2, BASE_ID + 3, BASE_ID + 4, BASE_ID + 5, BASE_ID + 6, BASE_ID + 7, BASE_ID + 8],
         //     [
         //         "3-5-6-3-0-0-0-0-7-8-2",
         //         "4-6-7-4-2-3-0-0-0-0-3",
@@ -31,8 +37,8 @@ async function main() {
         //         "4-6-7-4-2-3-0-0-0-0-3",
         //         "5-7-8-5-2-3-4-0-0-0-0",
         //     ]);
-        idPassed = idPassed + 8;
-        console.log("idPassed", idPassed);
+        BASE_ID = BASE_ID + 8;
+        console.log("BASE_ID", BASE_ID);
     // }
 }
 
