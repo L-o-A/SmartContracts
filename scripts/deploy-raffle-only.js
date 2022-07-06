@@ -17,7 +17,7 @@ async function main() {
     const raffleHelper = await RaffleHelper.attach("0xBdeD735bF0220EdCbeD69319B6396C38a7F6e2f4");
     console.log("raffleHelper.address :", raffleHelper.address);
 
-    await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [10, 200, 400], [150, 300]);
+    await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [30, 200, 400], [150, 300]);
 
     const Raffle = await ethers.getContractFactory("Raffle");
     const raffle = await Raffle.deploy(loa, raffleHelper.address, multiSigAdmin.address);
