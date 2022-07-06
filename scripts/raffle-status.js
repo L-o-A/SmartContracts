@@ -9,7 +9,6 @@ async function main() {
     const raffle = await Raffle.attach(RAFFLE_ADDRESS);
 
     console.log("raffle status : ", await raffle._raffle_status())
-    console.log("raffle status : ", await raffle._raffle_status())
 }
 
 main();
