@@ -3,11 +3,7 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Closing Raffle...");
 
-<<<<<<< HEAD
-    const RAFFLE_ADDRESS = "0x784Be3f7c22E440248E5973A8d1A421B9BB1ce2a";
-=======
     const RAFFLE_ADDRESS = "0x760C9507328b80a9027c8f82aDf1a159aEab538C";
->>>>>>> 2e39e7ca0c3982094671ea18859b4825fc470e16
 
     // const capsuleStaking = "0x33dfA3020363cDC4DF91A26A2D618F5A64EE1532";
     // const _NFTMarket = "0x632F468665629654C6923c38fEbD037e440e3a6B";
@@ -28,7 +24,6 @@ async function main() {
 
     console.log("raffle closed")
     await raffle.pickWinner(5);
-    console.log(1);
     await raffle.pickWinner(100);
 
     // await raffle.terminate();
