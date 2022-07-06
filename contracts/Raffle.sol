@@ -219,7 +219,7 @@ contract Raffle {
 
             winners[i] = ticketIds[selected];
             winnerFees += _ticket_price[winners[i]];
-            _user_ticket_prices[msg.sender] -= _ticket_price[winners[i]];
+            _user_ticket_prices[_ticket_owner[winners[i]]] -= _ticket_price[winners[i]];
 
             _raffle_winning_tickets_count[_ticket_owner[winners[i]]] += 1;
             _user_winning_tickets[_ticket_owner[winners[i]]].push(winners[i]);

@@ -64,12 +64,6 @@ describe("RAFFLE ", function () {
     // await raffleHelper.putRafflePrices([10, 20, 30], [10, 20, 30, 40], [2, 4, 20], [5, 7]);
     await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [100, 200, 400], [150, 300]);
 
-    console.log(await raffleHelper.calcPrice(10, "10"));
-    console.log(await raffleHelper.calcPrice(20, "10"));
-    console.log(await raffleHelper.calcPrice(30, "10"));
-    console.log(await raffleHelper.calcPrice(40, "10"));
-    console.log(await raffleHelper.calcPrice(50, "10"));
-
     
 
     
