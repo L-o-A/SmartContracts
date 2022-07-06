@@ -65,6 +65,7 @@ contract Raffle {
     mapping(address => uint256) public _raffle_winning_tickets_count;
     mapping(address => uint256[]) public _user_winning_tickets;
     mapping(address => uint256[]) public _user_tickets;
+    mapping(address => uint256) public _user_ticket_prices;
     mapping(address => mapping(uint256 => uint8)) public _user_ticket_balance;
 
 
@@ -181,6 +182,7 @@ contract Raffle {
             uint256 id = _ticketCounter.current();
             _user_ticket_balance[msg.sender][id] = 1;
             _user_tickets[msg.sender].push(id);
+            _user_ticket_prices[msg.sender] += ticketPrice;
          
             _ticket_price[id] = ticketPrice;
             _ticket_status[id] = 1;
@@ -217,6 +219,8 @@ contract Raffle {
 
             winners[i] = ticketIds[selected];
             winnerFees += _ticket_price[winners[i]];
+            _user_ticket_prices[msg.sender] -= _ticket_price[winners[i]];
+
             _raffle_winning_tickets_count[_ticket_owner[winners[i]]] += 1;
             _user_winning_tickets[_ticket_owner[winners[i]]].push(winners[i]);
 
@@ -277,6 +281,7 @@ contract Raffle {
 
                     if(_ticket_status[ticketIds[j-1]] != 3) {
                         _ticket_status[ticketIds[j-1]] = 2;
+                        _user_ticket_prices[msg.sender] -= _ticket_price[ticketIds[j-1]];
                         _refund_address_to_amount[msg.sender] += _ticket_price[ticketIds[j-1]];
                         _raffle_tickets_count[msg.sender]--;
                         delete _user_ticket_balance[msg.sender][ticketIds[j-1]];
