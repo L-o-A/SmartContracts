@@ -88,7 +88,7 @@ contract CapsuleData {
         _capsule_types[id] = val;
     }
 
-    function getNewCapsuleIdByType(uint8 capsuleType) public view validCapsule returns (uint256) {
+    function getNewCapsuleIdByType(uint8 capsuleType) public view returns (uint256) {
         require(_capsule_type_to_ids[capsuleType].length > 0, "No capsule published");
         return _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length - 1];
     }
