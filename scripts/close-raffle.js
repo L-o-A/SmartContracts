@@ -16,26 +16,19 @@ async function main() {
     // const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
     // const multiSigAdmin = await MultiSigAdmin.attach("0xb1E95C89893354C5A0Dbff233d56cB072E03ce78");
     
-    const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
-    const oneDayAgo = parseInt(new Date().getTime()/1000 - 86400  + "");
-    const now = parseInt(new Date().getTime()/1000);
+    // const twoDaysAgo = parseInt(new Date().getTime()/1000 - 2 * 86400 + "");
+    // const oneDayAgo = parseInt(new Date().getTime()/1000 - 86400  + "");
+    // const now = parseInt(new Date().getTime()/1000);
     
-    await raffle.setRaffleInfo(1, twoDaysAgo + "", oneDayAgo + "", now + "");
+    // await raffle.setRaffleInfo(1, twoDaysAgo + "", oneDayAgo + "", now + "");
 
     console.log("raffle closed")
-    await raffle.pickWinner(100);
-    console.log(1);
+    await raffle.pickWinner(5);
     await raffle.pickWinner(100);
 
     // await raffle.terminate();
     console.log(2);
-    // await raffle.pickWinner(5);
-    // await raffle.pickWinner(5);
-    // await raffle.pickWinner(5);
 
-
-
-    // console.log("winners declared")
 
     // await multiSigAdmin.modifyRaffleAddress(raffle.address, true)
 
