@@ -13,7 +13,7 @@ contract MYERC20 is ERC20 {
     }
 
     function mint (uint256 amount) public {
-        require(balanceOf(msg.sender) < 1_000_000_000_000_000_000_000_000, "You have enough tokens.");
+        //require(balanceOf(msg.sender) < 1_000_000_000_000_000_000_000_000, "You have enough tokens.");
         _mint(msg.sender, amount);
     }
 }

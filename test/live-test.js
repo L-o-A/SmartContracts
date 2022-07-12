@@ -32,7 +32,7 @@ describe("LIVE MP Test ", function () {
     const loa = await LOA.deploy("LOA", "LOA");
     await loa.deployed();
 
-    await loa.connect(owner).transfer(addr1.address, "20000000000000000000000000");
+    await loa.connect(addr1).mint("10000000000000000000000000000");
 
 
     let multiSigAdmin;
@@ -365,10 +365,10 @@ describe("LIVE MP Test ", function () {
     const userCapsules = await capsuleData.getUserCapsules(addr1.address);
     console.log("user Capsules -0", await capsuleData.getUserCapsules(addr1.address));
 
-    await capsuleStaking.connect(addr1).stake([userCapsules[0], userCapsules[1]]);
-    return;
+    await capsuleStaking.connect(addr1).stake(userCapsules);
 
-    await capsuleStaking.connect(addr1).reclaim([userCapsules[0], userCapsules[1]], false);
+    
+    await capsuleStaking.connect(addr1).reclaim(userCapsules, false);
     console.log("user Capsules -1", await capsuleData.getUserCapsules(addr1.address));
 
 
@@ -376,6 +376,11 @@ describe("LIVE MP Test ", function () {
 
     await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000");
     const capsules = await capsuleData.getUserCapsules(addr1.address);
+    
+
+    await loa.connect(addr1).approve(_LoANFT.address, "200000000000000000000000");
+
+
     console.log("ready to mint nft");
     await _LoANFT.connect(addr1).mint(capsules);
 

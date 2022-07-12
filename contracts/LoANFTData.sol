@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./IAdmin.sol";
 
-// import "hardhat/console.sol";
+//import "hardhat/console.sol";
 
 contract LoANFTData {
 
@@ -108,7 +108,7 @@ contract LoANFTData {
         nft.hero = hero;
         nft.level = level;
         nft.status = 2;
-        nft.attributes = new uint64[](_nft_attribute_names.length);
+        nft.attributes = new uint64[](_nft_attribute_names.length + 1);
 
         //set default values
         for(uint8 i = 0; i < nftAttribLimit._default_attributes.length; i++) {
