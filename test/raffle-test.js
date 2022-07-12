@@ -295,17 +295,22 @@ describe("RAFFLE ", function () {
 
     await raffle.terminate();
 
+    console.log("addNFTAttributeLimits");
 
-    // await _LoANFTData.addNFTAttributeLimits(1, 1, [2,3,4,5,6,7,8,9,10,11], [759500], [65100] [1], [] ,[], 1)
+    // await _LoANFTData.addNFTAttributeLimits(1, 1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800], [651000, 1264300, 102400, 71400], [1], [50000], [10000], 1)
+    await _LoANFTData.addNFTAttributeLimits(1, 1, [2, 3, 4, 5], [759500, 1299400, 108800, 72800], [651000, 1264300, 102400, 71400], [1], [50000], [10000], 1)
+    console.log("added NFTAttributeLimits");
+    await _LoANFTData.populateAttribute(101, 1, 1);
+    console.log("_LoANFTData.populateAttribute(101, 1, 1)");
+    await _LoANFTData.populateAttribute(102, 1, 1);
+    console.log("_LoANFTData.populateAttribute(102, 1, 1)");
+    await _LoANFTData.populateAttribute(103, 1, 1);
+    console.log("_LoANFTData.populateAttribute(103, 1, 1)");
 
-    // await _LoANFTData.populateAttribute(101, 1, 1);
-    // await _LoANFTData.populateAttribute(102, 1, 1);
-    // await _LoANFTData.populateAttribute(103, 1, 1);
 
-
-    // console.log(await _LoANFTData.getNFTDetail(101));
-    // console.log(await _LoANFTData.getNFTDetail(102));
-    // console.log(await _LoANFTData.getNFTDetail(103));
+    console.log(await _LoANFTData.getNFTDetail(101));
+    console.log(await _LoANFTData.getNFTDetail(102));
+    console.log(await _LoANFTData.getNFTDetail(103));
   });
 
 
