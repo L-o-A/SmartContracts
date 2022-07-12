@@ -171,15 +171,6 @@ async function main() {
    //  await _LoANFT.updateFees([1, 2, 3], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000"]);
    //  console.log(8);
 
-   //  /**
-   //   *  function modifyNFTs(bool add,
-   //      uint256[] memory ids,
-   //      uint8[] memory levels,
-   //      uint8[] memory heroes,
-   //      uint256[] memory startTimes
-   //  )
-   //   */
-   //  await _LoANFT.modifyNFTs(true, [1,2,3,4,5,6,7,8,9,10], [1,1,1,1,1,1,1,1,1,1], [1,2,1,2,1,2,1,2,1,2],[1,1,1,1,1,1,1,1,1,1]);
    //  console.log(9);
 
    //  await _LoANFTAttributes.setNFTAddress(_LoANFT.address);
