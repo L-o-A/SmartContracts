@@ -9,16 +9,16 @@ async function main() {
     const admin2 = "0x36Ee9c4520F9E7C15A0Cba1e032627eDc2B4C50D";
     const admin3 = "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da";
 
-    const multiSigAdmin_addr = "0xb1E95C89893354C5A0Dbff233d56cB072E03ce78";
-    const raffleHelper_addr = "0xD80c8CF37afc5072B09dF4FFa12db6Cdbce7D8D4";
-    const raffle_addr = "0x5cE83Ac8aCA49F4De192ed7923e8f63B28cD4891";
-    const capsule_addr = "0xcf42951d10D9BeAd202f335278A0fF8b6Fbfb24b";
-    const capsuleData_addr =  "0x8C6e22139134796C081327fba53489aA5B9167fc";
-    const capsuleStaking_addr =  "0xe790207bA0512Ef30D6B5A1ECbCA0FEbA9aD06d4";
-    const _LoANFTData_addr = "0xAaDDe1Bde72bf8B0D2f56815088201568566470d";
-    const _LoANFT_addr = "0x6c73041c14fffbd1deD66466C3F4Af7306fCd0B6";
-    const _LoANFTFusion_addr = "0xe4f8c694daad6b229F634a3a818d416F269EC42C";
-    const _NFTMarket_addr = "0x1D1e4CdB8c65dB73f2Fd0C9bDF5b8f87e4676541";
+    const multiSigAdmin_addr = '0x44765D53328CaD452ecc90E5864524C7a9e5111B';
+    const raffleHelper_addr = '0x59cf060cF826fBF12A34eb58bD00F9F959f72828';
+    const raffle_addr = '0x86a47f7FF6D28Bc1F8aa16b823D1C2FB855DB174';
+    const capsule_addr = '0x93185DD95d636a7bd6deb3cC4B956CEA18f02432';
+    const capsuleData_addr = '0x51Bb854F0794B9b5d8723715cae65da23b896e56';
+    const capsuleStaking_addr = '0x0987AFEe94Ec81A6F6e7d4b354bd8085dbe97618';
+    const _LoANFTData_addr = '0xaa830E7B5061E81083aF344777709C3E6DB7FA4A';
+    const _LoANFT_addr = '0x5B3127585Cea15cB600f350C1CF220364dB9DD1d';
+    const _LoANFTFusion_addr = '0x931B14d652A9d37E1D0B1f30E684fd63Be048bc8';
+    const _NFTMarket_addr = '0x05C8F08ce73422f468426ff784b81776d55e64e9';
 
 
     let multiSigAdmin;
@@ -185,7 +185,7 @@ async function main() {
     console.log(4);
 
 
-    await capsuleData.modifyCapsules(true, [1, 2, 3, 4, 5, 6, 7, 8, 9 ,10], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+    // await capsuleData.modifyCapsules(true, [1, 2, 3, 4, 5, 6, 7, 8, 9 ,10], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
     console.log(5);
     
     await capsuleStaking.setCapsuleStakingRule(1, 0, "1000000000000000000000");
@@ -199,33 +199,33 @@ async function main() {
     await _LoANFTData.updateFees([1, 2, 3, 4, 5], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000", "3000000000000000000000", "3000000000000000000000"]);
     console.log(8);
 
-    await _LoANFTData.modifyNFTs(true, [1,2,3,4,5,6,7,8,9,10], [1,1,1,1,1,1,1,1,1,1], [1,2,1,2,1,2,1,2,1,2],[1,1,1,1,1,1,1,1,1,1]);
+    // await _LoANFTData.modifyNFTs(true, [1,2,3,4,5,6,7,8,9,10], [1,1,1,1,1,1,1,1,1,1], [1,2,1,2,1,2,1,2,1,2],[1,1,1,1,1,1,1,1,1,1]);
     console.log(9);
 
-    await _LoANFTData.putNFTAttributeNames("HASH-POWER,MAX-HP,MAX-PRANA,MAXSPEED,HP-REGEN,PRANA-REGEN,ATTACK-DAMAGE,ATTACK-SPEED,CRITICAL-DAMAGE,ARMOUR,MAGIC-DEFENCE");
+    await _LoANFTData.putNFTAttributeNames(["HASH-POWER", "MAX-HP", "MAX-PRANA", "MAXSPEED", "HP-REGEN", "PRANA-REGEN", "ATTACK-DAMAGE", "ATTACK-SPEED", "CRITICAL-DAMAGE", "ARMOUR", "MAGIC-DEFENCE"]);
 
     console.log(11);
 
     /**
      * function putNFTAttributes (uint256[] memory ids, string[] memory attribs)
      */
-     await _LoANFTData.putNFTAttributes([1,2,3,4,5], 
-      [
-          "1-3-4-1-0-0-0-0-6-7-8", 
-          "2-4-0-0-0-0-4-5-6-7-8", 
-          "3-5-6-3-0-0-0-0-7-8-2", 
-          "4-6-7-4-2-3-0-0-0-0-3", 
-          "5-7-8-5-2-3-4-0-0-0-0", 
-      ]);
+    //  await _LoANFTData.putNFTAttributes([1,2,3,4,5], 
+    //   [
+    //       "1-3-4-1-0-0-0-0-6-7-8",
+    //       "2-4-0-0-0-0-4-5-6-7-8",
+    //       "3-5-6-3-0-0-0-0-7-8-2",
+    //       "4-6-7-4-2-3-0-0-0-0-3",
+    //       "5-7-8-5-2-3-4-0-0-0-0",
+    //   ]);
 
-    await _LoANFTData.putNFTAttributes([6, 7, 8, 9, 10], 
-         [
-             "1-3-0-0-0-0-4-5-6-7-8", 
-             "2-4-5-0-0-0-0-5-6-7-8", 
-             "3-5-6-3-2-0-0-0-0-8-1", 
-             "4-6-7-4-0-0-0-0-7-8-1", 
-             "5-7-8-5-2-3-0-0-0-0-2", 
-         ]);
+    // await _LoANFTData.putNFTAttributes([6, 7, 8, 9, 10],
+    //      [
+    //          "1-3-0-0-0-0-4-5-6-7-8",
+    //          "2-4-5-0-0-0-0-5-6-7-8",
+    //          "3-5-6-3-2-0-0-0-0-8-1",
+    //          "4-6-7-4-0-0-0-0-7-8-1",
+    //          "5-7-8-5-2-3-0-0-0-0-2",
+    //      ]);
      console.log(12);
 
 
@@ -237,7 +237,7 @@ async function main() {
         uint8[] memory levelValues
     )
      */
-    await _LoANFTFusion.createFusionRule(1, "1000000000000000000000", 2, [1,1]);
+    // await _LoANFTFusion.createFusionRule(1, "1000000000000000000000", 2, [1,1]);
     console.log(13);
 
     /**
