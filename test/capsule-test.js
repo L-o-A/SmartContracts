@@ -32,10 +32,10 @@ describe("RAFFLE ", function () {
     await capsuleData.addCapsuleSupply(2, [1, 2, 3], [90750, 49500, 24750]);
     
 
-    console.log("randomMultiple of 5", await capsuleData.randomMultiple([20,30,40,50,60],3, 1));
-    console.log("randomMultiple of 5", await capsuleData.randomMultiple([20,30,40,50,60],3, 2));
-    console.log("randomMultiple of 5", await capsuleData.randomMultiple([20,30,40,50,60],3, 3));
-    console.log("randomMultiple of 5", await capsuleData.randomMultiple([20,30,40,50,60],3, 4));
+    // console.log("randomMultiple of 5", await capsuleData.randomMultiple([20,30,40,50,60],3, 1));
+    // console.log("randomMultiple of 5", await capsuleData.randomMultiple([20,30,40,50,60],3, 2));
+    // console.log("randomMultiple of 5", await capsuleData.randomMultiple([20,30,40,50,60],3, 3));
+    // console.log("randomMultiple of 5", await capsuleData.randomMultiple([20,30,40,50,60],3, 4));
 
 
   });

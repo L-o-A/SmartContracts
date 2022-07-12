@@ -232,7 +232,7 @@ describe("RAFFLE ", function () {
 
     await multiSigAdmin.setNFTDataAddress(_LoANFTData.address);
 
-    // await _LoANFTData.addNFTAttributeLimits(1, 1, [2,3,4,5,6,7,8,9,10,11], [759500], [65100] [1], [] ,[], 1)
+    
 
     // await _LoANFTData.putNFTAttributes([1,2,3,4,5,6,7,8,9,10], ["1-0-0", "1-2-0", "1-3-0", "1-4-0", "1-5-0", "2-0-1", "2-0-1", "2-0-1", "2-2-1", "2-0-2"]);
     console.log(12);
@@ -295,6 +295,17 @@ describe("RAFFLE ", function () {
 
     await raffle.terminate();
 
+
+    // await _LoANFTData.addNFTAttributeLimits(1, 1, [2,3,4,5,6,7,8,9,10,11], [759500], [65100] [1], [] ,[], 1)
+
+    // await _LoANFTData.populateAttribute(101, 1, 1);
+    // await _LoANFTData.populateAttribute(102, 1, 1);
+    // await _LoANFTData.populateAttribute(103, 1, 1);
+
+
+    // console.log(await _LoANFTData.getNFTDetail(101));
+    // console.log(await _LoANFTData.getNFTDetail(102));
+    // console.log(await _LoANFTData.getNFTDetail(103));
   });
 
 
