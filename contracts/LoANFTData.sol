@@ -148,6 +148,7 @@ contract LoANFTData {
             total += nftSupply._supply[nftSupply.heroes[i]] - nftSupply._consumed[nftSupply.heroes[i]];
         }
         require(false, "No nft available");
+        return 0;
     }
 
     function getNewNFTByLevel(uint8 level) private returns (uint256) {

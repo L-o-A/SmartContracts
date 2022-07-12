@@ -32,7 +32,7 @@ module.exports = {
       allowUnlimitedContractSize:true
     },
     bsctestnet: {
-      url: secret.BSC_TESTNET_URL,
+      url: secret.BSC_CHAINLINK_URL,
       accounts: [secret.WALLET_PRI_KEY],
     },
     ropsten: {
