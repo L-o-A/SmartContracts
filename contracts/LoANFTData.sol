@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./IAdmin.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract LoANFTData {
 
@@ -92,15 +92,15 @@ contract LoANFTData {
             nftAttribLimit._min[optionalAttributes[i]] = minValues[i];
         }
         for(uint8 i = 0; i < defaultAttributes.length; i++) {
-            nftAttribLimit._max[optionalAttributes[i]] = defaultMaxValues[i];
-            nftAttribLimit._min[optionalAttributes[i]] = defaultMinValues[i];
+            nftAttribLimit._max[defaultAttributes[i]] = defaultMaxValues[i];
+            nftAttribLimit._min[defaultAttributes[i]] = defaultMinValues[i];
         }
         nftAttribLimit._default_attributes = defaultAttributes;
         nftAttribLimit._attributes = optionalAttributes;
         nftAttribLimit._total_attributes = totalOptionalAttributes;
     }
 
-    function populateAttribute(uint256 id, uint8 level, uint8 hero) private {
+    function populateAttribute(uint256 id, uint8 level, uint8 hero) public {
         NFT storage nft = _nfts[id];
         require(nft.status < 2, "NFT is minted");
         NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
@@ -112,8 +112,8 @@ contract LoANFTData {
 
         //set default values
         for(uint8 i = 0; i < nftAttribLimit._default_attributes.length; i++) {
-            nft.attributes[nftAttribLimit._default_attributes[i]] = nftAttribLimit._min[nftAttribLimit._default_attributes[i]] + 
-                random(nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]], 0);
+            nft.attributes[nftAttribLimit._default_attributes[i]] = nftAttribLimit._min[nftAttribLimit._default_attributes[i]]  + 
+               random(nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]], 0);
         }
 
         uint8[] memory otherAttributes = randomMultiple(nftAttribLimit._attributes, nftAttribLimit._total_attributes, id);
@@ -303,14 +303,6 @@ contract LoANFTData {
         _nft_attribute_names = nft_attribute_names;
     }
 
-    // function putNFTAttributes (uint256[] memory ids, string[] memory attribs) public validAdmin {
-    //     require(ids.length ==  attribs.length, "Args length not matching");
-    //     for (uint256 i = 0; i < ids.length; i++) {
-    //         require(_nft_status[ids[i]] == 1, "Id is not published");
-    //         _nft_attributes[ids[i]] = attribs[i];
-    //     }
-    // }
-
     function withdraw(address tokenAddress) public validAdmin {
         if (tokenAddress == address(0)) {
             payable(_admin.getTreasury()).transfer(address(this).balance);
@@ -339,6 +331,7 @@ contract LoANFTData {
     }
 
     function random(uint256 limit, uint randNonce) public view returns (uint32) {
+        if(limit == 0) return 0;
         return uint32(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, randNonce)))% limit);
     }
 }
