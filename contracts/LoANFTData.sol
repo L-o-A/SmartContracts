@@ -1,32 +1,62 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./IAdmin.sol";
 
 // import "hardhat/console.sol";
 
 contract LoANFTData {
-    // 0 : unpublished
-    // 1 : ready to mint
-    // 2 : minted
-    // 3 : burned
-    mapping(uint256 => uint8) public _nft_status;
-    mapping(uint256 => uint8) _nft_level;
-    mapping(uint256 => uint8) _nft_hero;
-    mapping(uint256 => address) _nft_owner;
 
-    mapping(uint8 => uint256[]) _nft_level_to_ids;
+    using Counters for Counters.Counter;
+    Counters.Counter private _nftCounter;
+
+    mapping(uint8 => NFTSupply) _nft_level_supply;
     mapping(uint8 => uint256) public _minting_fee;
     mapping(address => uint256[]) _user_holdings;
 
-    string public _nft_attribute_names;
+    string[] public _nft_attribute_names;
     mapping(uint256 => string) _nft_attributes;
     mapping(address => uint8) _axionAddresses; // Axion Contract
     mapping(uint8 => uint256) public _nft_level_to_total_added;
     mapping(uint8 => uint256) public _nft_level_to_total_minted;
 
+    mapping(uint256 => NFT) public _nfts;
+    mapping(uint8=> mapping(uint8 => NFTAttribLimit)) _nft_attrib_by_level_hero;
+
     IAdmin _admin;
+
+    struct NFTSupply {
+        mapping(uint8 => uint32) _supply;
+        mapping(uint8 => uint32) _consumed;
+        uint8[] heroes;
+        uint32 _total_supply;
+        uint32 _total_consumed;
+    }
+
+    struct NFTAttribLimit {
+        mapping(uint8 => uint64) _max; 
+        mapping(uint8 => uint64) _min;
+        uint8[] _attributes;
+        uint8[] _default_attributes;
+        uint8 _total_attributes;
+    }
+
+    struct NFT {
+        uint256 id;
+
+        // 0 : unpublished
+        // 1 : ready to mint
+        // 2 : minted
+        // 3 : burned
+        uint8 status;
+        address owner;
+        uint8 level;
+        uint8 hero;
+        mapping(uint8 => uint64) attributes;
+        string attribute_string;
+    }
 
     event NFTMinted(
         uint256 indexed itemIds,
@@ -37,6 +67,102 @@ contract LoANFTData {
 
     constructor(address adminContractAddress) {
         _admin = IAdmin(adminContractAddress);
+    }
+
+    function addNFTAttributeLimits(
+        uint8 level, 
+        uint8 hero, 
+        uint8[] memory optionalAttributes, 
+        uint64[] memory maxValues, 
+        uint64[] memory minValues,
+        uint8[] memory defaultAttributes,
+        uint64[] memory defaultMaxValues, 
+        uint64[] memory defaultMinValues,
+        uint8 totalOptionalAttributes) public validAdmin {
+
+        require(maxValues.length ==  minValues.length 
+            && maxValues.length == optionalAttributes.length, "Args length not matching");
+
+        require(defaultMaxValues.length ==  defaultMinValues.length 
+            && defaultMaxValues.length == defaultAttributes.length, "Args length not matching");
+
+        NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
+
+        for(uint8 i = 0; i < optionalAttributes.length; i++) {
+            nftAttribLimit._max[optionalAttributes[i]] = maxValues[i];
+            nftAttribLimit._min[optionalAttributes[i]] = minValues[i];
+        }
+        for(uint8 i = 0; i < defaultAttributes.length; i++) {
+            nftAttribLimit._max[optionalAttributes[i]] = defaultMaxValues[i];
+            nftAttribLimit._min[optionalAttributes[i]] = defaultMinValues[i];
+        }
+        nftAttribLimit._default_attributes = defaultAttributes;
+        nftAttribLimit._attributes = optionalAttributes;
+        nftAttribLimit._total_attributes = totalOptionalAttributes;
+    }
+
+    function populateAttribute(uint256 id, uint8 level, uint8 hero) private {
+        NFT storage nft = _nfts[id];
+        require(nft.status < 2, "NFT is minted");
+        NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
+
+        nft.hero = hero;
+        nft.level = level;
+        nft.status = 2;
+
+        //set default values
+        for(uint8 i = 0; i < nftAttribLimit._default_attributes.length; i++) {
+            nft.attributes[nftAttribLimit._default_attributes[i]] = nftAttribLimit._min[nftAttribLimit._default_attributes[i]] + 
+                random(nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]], 0);
+        }
+
+        uint8[] memory otherAttributes = randomMultiple(nftAttribLimit._attributes, nftAttribLimit._total_attributes, id);
+        for(uint8 i = 0; i < otherAttributes.length; i++) {
+            nft.attributes[otherAttributes[i]] = nftAttribLimit._min[otherAttributes[i]] + 
+                random(nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]], i);
+        }
+    }
+
+
+    function addNFTSupply(uint8 level, uint8[] memory heroes, uint32[] memory supply) public {
+        require(supply.length ==  heroes.length, "Args length not matching");
+
+        NFTSupply storage nftSupply = _nft_level_supply[level];
+
+        for(uint32 i = 0; i < heroes.length; i++) {
+            require(nftSupply._consumed[heroes[i]] < supply[i], "Supply cant be less than consumed");
+            nftSupply._supply[heroes[i]] = supply[i];
+            nftSupply._total_supply += supply[i];
+        }
+        nftSupply.heroes = heroes;
+    }
+
+    function pickNFTHero(uint8 level) public view returns (uint8) {
+        NFTSupply storage nftSupply = _nft_level_supply[level];
+        uint32 selected = random(nftSupply._total_supply - nftSupply._total_consumed, _nftCounter.current()) + 1;
+        uint32 total = 0;
+        for(uint i = 0; i < nftSupply.heroes.length; i ++) {
+            if(nftSupply._supply[nftSupply.heroes[i]] - nftSupply._consumed[nftSupply.heroes[i]] + total >= selected) {
+                return nftSupply.heroes[i];
+            }
+            total += nftSupply._supply[nftSupply.heroes[i]] - nftSupply._consumed[nftSupply.heroes[i]];
+        }
+        require(false, "No nft available");
+    }
+
+    function getNewNFTByLevel(uint8 level) private returns (uint256) {
+        uint8 hero = pickNFTHero(level);
+        NFTSupply storage nftSupply = _nft_level_supply[level];
+
+        require(nftSupply._supply[hero] - nftSupply._consumed[hero] > 0, "No capsule available");
+
+        nftSupply._consumed[hero] +=1;
+        nftSupply._total_consumed +=1;
+
+        _nftCounter.increment();
+        uint256 id = _nftCounter.current();
+        populateAttribute(id, level, hero);
+        return id;
     }
 
     function updateFees(uint8[] memory capsuleTypes, uint256[] memory fees)
@@ -66,63 +192,12 @@ contract LoANFTData {
             string memory
         )
     {
-        require(_nft_status[id] == 2, "Id is not minted");
-        return (_nft_hero[id], _nft_level[id], _nft_owner[id], _nft_status[id], _nft_attributes[id]);
+        require(_nfts[id].status == 2, "Id is not minted");
+        return (_nfts[id].hero, _nfts[id].level, _nfts[id].owner, _nfts[id].status, _nfts[id].attribute_string);
     }
 
     function getUserNFTs(address sender) public view returns (uint256[] memory) {
         return _user_holdings[sender];
-    }
-
-    function modifyNFTs(
-        bool add,
-        uint256[] memory ids,
-        uint8[] memory levels,
-        uint8[] memory heroes,
-        uint256[] memory startTimes
-    ) public validAdmin {
-        if (add) {
-            require(
-                ids.length == levels.length &&
-                    levels.length == heroes.length &&
-                    heroes.length == startTimes.length,
-                "Args length not matching"
-            );
-
-            for (uint256 i = 0; i < ids.length; i++) {
-                require(_nft_status[ids[i]] == 0, "Id is already published");
-                if (_nft_status[ids[i]] == 0)
-                    _nft_level_to_ids[levels[i]].push(ids[i]);
-
-                _nft_status[ids[i]] = 1;
-                _nft_level[ids[i]] = levels[i];
-                _nft_hero[ids[i]] = heroes[i];
-                _nft_level_to_total_added[levels[i]]++;
-            }
-        } else {
-            for (uint256 i = 0; i < ids.length; i++) {
-                require(
-                    _nft_status[ids[i]] == 0 || _nft_status[ids[i]] == 1,
-                    "Id is already consumed."
-                );
-                if (_nft_status[ids[i]] == 0) {
-                    uint256[] storage cids = _nft_level_to_ids[
-                        _nft_level[ids[i]]
-                    ];
-                    for (uint256 j = 0; j < cids.length; j++) {
-                        if (cids[j] == ids[i]) {
-                            cids[j] = cids[cids.length - 1];
-                            cids.pop();
-                            break;
-                        }
-                    }
-                }
-                delete _nft_status[ids[i]];
-                delete _nft_level[ids[i]];
-                delete _nft_hero[ids[i]];
-                _nft_level_to_total_added[levels[i]]--;
-            }
-        }
     }
 
     function safeTransferFrom(
@@ -184,19 +259,10 @@ contract LoANFTData {
             }
         }
 
-        
+        uint256 id = getNewNFTByLevel(fusionLevel);
 
-        uint256 id = _nft_level_to_ids[fusionLevel][
-            _nft_level_to_ids[fusionLevel].length - 1
-        ];
-        require(_nft_status[id] == 1, "id is not available");
-
-        _nft_owner[id] = owner;
-        _nft_status[id] = 2;
-
+        _nfts[id].owner = owner;
         _user_holdings[owner].push(id);
-        _nft_level_to_ids[_nft_level[id]].pop();
-
         _nft_level_to_total_minted[fusionLevel]++;
 
         return id;
@@ -205,16 +271,11 @@ contract LoANFTData {
     function mint(uint8 capsuleLevel, address owner) public returns (uint256, uint256) {
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
 
-        uint256 id = _nft_level_to_ids[capsuleLevel][_nft_level_to_ids[capsuleLevel].length - 1];
-        require(_nft_status[id] == 1, "id is not available");
-
+        uint256 id = getNewNFTByLevel(capsuleLevel);
         uint256 fee = _minting_fee[capsuleLevel];
        
-
-        _nft_owner[id] = owner;
-        _nft_status[id] = 2;
+        _nfts[id].owner = owner;
         _user_holdings[owner].push(id);
-        _nft_level_to_ids[_nft_level[id]].pop();
         _nft_level_to_total_minted[capsuleLevel]++;
 
         return (id, fee);
@@ -237,17 +298,17 @@ contract LoANFTData {
         return (_nft_attributes[id]);
     }
 
-    function putNFTAttributeNames (string memory nft_attribute_names) public validAdmin {
+    function putNFTAttributeNames (string[] memory nft_attribute_names) public validAdmin {
         _nft_attribute_names = nft_attribute_names;
     }
 
-    function putNFTAttributes (uint256[] memory ids, string[] memory attribs) public validAdmin {
-        require(ids.length ==  attribs.length, "Args length not matching");
-        for (uint256 i = 0; i < ids.length; i++) {
-            require(_nft_status[ids[i]] == 1, "Id is not published");
-            _nft_attributes[ids[i]] = attribs[i];
-        }
-    }
+    // function putNFTAttributes (uint256[] memory ids, string[] memory attribs) public validAdmin {
+    //     require(ids.length ==  attribs.length, "Args length not matching");
+    //     for (uint256 i = 0; i < ids.length; i++) {
+    //         require(_nft_status[ids[i]] == 1, "Id is not published");
+    //         _nft_attributes[ids[i]] = attribs[i];
+    //     }
+    // }
 
     function withdraw(address tokenAddress) public validAdmin {
         if (tokenAddress == address(0)) {
@@ -257,5 +318,26 @@ contract LoANFTData {
 
         ERC20 token = ERC20(tokenAddress);
         token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
+    }
+
+    function randomMultiple(uint8[] memory all, uint8 units, uint randNonce) public view returns (uint8[] memory) {
+
+        uint8[] memory finalList = new uint8[](units);
+        uint8 count = 0;
+        uint8 nonceIncrementor = 0;
+
+        for(uint8 i = 0; i < units; ) {
+            uint32 index = random(uint256(all.length), randNonce + nonceIncrementor++);
+            if(all[index] > 0) {
+                finalList[count++] = all[index];
+                all[index] = 0;
+                i++;
+            }
+        }
+        return finalList;
+    }
+
+    function random(uint256 limit, uint randNonce) public view returns (uint32) {
+        return uint32(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, randNonce)))% limit);
     }
 }

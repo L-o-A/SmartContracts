@@ -122,26 +122,26 @@ contract Raffle {
     }
 
     function burn(address owner, uint256 id) public payable {
+        
         require(msg.sender == _admin.getCapsuleAddress(), "You are not authorized to burn");
         require(_raffle_status != 4, "Raffle is terminated");
 
         _ticket_status[id] = 4;
-        delete _user_ticket_balance[owner][id];
-
         uint256 index = _user_tickets_id_to_index[owner][id];
         _user_tickets[owner][index] = _user_tickets[owner][_user_tickets[owner].length - 1];
         _user_tickets_id_to_index[owner][_user_tickets[owner][index]] = index;
-        _user_tickets[owner].pop();
-        delete _user_tickets_id_to_index[owner][id];
-
-
+        
 
         index = _user_winning_tickets_id_to_index[owner][id];
         _user_winning_tickets[owner][index] = _user_winning_tickets[owner][_user_tickets[owner].length - 1];
-        delete _user_winning_tickets_id_to_index[owner][id];
         _user_winning_tickets_id_to_index[owner][_user_winning_tickets[owner][index]] = index;
-        _user_winning_tickets[owner].pop();
 
+        _user_tickets[owner].pop();
+        _user_winning_tickets[owner].pop();
+        delete _user_tickets_id_to_index[owner][id];
+        delete _user_winning_tickets_id_to_index[owner][id];
+
+        delete _user_ticket_balance[owner][id];
     }
     
 

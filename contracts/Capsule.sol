@@ -47,7 +47,6 @@ interface IRaffle {
 
 
 interface ICapsuleData {
-    function getCapsuleStatus(uint256 id) external view returns (uint8);
     function setCapsuleStatus(uint256 id, uint8 value) external;
     function getCapsuleLevel(uint256 id) external view returns (uint8);
     function setCapsuleLevel(uint256 id, uint8 value) external;
@@ -55,7 +54,6 @@ interface ICapsuleData {
     function setCapsuleType(uint256 id, uint8 value) external;
     function getNewCapsuleIdByType(uint8 kind) external returns (uint256);
     function hasCapsuleTypeToIds(uint8 kind) external view returns (bool);
-    function deleteCapsuleTypeToIdsLast(uint8 kind) external;
     function burn(uint256 id, address owner) external;
     function airdrop(uint256 id, address owner) external;
 }
@@ -106,17 +104,9 @@ contract Capsule is ERC1155, Ownable {
         for(uint8 i =0; i < units; i++) {
             uint256 capsuleId = ICapsuleData(_admin.getCapsuleDataAddress()).getNewCapsuleIdByType(capsuleType);
 
-            // require(_capsule_status[capsuleId] == 1, "Capsule is not available");
-
-            // _capsule_status[capsuleId] = 2;
-            ICapsuleData(_admin.getCapsuleDataAddress()).setCapsuleStatus(capsuleId, 2);
-
             _mint(dropTo, capsuleId, 1, "");
-
             ICapsuleData(_admin.getCapsuleDataAddress()).airdrop(capsuleId, dropTo);
 
-            // _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
-            ICapsuleData(_admin.getCapsuleDataAddress()).deleteCapsuleTypeToIdsLast(capsuleType);
             capsuleIdsMinted[i] = capsuleId;
         }
         emit CapsuleMinted(capsuleIdsMinted, msg.sender, 0);
@@ -139,17 +129,11 @@ contract Capsule is ERC1155, Ownable {
             // require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
             uint256 capsuleId = ICapsuleData(_admin.getCapsuleDataAddress()).getNewCapsuleIdByType(capsuleType);
 
-            require(ICapsuleData(_admin.getCapsuleDataAddress()).getCapsuleStatus(capsuleId) == 1, "id is not available");
-
-            // _capsule_status[capsuleId] = 2;
-            ICapsuleData(_admin.getCapsuleDataAddress()).setCapsuleStatus(capsuleId, 2);
-
             _mint(owner, capsuleId, 1, "");
 
             ICapsuleData(_admin.getCapsuleDataAddress()).airdrop(capsuleId, owner);
             _raffleContract.burn(owner, ticketId);
             
-            ICapsuleData(_admin.getCapsuleDataAddress()).deleteCapsuleTypeToIdsLast(capsuleType);
             capsuleIdsMinted[i] = capsuleId;
         }
         emit CapsuleMinted(capsuleIdsMinted, msg.sender, 0);

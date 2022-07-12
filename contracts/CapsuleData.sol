@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import "@openzeppelin/contracts/utils/Counters.sol";
 import "./IAdmin.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 interface ICapsuleStaking {
     function getCapsuleStakeInfo(uint256 id) external view returns (address, uint256, uint256);
@@ -26,6 +27,9 @@ interface IERC20Contract {
 
 contract CapsuleData {
 
+    using Counters for Counters.Counter;
+    Counters.Counter private _capsuleCounter;
+
     /**
      * Status values
      */
@@ -39,14 +43,23 @@ contract CapsuleData {
     mapping(uint256 => uint8) public _capsule_status; //keeps mapping of status of each capsule
     mapping(uint256 => uint8) public _capsule_types; //keeps mapping of type value of each capsule. It is defined while adding data
     mapping(uint256 => uint8) _capsule_level; // keeps mapping of level of each capsule
-    mapping(uint8 => uint256[]) _capsule_type_to_ids; // keeps mapping of id list of capsule ids by their type
+    // mapping(uint8 => uint256[]) _capsule_type_to_ids; // keeps mapping of id list of capsule ids by their type
 
     mapping(address => uint256[]) _user_holdings;
     mapping(address => mapping(uint256 => uint256)) _user_holdings_id_index_mapping;
     mapping(uint8 => uint256) public _total_locked;
     mapping(uint8 => uint256) public _total_unlocked;
+    mapping(uint8 => CapsuleSupply) _capsule_type_supply;
 
     IAdmin _admin;
+
+    struct CapsuleSupply {
+        mapping(uint8 => uint32) _supply;
+        mapping(uint8 => uint32) _consumed;
+        uint8[] levels;
+        uint32 _total_supply;
+        uint32 _total_consumed;
+    }
 
     constructor(address adminContractAddress) {
         _admin = IAdmin(adminContractAddress);
@@ -62,7 +75,6 @@ contract CapsuleData {
         require(_admin.getCapsuleAddress() == msg.sender, "You are not authorized.");
         _;
     }
-
 
     function getCapsuleStatus(uint256 id) public view validCapsule returns (uint8) {
         return _capsule_status[id];
@@ -88,66 +100,54 @@ contract CapsuleData {
         _capsule_types[id] = val;
     }
 
-    function getNewCapsuleIdByType(uint8 capsuleType) public view returns (uint256) {
-        require(_capsule_type_to_ids[capsuleType].length > 0, "No capsule published");
-        return _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length - 1];
+    function getNewCapsuleIdByType(uint8 capsuleType) public validCapsule returns (uint256) {
+        uint8 level = pickCapsuleLevel(capsuleType);
+        CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
+
+        require(capsuleSupply._supply[level] - capsuleSupply._consumed[level] > 0, "No capsule available");
+
+        capsuleSupply._consumed[level] +=1;
+        capsuleSupply._total_consumed +=1;
+
+        _capsuleCounter.increment();
+        uint256 id = _capsuleCounter.current();
+        _capsule_status[id] = 2;
+        _capsule_level[id] = level;
+        _capsule_types[id] = capsuleType; 
+
+        return id;
     }
 
-    function hasCapsuleTypeToIds(uint8 kind) public view validCapsule returns (bool) {
-        return _capsule_type_to_ids[kind].length > 0;
-        
+    function hasCapsuleTypeToIds(uint8 capsuleType) public view validCapsule returns (bool) {
+        uint8 level = pickCapsuleLevel(capsuleType);
+        CapsuleSupply storage capsuleSupply = _capsule_type_supply[level];
+        return capsuleSupply._total_supply - capsuleSupply._total_consumed > 0;
     }
 
-    function deleteCapsuleTypeToIdsLast(uint8 kind) public validCapsule {
-        _capsule_type_to_ids[kind].pop();
-    }
+    function addCapsuleSupply(uint8 capsuleType, uint8[] memory levels, uint32[] memory supply) public {
+        require(supply.length ==  levels.length, "Args length not matching");
 
+        CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
 
-    /*
-     * Put Capsule details which can be minted later.
-     * User cant mint a capsule if not added to inventory.
-     * It consumes of array of values which provides various attributes of a capsule diffentiated via index.
-     */
-    function modifyCapsules(
-        bool add,
-        uint256[] memory ids,
-        uint8[] memory levels,
-        uint8[] memory types
-    ) public {
-        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
-        if(add) {
-            require(ids.length ==  levels.length && levels.length == types.length , "Args length not matching");
-            
-            for (uint256 i = 0; i < ids.length; i++) {
-                require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
-                if(_capsule_status[ids[i]] == 0) {
-                    _capsule_type_to_ids[types[i]].push(ids[i]);
-                }
-                _capsule_status[ids[i]] = 1;
-                _capsule_level[ids[i]] = levels[i];
-                _capsule_types[ids[i]] = types[i];
-                _total_locked[types[i]]++;
-            }
-        } else {
-
-            for (uint256 i = 0; i < ids.length; i++) {
-                require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
-                if(_capsule_status[ids[i]] == 0) {
-                    uint256[] storage cids = _capsule_type_to_ids[_capsule_types[ids[i]]];
-                    for(uint256 j = 0; j < cids.length; j++) {
-                        if(cids[j] == ids[i]) {
-                            cids[j] = cids[cids.length -1];
-                            cids.pop();
-                            _total_locked[types[i]]--;
-                            break;
-                        }
-                    }
-                }
-                delete _capsule_status[ids[i]];
-                delete _capsule_level[ids[i]];
-                delete _capsule_types[ids[i]];
-            }
+        for(uint32 i = 0; i < levels.length; i++) {
+            require(capsuleSupply._consumed[levels[i]] < supply[i], "Supply cant be less than consumed");
+            capsuleSupply._supply[levels[i]] = supply[i];
+            capsuleSupply._total_supply += supply[i];
         }
+        capsuleSupply.levels = levels;
+    }
+
+    function pickCapsuleLevel(uint8 capsuleType) public view returns (uint8) {
+        CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
+        uint32 selected = random(capsuleSupply._total_supply - capsuleSupply._total_consumed, _capsuleCounter.current()) + 1;
+        uint32 total = 0;
+        for(uint i = 0; i < capsuleSupply.levels.length; i ++) {
+            if(capsuleSupply._supply[capsuleSupply.levels[i]] - capsuleSupply._consumed[capsuleSupply.levels[i]] + total >= selected) {
+                return capsuleSupply.levels[i];
+            }
+            total += capsuleSupply._supply[capsuleSupply.levels[i]] - capsuleSupply._consumed[capsuleSupply.levels[i]];
+        }
+        require(false, "No capsule available");
     }
 
     function extract(address tokenAddress) public {
@@ -206,5 +206,10 @@ contract CapsuleData {
             require(_capsule_status[capsuleId] == 3, "Token is not vested.");
             _capsule_status[capsuleId] = 2;
         }
+    }
+
+
+    function random(uint256 limit, uint randNonce) public view returns (uint32) {
+        return uint32(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, randNonce)))% limit);
     }
 }
