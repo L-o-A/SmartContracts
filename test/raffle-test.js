@@ -257,14 +257,21 @@ describe("RAFFLE ", function () {
     
     await _LoANFT.connect(addr1).setApprovalForAll(_NFTMarket.address, true);
     await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
-    await _NFTMarket.connect(addr1).list(_LoANFT.address, 10, "2000000000000000000000");
+
+    const myNfts = await _LoANFTData.getUserNFTs(addr1.address);
+    console.log("myNfts :", myNfts);
+
+
+    await _NFTMarket.connect(addr1).list(_LoANFT.address, myNfts[0], "2000000000000000000000");
     console.log("\n\n before unlist", await _NFTMarket.fetchMarketItems());
     await _NFTMarket.connect(addr1).unlist(1);
     await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
-    await _NFTMarket.connect(addr1).list(_LoANFT.address, 10, "2000000000000000000000");
+
+    
+    await _NFTMarket.connect(addr1).list(_LoANFT.address, myNfts[0], "2000000000000000000000");
     
     await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
-    await _NFTMarket.connect(addr1).list(_LoANFT.address, 9, "2000000000000000000000");
+    await _NFTMarket.connect(addr1).list(_LoANFT.address, myNfts[1], "2000000000000000000000");
     
     console.log("\n\n", await _NFTMarket.fetchMarketItems());
     await loa.connect(addr2).approve(_NFTMarket.address, "2000000000000000000000");
@@ -276,7 +283,7 @@ describe("RAFFLE ", function () {
 
     await loa.connect(addr2).approve(_NFTMarket.address, "20000000000000000000");
     await _LoANFT.connect(addr2).setApprovalForAll(_NFTMarket.address, true);
-    await _NFTMarket.connect(addr2).list(_LoANFT.address, 10, "2000000000000000000000");
+    await _NFTMarket.connect(addr2).list(_LoANFT.address, myNfts[0], "2000000000000000000000");
 
 
     console.log("\n\n", await _NFTMarket.fetchMarketItems());
