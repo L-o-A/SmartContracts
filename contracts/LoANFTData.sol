@@ -54,8 +54,7 @@ contract LoANFTData {
         address owner;
         uint8 level;
         uint8 hero;
-        mapping(uint8 => uint64) attributes;
-        string attribute_string;
+        uint64[] attributes;
     }
 
     event NFTMinted(
@@ -109,6 +108,7 @@ contract LoANFTData {
         nft.hero = hero;
         nft.level = level;
         nft.status = 2;
+        nft.attributes = new uint64[](_nft_attribute_names.length);
 
         //set default values
         for(uint8 i = 0; i < nftAttribLimit._default_attributes.length; i++) {
@@ -190,11 +190,11 @@ contract LoANFTData {
             uint8,
             address,
             uint8,
-            string memory
+            uint64[] memory
         )
     {
         require(_nfts[id].status == 2, "Id is not minted");
-        return (_nfts[id].hero, _nfts[id].level, _nfts[id].owner, _nfts[id].status, _nfts[id].attribute_string);
+        return (_nfts[id].hero, _nfts[id].level, _nfts[id].owner, _nfts[id].status, _nfts[id].attributes);
     }
 
     function getUserNFTs(address sender) public view returns (uint256[] memory) {
