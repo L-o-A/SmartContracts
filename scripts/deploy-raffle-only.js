@@ -6,15 +6,16 @@ async function main() {
     const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce";
 
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
+    console.log(90);
     const multiSigAdmin = await MultiSigAdmin.attach("0xb1E95C89893354C5A0Dbff233d56cB072E03ce78");
-    
+    console.log(91);
 
     // const RaffleHelper = await ethers.getContractFactory("RaffleHelper");
     // const raffleHelper = await RaffleHelper.deploy(multiSigAdmin.address);
     // await raffleHelper.deployed();
     // console.log("raffleHelper.address :", raffleHelper.address);
     const RaffleHelper = await ethers.getContractFactory("RaffleHelper");
-    const raffleHelper = await RaffleHelper.attach("0xBdeD735bF0220EdCbeD69319B6396C38a7F6e2f4");
+    const raffleHelper = await RaffleHelper.attach("0x20366BaE0D21943457C61fE401a34Ef26581570B");
     console.log("raffleHelper.address :", raffleHelper.address);
 
     await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [30, 200, 400], [150, 300]);

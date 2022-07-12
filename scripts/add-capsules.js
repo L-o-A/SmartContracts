@@ -7,13 +7,29 @@ async function main() {
    // const capsule = await Capsule.attach("0xcf42951d10D9BeAd202f335278A0fF8b6Fbfb24b");
 
    const CapsuleData = await ethers.getContractFactory("CapsuleData");
-   const capsuleData = await CapsuleData.attach("0x8C6e22139134796C081327fba53489aA5B9167fc");
+   const capsuleData = await CapsuleData.attach("0xb0998478006C0dF46468B4547A54fC83eF07035C");
 
    const base = 340;
-   await capsuleData.modifyCapsules(true,
-      [base + 1, base + 2, base + 3, base + 4, base + 5, base + 6, base + 7, base + 8, base + 9, base + 10, base + 11, base + 12, base + 13, base + 14, base + 15, base + 16, base + 17, base + 18, base + 19, base + 20, base + 21, base + 22, base + 23, base + 24, base + 25, base + 26, base + 27, base + 28, base + 29, base + 30, base + base + 31, base + 32, base + 33, base + 34, base + 35, base + 36, base + 37, base + 38, base + 39, base + 40],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+
+   let ids = [];
+   let levels = [];
+   let types = [];
+
+
+   for (let i = 1; i <= 200; i++) {
+      ids.push(i);
+      levels.push(1);
+      types.push(1);
+   }
+
+   console.log(await capsuleData.getNewCapsuleIdByType(1));
+
+   await capsuleData.modifyCapsules(true, ids, levels, types);
+   console.log("added");
+      // await capsuleData.modifyCapsules(true,
+      // [base + 1, base + 2, base + 3, base + 4, base + 5, base + 6, base + 7, base + 8, base + 9, base + 10, base + 11, base + 12, base + 13, base + 14, base + 15, base + 16, base + 17, base + 18, base + 19, base + 20, base + 21, base + 22, base + 23, base + 24, base + 25, base + 26, base + 27, base + 28, base + 29, base + 30, base + base + 31, base + 32, base + 33, base + 34, base + 35, base + 36, base + 37, base + 38, base + 39, base + 40],
+      // [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      // [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
 
    // await capsuleData.modifyCapsules(true, [61, 62, 63, 64, 65, 66, 67, 68, 69, 70], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]);
    // console.log(1);

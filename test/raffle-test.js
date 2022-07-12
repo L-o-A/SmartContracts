@@ -66,6 +66,9 @@ describe("RAFFLE ", function () {
     
     await capsuleData.addCapsuleSupply(1, [1, 2, 3, 4, 5, 6, 8], [50000, 25500, 14500, 4400, 2200, 1660, 920]);
     await capsuleData.addCapsuleSupply(2, [1, 2, 3], [90750, 49500, 24750]);
+    await capsuleData.addCapsuleSupply(3, [4, 5, 6], [7926, 4323, 2161]);
+    await capsuleData.addCapsuleSupply(4, [8], [3080]);
+    await capsuleData.addCapsuleSupply(5, [9], [100]);
 
     
     
@@ -218,11 +221,18 @@ describe("RAFFLE ", function () {
 
     await _LoANFTData.updateFees([1,2,3], [1000,2000, 3000]);
 
-    await _LoANFTData.addNFTSupply(1, [1,2,3,4,5,6,7,8,9,10],[14075,14075,14075,14075,14075,14075,14075,14075,14075,14075])
+    await _LoANFTData.addNFTSupply(1, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075]);
+    await _LoANFTData.addNFTSupply(2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000]);
+    await _LoANFTData.addNFTSupply(3, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925]);
+    await _LoANFTData.addNFTSupply(4, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1471, 1470, 1470, 1470, 1470, 1471, 1469, 1470, 1470, 1470]);
+    await _LoANFTData.addNFTSupply(5, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [754, 755, 755, 755, 755, 754, 755, 755, 755, 755]);
+    await _LoANFTData.addNFTSupply(6, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [435, 435, 435, 435, 435, 435, 436, 435, 435, 435]);
+    await _LoANFTData.addNFTSupply(8, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [400, 400, 400, 400, 400, 400, 400, 400, 400, 400]);
+    await _LoANFTData.addNFTSupply(9, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [50, 50, 50, 50, 50, 50, 50, 50, 50, 50]);
 
     await multiSigAdmin.setNFTDataAddress(_LoANFTData.address);
 
-    await _LoANFTData.addNFTAttributeLimits(1, 1, [2,3,4,5,6,7,8,9,10,11], [759500], [65100] [1], [] ,[], 1)
+    // await _LoANFTData.addNFTAttributeLimits(1, 1, [2,3,4,5,6,7,8,9,10,11], [759500], [65100] [1], [] ,[], 1)
 
     // await _LoANFTData.putNFTAttributes([1,2,3,4,5,6,7,8,9,10], ["1-0-0", "1-2-0", "1-3-0", "1-4-0", "1-5-0", "2-0-1", "2-0-1", "2-0-1", "2-2-1", "2-0-2"]);
     console.log(12);
