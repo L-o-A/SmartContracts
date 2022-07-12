@@ -100,7 +100,7 @@ contract LoANFTData {
         nftAttribLimit._total_attributes = totalOptionalAttributes;
     }
 
-    function populateAttribute(uint256 id, uint8 level, uint8 hero) public {
+    function populateAttribute(uint256 id, uint8 level, uint8 hero) private {
         NFT storage nft = _nfts[id];
         require(nft.status < 2, "NFT is minted");
         NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
