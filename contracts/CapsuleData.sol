@@ -42,7 +42,7 @@ contract CapsuleData {
     // 6 : burned
     mapping(uint256 => uint8) public _capsule_status; //keeps mapping of status of each capsule
     mapping(uint256 => uint8) public _capsule_types; //keeps mapping of type value of each capsule. It is defined while adding data
-    mapping(uint256 => uint8) public _capsule_level; // keeps mapping of level of each capsule
+    mapping(uint256 => uint8) _capsule_level; // keeps mapping of level of each capsule
 
     mapping(address => uint256[]) _user_holdings;
     mapping(address => mapping(uint256 => uint256)) _user_holdings_id_index_mapping;
@@ -147,6 +147,7 @@ contract CapsuleData {
             total += capsuleSupply._supply[capsuleSupply.levels[i]] - capsuleSupply._consumed[capsuleSupply.levels[i]];
         }
         require(false, "No capsule available");
+        return 0;
     }
 
     function extract(address tokenAddress) public {
@@ -209,6 +210,7 @@ contract CapsuleData {
 
 
     function random(uint256 limit, uint randNonce) public view returns (uint32) {
+        require(limit > 0, "Divide by zero");
         return uint32(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, randNonce)))% limit);
     }
 }

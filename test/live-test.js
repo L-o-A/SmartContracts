@@ -340,6 +340,25 @@ describe("LIVE MP Test ", function () {
     console.log(16.1);
 
 
+    //------------------------------------------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------
+
+    await 
+    await capsule.airdrop(5, addr1.address, 1);
+
+    const capsules_data = await capsuleData.getUserCapsules(addr1.address);
+    console.log("Capsules :", capsules_data);
+
+    await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000000000");
+    await _LoANFT.connect(addr1).mint(capsules_data);
+
+    console.log("nfts : ", await _LoANFTData.getUserNFTs(addr1.address));
+
+
+
+    return;
+
+
     await loa.connect(addr1).approve(raffle.address, "20000000000000000000000000");
     await raffle.connect(addr1).buyTicket(100);
 

@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./IAdmin.sol";
 
-//import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract LoANFTData {
 

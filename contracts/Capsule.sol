@@ -95,10 +95,6 @@ contract Capsule is ERC1155, Ownable {
 
     function airdrop(uint8 capsuleType, address dropTo, uint8 units) public {
         require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
-        
-
-        // require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
-
         uint256[] memory capsuleIdsMinted = new uint256[](units);
 
         for(uint8 i =0; i < units; i++) {
