@@ -3,12 +3,17 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Setting LOA Attributes...");
 
-    const LOANFT_DATA_ADDRESS = "0xaa830E7B5061E81083aF344777709C3E6DB7FA4A";
+    const LOANFT_DATA_ADDRESS = "0x55610Abb6a3c3FA11540E0d9e54309Cf4763BAbB";
 
     const LoANFTData = await ethers.getContractFactory("LoANFTData");
     const _LoANFTData = await LoANFTData.attach(LOANFT_DATA_ADDRESS);
 
     console.log(0);
+
+
+    await _LoANFTData.updateFees([1, 2, 3, 4, 5], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000", "3000000000000000000000", "3000000000000000000000"]);
+
+    return;
 
     // await _LoANFTData.putNFTAttributeNames(["HASH-POWER", "MAX-HP", "MAX-PRANA", "MAXSPEED", "HP-REGEN", "PRANA-REGEN", "ATTACK-DAMAGE", "ATTACK-SPEED", "CRITICAL-DAMAGE", "ARMOUR", "MAGIC-DEFENCE"]);
 

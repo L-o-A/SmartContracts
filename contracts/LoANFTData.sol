@@ -124,7 +124,7 @@ contract LoANFTData {
     }
 
 
-    function addNFTSupply(uint8 level, uint8[] memory heroes, uint32[] memory supply) public {
+    function addNFTSupply(uint8 level, uint8[] memory heroes, uint32[] memory supply) public validAdmin {
         require(supply.length ==  heroes.length, "Args length not matching");
 
         NFTSupply storage nftSupply = _nft_level_supply[level];
@@ -137,7 +137,7 @@ contract LoANFTData {
         nftSupply.heroes = heroes;
     }
 
-    function pickNFTHero(uint8 level) public view returns (uint8) {
+    function pickNFTHero(uint8 level) private view returns (uint8) {
         NFTSupply storage nftSupply = _nft_level_supply[level];
         uint32 selected = random(nftSupply._total_supply - nftSupply._total_consumed, _nftCounter.current()) + 1;
         uint32 total = 0;
@@ -166,9 +166,7 @@ contract LoANFTData {
         return id;
     }
 
-    function updateFees(uint8[] memory capsuleTypes, uint256[] memory fees)
-        public
-        validAdmin
+    function updateFees(uint8[] memory capsuleTypes, uint256[] memory fees) public validAdmin
     {
         require(capsuleTypes.length == fees.length, "args length must match");
         for (uint8 i = 0; i < capsuleTypes.length; i++) {

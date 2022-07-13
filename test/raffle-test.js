@@ -222,12 +222,18 @@
 
 //     await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000");
 
-//     const capsules = await capsuleData.getUserCapsules(addr1.address);
-
+//     let capsules = await capsuleData.getUserCapsules(addr1.address);
+    
+//     console.log("capsules count :", capsules.length);
+    
 //     console.log("ready to mint nft");
-//     await _LoANFT.connect(addr1).mint(capsules);
+//     await _LoANFT.connect(addr1).mint([capsules[0], capsules[1]]);
 //     console.log("nft minted");
+    
+//     capsules = await capsuleData.getUserCapsules(addr1.address);
+//     console.log("capsules count - 2:", capsules.length);
 
+//     return;
 
 //     console.log("getUserNFTs :", await _LoANFTData.getUserNFTs(addr1.address));
 
