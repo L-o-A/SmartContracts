@@ -6,7 +6,7 @@ const { ethers } = require("hardhat");
 describe("LIVE MP Test ", function () {
   it("LIVE MP Test", async function () {
 
-    const [owner, addr1, addr2, addr3] = await ethers.getSigners();
+    const [owner, addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
     
 
     // const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce"; //BSC Testnet
@@ -46,8 +46,8 @@ describe("LIVE MP Test ", function () {
         await multiSigAdmin.deployed();
         console.log("multiSigAdmin.address :", multiSigAdmin.address);
 
-        await multiSigAdmin.modifyAdmin(admin2, true);
-        await multiSigAdmin.modifyAdmin(admin3, true);
+        // await multiSigAdmin.modifyAdmin(admin2, true);
+        // await multiSigAdmin.modifyAdmin(admin3, true);
         await multiSigAdmin.modifyAdmin(treasury, true);
         await multiSigAdmin.setTreasury(treasury);
     }
@@ -179,8 +179,9 @@ describe("LIVE MP Test ", function () {
 
     await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
 
-
-    await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [100, 200, 400], [150, 300]);
+    await raffleHelper.putRafflePrices([500,1000, 1500, 2500],
+        ["1000000000000000000000", "1100000000000000000000", "1333000000000000000000", "1666000000000000000000", "2000000000000000000000"], 
+        [100, 200, 300, 400, 500], [500,1000, 1500, 2500]);
 
 
     await raffleHelper.setRaffle(raffle.address);
@@ -217,7 +218,6 @@ describe("LIVE MP Test ", function () {
 
     await _LoANFTData.putNFTAttributeNames(["HASH-POWER", "MAX-HP", "MAX-PRANA", "MAXSPEED", "HP-REGEN", "PRANA-REGEN", "ATTACK-DAMAGE", "ATTACK-SPEED", "CRITICAL-DAMAGE", "ARMOUR", "MAGIC-DEFENCE"]);
 
-    console.log(11);
 
     console.log(13);
 
@@ -337,58 +337,138 @@ describe("LIVE MP Test ", function () {
     await _LoANFTData.addNFTAttributeLimits(8, 10, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [2718200, 3444200, 129200, 107600, 58200, 268400, 24600, 176000, 289500, 142600], [2435100, 3352600, 112200, 103700, 56100, 253200, 23200, 166000, 273100, 134500], [1], [50000], [10000], 1);
     await _LoANFTData.addNFTAttributeLimits(9, 10, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [3397800, 3664000, 170000, 117000, 63300, 305000, 28000, 200000, 329000, 162000], [2831500, 3480800, 136000, 109200, 59100, 274500, 25200, 180000, 296100, 145800], [1], [50000], [10000], 1);
 
+    console.log(16.1);
 
 
+    await loa.connect(addr1).approve(raffle.address, "20000000000000000000000000");
+    await raffle.connect(addr1).buyTicket(100);
 
-    await loa.connect(addr1).approve(raffle.address, "20000000000000000000000");
-    await raffle.connect(addr1).buyTicket(50);
+    console.log(16.2);
+
+    await loa.connect(addr4).mint("20000000000000000000000000");
+    await loa.connect(addr4).approve(raffle.address, "20000000000000000000000000");
+    await raffle.connect(addr4).buyTicket(100);
+
+    await loa.connect(addr5).mint("20000000000000000000000000");
+    await loa.connect(addr5).approve(raffle.address, "20000000000000000000000000");
+    await raffle.connect(addr5).buyTicket(100);
 
     //close raffle
     await raffle.setRaffleInfo(1, 10, 100, 102);
 
+    console.log(17);
+
     await raffle.pickWinner(100);
+
+    console.log(18);
     console.log("getUserWinningTickets:", await raffle.connect(addr1).getUserWinningTickets(addr1.address));
 
     await raffle.connect(addr1).withdraw(loa.address);
     await raffle.connect(addr1).withdraw(loa.address);
+    await raffle.connect(addr1).withdraw(loa.address);
+    await raffle.connect(addr1).withdraw(loa.address);
+    await raffle.connect(addr1).withdraw(loa.address);
+    await raffle.connect(addr1).withdraw(loa.address);
 
-
+    console.log(20);
+    
     const tickets = await raffle.getUserTickets(addr1.address)
     console.log("getUserTickets :", tickets);
     await capsule.connect(addr1).claim(tickets, raffle.address, addr1.address);
-
+    
+    console.log(21);
     console.log(await capsuleData.getUserCapsules(addr1.address));
-
-
+    
+    
     await capsule.connect(addr1).setApprovalForAll(capsuleStaking.address, true);
     await loa.connect(addr1).approve(capsuleStaking.address, "200000000000000000000000");
     const userCapsules = await capsuleData.getUserCapsules(addr1.address);
     console.log("user Capsules -0", await capsuleData.getUserCapsules(addr1.address));
-
+    
     await capsuleStaking.connect(addr1).stake(userCapsules);
-
+    
+    console.log(22);
     
     await capsuleStaking.connect(addr1).reclaim(userCapsules, false);
     console.log("user Capsules -1", await capsuleData.getUserCapsules(addr1.address));
-
-
-
-
+    console.log(23);
+    
+    
+    
+    
     await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000");
     const capsules = await capsuleData.getUserCapsules(addr1.address);
     
-
+    
     await loa.connect(addr1).approve(_LoANFT.address, "200000000000000000000000");
-
-
+    
+    
     console.log("ready to mint nft");
     await _LoANFT.connect(addr1).mint(capsules);
+    
+    console.log(24);
+    
+    
+    raffleHelper = await (await ethers.getContractFactory("RaffleHelper")).deploy(multiSigAdmin.address);
+    await raffleHelper.deployed();
+    console.log("raffleHelper.address :", raffleHelper.address);
 
 
+    raffle = await (await ethers.getContractFactory("Raffle")).deploy(loa.address, raffleHelper.address, multiSigAdmin.address);
+    await raffle.deployed();
+    console.log("raffle.address :", raffle.address);
+
+    await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
+
+    await raffle.setRaffleInfo(1, twoDaysAgo + "", tomorrow + "", future + "");
+
+    await raffleHelper.putRafflePrices([500,1000, 1500, 2500],
+      ["1000000000000000000000", "1100000000000000000000", "1333000000000000000000", "1666000000000000000000", "2000000000000000000000"], 
+      [100, 200, 300, 400, 500], [500,1000, 1500, 2500]);
+
+
+
+    await loa.connect(addr1).approve(raffle.address, "20000000000000000000000000");
+    await raffle.connect(addr1).buyTicket(100);
+
+    console.log(25);
+
+    await loa.connect(addr4).mint("20000000000000000000000000");
+    await loa.connect(addr4).approve(raffle.address, "20000000000000000000000000");
+    await raffle.connect(addr4).buyTicket(100);
+
+    await loa.connect(addr5).mint("20000000000000000000000000");
+    await loa.connect(addr5).approve(raffle.address, "20000000000000000000000000");
+    await raffle.connect(addr5).buyTicket(100);
+
+    //close raffle
+    await raffle.setRaffleInfo(1, 10, 100, 102);
+
+    
+
+    console.log(26);
+
+    await raffle.pickWinner(100);
+    try{
+    await raffle.pickWinner(100);
+    }catch(e){}
+
+
+    console.log(18);
+    console.log("getUserWinningTickets:", await raffle.connect(addr1).getUserWinningTickets(addr1.address));
+
+    await raffle.connect(addr1).withdraw(loa.address);
+    await raffle.connect(addr1).withdraw(loa.address);
+    await raffle.connect(addr4).withdraw(loa.address);
+    await raffle.connect(addr4).withdraw(loa.address);
+    await raffle.connect(addr5).withdraw(loa.address);
+    await raffle.connect(addr5).withdraw(loa.address);
 
 
     console.log("done");
-  });
+
+    //done();
+  }).timeout(100000);
 });
 
 

@@ -133,7 +133,7 @@ contract Raffle {
         
 
         index = _user_winning_tickets_id_to_index[owner][id];
-        _user_winning_tickets[owner][index] = _user_winning_tickets[owner][_user_tickets[owner].length - 1];
+        _user_winning_tickets[owner][index] = _user_winning_tickets[owner][_user_winning_tickets[owner].length - 1];
         _user_winning_tickets_id_to_index[owner][_user_winning_tickets[owner][index]] = index;
 
         _user_tickets[owner].pop();
