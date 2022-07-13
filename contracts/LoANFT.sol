@@ -135,16 +135,17 @@ contract LoANFT is ERC1155, Ownable {
                 "Capsule is not owned by user"
             );
             (, uint8 capsuleLevel, ,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleId);
-
+            require(capsuleLevel > 0, "Capsule level not found");
             (uint256 id, uint256 fee) = _nftData.mint(capsuleLevel, msg.sender);
+            require(id > 0, "NFT not found");
 
-            require(IERC20Contract(_loaAddress).balanceOf(msg.sender) >= fee, "Not enough minting fee available");
-            IERC20Contract(_loaAddress).transferFrom(msg.sender, _admin.getTreasury(), fee);
+            require(IERC20Contract(_loaAddress).transferFrom(msg.sender, _admin.getTreasury(), fee) , "Not enough minting fee available");
             IERC1155Contract(_admin.getCapsuleAddress()).burn(  msg.sender, capsuleId);
             _mint(msg.sender, id, 1, "");
             emit NFTMinted(id, capsuleId, msg.sender, 0);
         }
     }
+
 
     function withdraw(address tokenAddress) public validAdmin {
         if (tokenAddress == address(0)) {
