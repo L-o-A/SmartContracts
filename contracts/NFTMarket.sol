@@ -49,7 +49,7 @@ interface IERC20Contract {
 }
 
 interface INFTData {
-    function getNFTDetail(uint256 id) external view returns ( uint8, uint8, address, uint8, string memory);
+    function getNFTDetail(uint256 id) external view returns ( uint8, uint8, address, uint8, uint64[] memory);
 }
 
 interface ICapsuleDataContract {
@@ -66,7 +66,6 @@ contract NFTMarket is ERC1155Holder {
     MarketItem[] _listed_items;
     mapping(uint256 => uint256) _listed_items_to_index;
     mapping(address => mapping(uint256 => uint256)) public _addess_to_id_to_itemId;
-    mapping(address => uint256) public _user_balance;
     mapping(address => uint256) public _listingFee;
     mapping(address => uint256) public _transactionFee;
     uint256 public _totalLOAStaked;
@@ -82,7 +81,7 @@ contract NFTMarket is ERC1155Holder {
         address owner,
         uint256 price,
         uint8 action,
-        string attributes,
+        uint64[] attributes,
         uint8 hero,
         uint8 level,
         uint8 status
@@ -95,7 +94,7 @@ contract NFTMarket is ERC1155Holder {
         address seller;
         address owner;
         uint256 price;
-        string attributes;
+        uint64[] attributes;
         uint8 hero;
         uint8 level;
         uint8 status;
@@ -118,7 +117,7 @@ contract NFTMarket is ERC1155Holder {
             address(0),
             address(0),
             0,
-            "",
+            new uint64[](0),
             0,
             0,
             0
@@ -158,8 +157,7 @@ contract NFTMarket is ERC1155Holder {
         _itemIds.increment();
         uint256 itemId = _itemIds.current();
         if(nftContract == _admin.getNFTAddress()) {
-            (uint8 hero, uint8 level, , , string memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
-            
+            (uint8 hero, uint8 level, , , uint64[] memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
             _listed_items.push(MarketItem(
                 itemId,
                 nftContract,
@@ -197,7 +195,7 @@ contract NFTMarket is ERC1155Holder {
                 msg.sender,
                 address(0),
                 price,
-                "",
+                new uint64[](0),
                 0,
                 capsuleType,
                 capsuleStatus
@@ -211,7 +209,7 @@ contract NFTMarket is ERC1155Holder {
                 address(0),
                 price,
                 1,
-                "",
+                new uint64[](0),
                 0,
                 capsuleType,
                 capsuleStatus
@@ -302,9 +300,11 @@ contract NFTMarket is ERC1155Holder {
         uint256 index = _listed_items_to_index[itemId];
         require(index != 0, "Item not present");
 
-        uint256 price = _listed_items[index].price;
-        uint256 tokenId = _listed_items[index].tokenId;
-        address nftContract = _listed_items[index].nftContract;
+        MarketItem storage marketItem = _listed_items[index];
+
+        uint256 price = marketItem.price;
+        uint256 tokenId = marketItem.tokenId;
+        address nftContract = marketItem.nftContract;
 
         require(
             _erc20Token.balanceOf(msg.sender) >= price,
@@ -313,22 +313,20 @@ contract NFTMarket is ERC1155Holder {
         
         //transfer seller amount
         uint256 transFee = price * _transactionFee[nftContract] / 1000;
-        // _erc20Token.transferFrom(msg.sender, _admin.getTreasury(), transFee);
-        // _erc20Token.transferFrom(msg.sender, _listed_items[index].seller, price - transFee);
         _erc20Token.transferFrom(msg.sender, address(this), price);
-        _erc20Token.transfer(_listed_items[index].seller, price - transFee);
+        _erc20Token.transfer(marketItem.seller, price - transFee);
         _erc20Token.transfer(_admin.getTreasury(), transFee);
 
         IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
 
-        if(_listed_items[index].nftContract == _admin.getNFTAddress()) {
-            (uint8 hero, uint8 level, , , string memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
+        if(marketItem.nftContract == _admin.getNFTAddress()) {
+            (uint8 hero, uint8 level, , , uint64[] memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
     
             emit MarketItemAction(
                 itemId,
-                _listed_items[index].nftContract,
-                _listed_items[index].tokenId,
-                _listed_items[index].seller,
+                marketItem.nftContract,
+                marketItem.tokenId,
+                marketItem.seller,
                 msg.sender,
                 price,
                 4,
@@ -341,23 +339,23 @@ contract NFTMarket is ERC1155Holder {
 
             emit MarketItemAction(
                 itemId,
-                _listed_items[index].nftContract,
-                _listed_items[index].tokenId,
-                _listed_items[index].seller,
+                marketItem.nftContract,
+                marketItem.tokenId,
+                marketItem.seller,
                 msg.sender,
                 price,
                 4,
-                "",
+                new uint64[](0),
                 0,
-                _listed_items[index].level,
-                _listed_items[index].status
+                marketItem.level,
+                marketItem.status
             );
 
         }
-        delete _addess_to_id_to_itemId[_listed_items[index].nftContract][tokenId];
+        delete _addess_to_id_to_itemId[marketItem.nftContract][tokenId];
 
         _listed_items[index] = _listed_items[_listed_items.length - 1];
-        _listed_items_to_index[_listed_items[index].itemId] = index;
+        _listed_items_to_index[marketItem.itemId] = index;
         _listed_items.pop();
         delete _listed_items_to_index[itemId];
     }
@@ -366,12 +364,6 @@ contract NFTMarket is ERC1155Holder {
         return _listed_items;
     }
 
-    function withdraw() public {
-        uint256 balance = _user_balance[msg.sender];
-        require(balance > 0, "No balance present to withdraw." );
-         _erc20Token.transfer(msg.sender, balance);
-    } 
-
     function extract(address tokenAddress) public {
         require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
 
@@ -379,8 +371,7 @@ contract NFTMarket is ERC1155Holder {
             payable(_admin.getTreasury()).transfer(address(this).balance);
             return;
         }
-        IERC20Contract token = IERC20Contract(tokenAddress);
-        require(token.balanceOf(address(this)) > 0, "No balance available");
-        token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
+        require(IERC20Contract(tokenAddress).balanceOf(address(this)) > 0, "No balance available");
+        IERC20Contract(tokenAddress).transfer(_admin.getTreasury(), IERC20Contract(tokenAddress).balanceOf(address(this)));
     }
 }

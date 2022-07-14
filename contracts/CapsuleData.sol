@@ -101,6 +101,7 @@ contract CapsuleData {
 
     function getNewCapsuleIdByType(uint8 capsuleType) public validCapsule returns (uint256) {
         uint8 level = pickCapsuleLevel(capsuleType);
+        require(level > 0, "No capsule available");
         CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
 
         require(capsuleSupply._supply[level] - capsuleSupply._consumed[level] > 0, "No capsule available");
@@ -146,7 +147,6 @@ contract CapsuleData {
             }
             total += capsuleSupply._supply[capsuleSupply.levels[i]] - capsuleSupply._consumed[capsuleSupply.levels[i]];
         }
-        require(false, "No capsule available");
         return 0;
     }
 

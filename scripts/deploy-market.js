@@ -3,11 +3,11 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Deploying Market...");
 
-    const multiSigAdminAddr = "0xb1E95C89893354C5A0Dbff233d56cB072E03ce78";
+    const multiSigAdminAddr = "0x590CD0257F0D69dEb54E49122Fcef746d8a2720e";
     loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce"
 
-    const nft = "0x6c73041c14fffbd1deD66466C3F4Af7306fCd0B6";
-    const capsule = "0xcf42951d10D9BeAd202f335278A0fF8b6Fbfb24b";
+    const nft = "0x06d1dA4b026cdFde739F5da268D8864e230e1DDc";
+    const capsule = "0x6790a268314e3D5a7308E0FF76721c216A4493d2";
 
     const NFTMarket = await ethers.getContractFactory("NFTMarket");
     const _NFTMarket = await NFTMarket.deploy(loa, multiSigAdminAddr);
