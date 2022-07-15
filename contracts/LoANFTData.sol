@@ -5,24 +5,20 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "./IAdmin.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract LoANFTData {
 
     using Counters for Counters.Counter;
     Counters.Counter private _nftCounter;
 
-    mapping(uint8 => NFTSupply) _nft_level_supply;
+    mapping(uint8 => NFTSupply) public _nft_level_supply;
     mapping(uint8 => uint256) public _minting_fee;
     mapping(address => uint256[]) _user_holdings;
 
     string[] public _nft_attribute_names;
-    mapping(uint256 => string) _nft_attributes;
-    mapping(address => uint8) _axionAddresses; // Axion Contract
-    mapping(uint8 => uint256) public _nft_level_to_total_added;
-    mapping(uint8 => uint256) public _nft_level_to_total_minted;
 
-    mapping(uint256 => NFT) public _nfts;
+    mapping(uint256 => NFT) _nfts;
     mapping(uint8=> mapping(uint8 => NFTAttribLimit)) _nft_attrib_by_level_hero;
 
     IAdmin _admin;
@@ -88,10 +84,12 @@ contract LoANFTData {
         NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
 
         for(uint8 i = 0; i < optionalAttributes.length; i++) {
+            require(maxValues[i] > minValues[i], "Max < Min");
             nftAttribLimit._max[optionalAttributes[i]] = maxValues[i];
             nftAttribLimit._min[optionalAttributes[i]] = minValues[i];
         }
         for(uint8 i = 0; i < defaultAttributes.length; i++) {
+            require(defaultMaxValues[i] > defaultMinValues[i], "Max < Min");
             nftAttribLimit._max[defaultAttributes[i]] = defaultMaxValues[i];
             nftAttribLimit._min[defaultAttributes[i]] = defaultMinValues[i];
         }
@@ -100,29 +98,33 @@ contract LoANFTData {
         nftAttribLimit._total_attributes = totalOptionalAttributes;
     }
 
-    function populateAttribute(uint256 id, uint8 level, uint8 hero) private {
+    function populateAttribute(uint256 id, uint8 level, uint8 hero) public {
         NFT storage nft = _nfts[id];
-        require(nft.status < 2, "NFT is minted");
         NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
+        require(nftAttribLimit._total_attributes > 0, "Attribute not set hero level");
 
+        nft.id = id;
         nft.hero = hero;
         nft.level = level;
-        nft.status = 2;
         nft.attributes = new uint64[](_nft_attribute_names.length + 1);
 
         //set default values
         for(uint8 i = 0; i < nftAttribLimit._default_attributes.length; i++) {
             nft.attributes[nftAttribLimit._default_attributes[i]] = nftAttribLimit._min[nftAttribLimit._default_attributes[i]]  + 
-               random(nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]], 0);
+               random(nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]], i + block.timestamp);
         }
 
-        uint8[] memory otherAttributes = randomMultiple(nftAttribLimit._attributes, nftAttribLimit._total_attributes, id);
+        uint8[] memory otherAttributes = randomSubList(nftAttribLimit._attributes, nftAttribLimit._total_attributes, id);
         for(uint8 i = 0; i < otherAttributes.length; i++) {
             nft.attributes[otherAttributes[i]] = nftAttribLimit._min[otherAttributes[i]] + 
-                random(nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]], i);
+                random(nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]], i + block.timestamp);
         }
     }
 
+    function getNFTAttrLimit(uint8 level, uint8 hero) public view returns (uint8[] memory, uint8[] memory, uint8) {
+        NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
+        return (nftAttribLimit._attributes, nftAttribLimit._default_attributes, nftAttribLimit._total_attributes);
+    }
 
     function addNFTSupply(uint8 level, uint8[] memory heroes, uint32[] memory supply) public validAdmin {
         require(supply.length ==  heroes.length, "Args length not matching");
@@ -137,7 +139,11 @@ contract LoANFTData {
         nftSupply.heroes = heroes;
     }
 
-    function pickNFTHero(uint8 level) private view returns (uint8) {
+    function getNFTSupply(uint8 level) public view returns (uint32, uint32) {
+        return (_nft_level_supply[level]._total_supply, _nft_level_supply[level]._total_consumed);
+    }
+
+    function pickNFTHero(uint8 level) public view returns (uint8) {
         NFTSupply storage nftSupply = _nft_level_supply[level];
         uint32 selected = random(nftSupply._total_supply - nftSupply._total_consumed, _nftCounter.current()) + 1;
         uint32 total = 0;
@@ -151,7 +157,7 @@ contract LoANFTData {
         return 0;
     }
 
-    function getNewNFTByLevel(uint8 level) private returns (uint256) {
+    function getNewNFTByLevel(uint8 level) public returns (uint256) {
         uint8 hero = pickNFTHero(level);
         NFTSupply storage nftSupply = _nft_level_supply[level];
 
@@ -163,6 +169,7 @@ contract LoANFTData {
         _nftCounter.increment();
         uint256 id = _nftCounter.current();
         populateAttribute(id, level, hero);
+        _nfts[id].status = 2;
         return id;
     }
 
@@ -184,26 +191,18 @@ contract LoANFTData {
         public
         view
         returns (
-            uint8,
-            uint8,
-            address,
-            uint8,
-            uint64[] memory
+            NFT memory
         )
     {
         require(_nfts[id].status == 2, "Id is not minted");
-        return (_nfts[id].hero, _nfts[id].level, _nfts[id].owner, _nfts[id].status, _nfts[id].attributes);
+        return (_nfts[id]);
     }
 
     function getUserNFTs(address sender) public view returns (uint256[] memory) {
         return _user_holdings[sender];
     }
 
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id
-    ) public {
+    function doTransferFrom( address from, address to, uint256 id) public {
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
         
         for (uint256 j = 0; j < _user_holdings[from].length; j++) {
@@ -218,11 +217,7 @@ contract LoANFTData {
         _user_holdings[to].push(id);
     }
 
-    function safeBatchTransferFrom(
-        address from,
-        address to,
-        uint256[] memory ids
-    ) public {
+    function doBatchTransfer(address from, address to, uint256[] memory ids) public {
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
         for(uint256 i =0; i < ids.length; i++){
             uint256 id = ids[i];
@@ -239,11 +234,7 @@ contract LoANFTData {
         }
     }
 
-    function fusion(
-        address owner,
-        uint256[] memory ids,
-        uint8 fusionLevel
-    ) public returns (uint256) {
+    function doFusion(address owner, uint256[] memory ids, uint8 fusionLevel ) public returns (uint256) {
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
 
         for (uint8 i = 0; i < ids.length; i++) {
@@ -262,12 +253,11 @@ contract LoANFTData {
 
         _nfts[id].owner = owner;
         _user_holdings[owner].push(id);
-        _nft_level_to_total_minted[fusionLevel]++;
 
         return id;
     }
 
-    function mint(uint8 capsuleLevel, address owner) public returns (uint256, uint256) {
+    function doMint(uint8 capsuleLevel, address owner) public returns (uint256, uint256) {
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
 
         uint256 id = getNewNFTByLevel(capsuleLevel);
@@ -275,26 +265,13 @@ contract LoANFTData {
        
         _nfts[id].owner = owner;
         _user_holdings[owner].push(id);
-        _nft_level_to_total_minted[capsuleLevel]++;
 
         return (id, fee);
     }
 
-    function modifyAxionAddresses(address axionAddress, bool add) public validAdmin {
-        if(add)
-            _axionAddresses[axionAddress] = 1;
-        else
-            delete _axionAddresses[axionAddress];
-    }
-
-    function modifyProperty(uint256 id, string memory newProperties) public {
-        require(_axionAddresses[msg.sender] == 1, "Not authorized axion contract");
-        _nft_attributes[id] = newProperties;
-    }
-
-    function getNFTAttributes(uint256 id) public view returns (string memory) {
-        require(_admin.isValidMarketPlaceContract(msg.sender), "Not authorized");
-        return (_nft_attributes[id]);
+    function repopulatePropery(uint256 id) public {
+        require(msg.sender == _admin.getAxionAddress(), "Not authorized axion");
+        populateAttribute(id, _nfts[id].level, _nfts[id].hero);
     }
 
     function putNFTAttributeNames (string[] memory nft_attribute_names) public validAdmin {
@@ -311,21 +288,28 @@ contract LoANFTData {
         token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
     }
 
-    function randomMultiple(uint8[] memory all, uint8 units, uint randNonce) public view returns (uint8[] memory) {
-
-        uint8[] memory finalList = new uint8[](units);
+    function randomSubList(uint8[] memory list, uint8 units, uint randNonce) public view returns (uint8[] memory) {
+        uint8[] memory subList = new uint8[](units);
         uint8 count = 0;
         uint8 nonceIncrementor = 0;
 
         for(uint8 i = 0; i < units; ) {
-            uint32 index = random(uint256(all.length), randNonce + nonceIncrementor++);
-            if(all[index] > 0) {
-                finalList[count++] = all[index];
-                all[index] = 0;
+            uint32 index = random(uint256(list.length), randNonce + nonceIncrementor++);
+            if(list[index] > 0) {
+                subList[count++] = list[index];
+                list[index] = 0;
+                i++;
+            } else if(list.length > index + 1 && list[index + 1] > 0) {
+                subList[count++] = list[index + 1];
+                list[index + 1] = 0;
+                i++;
+            } else if(index - 1 >= 0 && list[index - 1] > 0) {
+                subList[count++] = list[index - 1];
+                list[index - 1] = 0;
                 i++;
             }
         }
-        return finalList;
+        return subList;
     }
 
     function random(uint256 limit, uint randNonce) public view returns (uint32) {

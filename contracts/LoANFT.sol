@@ -45,11 +45,18 @@ interface ICapsuleDataContract {
     function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
 }
 
+interface ILoANFTData {
+    function doTransferFrom( address from, address to, uint256 id) external;
+    function doBatchTransfer(address from, address to, uint256[] memory ids) external;
+    function doFusion(address owner, uint256[] memory ids, uint8 fusionLevel ) external returns (uint256);
+    function doMint(uint8 capsuleLevel, address owner) external returns (uint256, uint256);
+}
+
 contract LoANFT is ERC1155, Ownable {
 
     address _loaAddress;
     IAdmin _admin;
-    LoANFTData _nftData;
+    ILoANFTData _nftData;
 
     event NFTMinted(
         uint256 indexed itemIds,
@@ -63,7 +70,7 @@ contract LoANFT is ERC1155, Ownable {
     {
         _loaAddress = loaAddress;
         _admin = IAdmin(adminContractAddress);
-        _nftData = LoANFTData(nftData);
+        _nftData = ILoANFTData(nftData);
     }
 
     // Modifier
@@ -85,7 +92,7 @@ contract LoANFT is ERC1155, Ownable {
                 "Not authorized to transfer"
         );
 
-        _nftData.safeTransferFrom(from, to, id);
+        _nftData.doTransferFrom(from, to, id);
         
 
         return super.safeTransferFrom(from, to, id, amount, data);
@@ -103,7 +110,7 @@ contract LoANFT is ERC1155, Ownable {
             || _admin.isValidMarketPlaceContract(msg.sender),
                 "Not authorized to transfer"
         );
-        _nftData.safeBatchTransferFrom(from, to, ids);
+        _nftData.doBatchTransfer(from, to, ids);
 
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }
@@ -116,7 +123,7 @@ contract LoANFT is ERC1155, Ownable {
     ) public {
         require(msg.sender == _admin.getFusionAddress(), "Not authorized");
 
-        uint256 id = _nftData.fusion( owner, ids, fusionLevel);
+        uint256 id = _nftData.doFusion( owner, ids, fusionLevel);
         _mint(owner, id, 1, "");
         for (uint8 i = 0; i < ids.length; i++) {
             _burn(owner, ids[i], 1);
@@ -136,7 +143,7 @@ contract LoANFT is ERC1155, Ownable {
             );
             (, uint8 capsuleLevel, ,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleId);
             require(capsuleLevel > 0, "Capsule level not found");
-            (uint256 id, uint256 fee) = _nftData.mint(capsuleLevel, msg.sender);
+            (uint256 id, uint256 fee) = _nftData.doMint(capsuleLevel, msg.sender);
             require(id > 0, "NFT not found");
 
             require(IERC20Contract(_loaAddress).transferFrom(msg.sender, _admin.getTreasury(), fee) , "Not enough minting fee available");

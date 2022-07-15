@@ -901,6 +901,36 @@ contract StringUtil {
         return parts;
     }
 
+
+    function randomSubList(uint8[] memory list, uint8 units, uint randNonce) public view returns (uint8[] memory) {
+        uint8[] memory subList = new uint8[](units);
+        uint8 count = 0;
+        uint8 nonceIncrementor = 0;
+
+        for(uint8 i = 0; i < units; ) {
+            uint32 index = random(uint256(list.length), randNonce + nonceIncrementor++);
+            if(list[index] > 0) {
+                subList[count++] = list[index];
+                list[index] = 0;
+                i++;
+            } else if(list.length > index + 1 && list[index + 1] > 0) {
+                subList[count++] = list[index + 1];
+                list[index + 1] = 0;
+                i++;
+            } else if(index - 1 >= 0 && list[index - 1] > 0) {
+                subList[count++] = list[index - 1];
+                list[index - 1] = 0;
+                i++;
+            }
+        }
+        return subList;
+    }
+
+    function random(uint256 limit, uint randNonce) public view returns (uint32) {
+        if(limit == 0) return 0;
+        return uint32(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, randNonce)))% limit);
+    }
+
     // function stringToUint(string memory s) private pure returns (uint64) {
     //     bytes memory b = bytes(s);
     //     uint64 result = 0;

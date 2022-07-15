@@ -3,7 +3,7 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Closing Raffle...");
 
-    const RAFFLE_ADDRESS = "0xAF7c70C76B321920BBdFEd91b2C7C019E2E16502";
+    const RAFFLE_ADDRESS = "0xAF3AA341055bD6FD449de97BB88Fa1C4bAB3fa56";
 
     const Raffle = await ethers.getContractFactory("Raffle");
     const raffle = await Raffle.attach(RAFFLE_ADDRESS);
@@ -17,7 +17,7 @@ async function main() {
 
 
     console.log("raffle closed")
-    await raffle.pickWinner(100);
+    // await raffle.pickWinner(100);
     // await raffle.pickWinner(100);
     // await raffle.pickWinner(100);
 

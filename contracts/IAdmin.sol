@@ -14,4 +14,5 @@ interface IAdmin {
     function getMarketAddress() external view returns (address);
     function getNFTDataAddress() external view returns (address);
     function getFusionAddress() external view returns (address);
+    function getAxionAddress() external view returns (address);
 }
