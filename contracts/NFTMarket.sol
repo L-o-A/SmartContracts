@@ -146,7 +146,7 @@ contract NFTMarket is ERC1155Holder {
     }
 
     function list( address nftContract, uint256 tokenId, uint256 price) public {
-        require(price > 0, "Price must be at least 1 wei");
+        require(price > 1_000_000_000_000_000_000, "Price must be at least 1 wei");
         require(_listingFee[nftContract] > 0, "This NFT is not permitted to be listed.");
 
         IERC1155 erc1155 = IERC1155(nftContract);

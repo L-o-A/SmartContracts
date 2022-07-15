@@ -280,7 +280,7 @@ contract Raffle {
         if(_raffle_status == 3) {
             uint256[] storage ticketIds = _user_tickets[msg.sender];
             if(ticketIds.length > 0){
-                uint256 loop_end = ticketIds.length > 30 ? (ticketIds.length - 30) : 0;
+                uint256 loop_end = ticketIds.length > 100 ? (ticketIds.length - 100) : 0;
                 for(uint256 j = ticketIds.length ; j > loop_end; j--) {
 
                     if(_ticket_status[ticketIds[j-1]] != 3) {
