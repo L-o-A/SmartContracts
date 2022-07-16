@@ -357,49 +357,52 @@ describe("LIVE MP Test ", function () {
     let capsules_data = await capsuleData.getUserCapsules(addr1.address);
     console.log("Capsules :", capsules_data);
 
+
+    // const mintingFee = await _LoANFTData._minting_fee
+
     await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000000000");
-    await _LoANFT.connect(addr1).mint(capsules_data);
+    await _LoANFT.connect(addr1).mint([capsules_data[0]]);
 
     console.log("nfts : ", await _LoANFTData.getUserNFTs(addr1.address));
 
     console.log(await _LoANFTData.getNFTDetail(1));
 
 
-    return;
-
-
+    
+    
     await loa.connect(addr1).approve(raffle.address, "20000000000000000000000000");
     await raffle.connect(addr1).buyTicket(100);
-
+    
     console.log(16.2);
-
+    
     await loa.connect(addr4).mint("20000000000000000000000000");
     await loa.connect(addr4).approve(raffle.address, "20000000000000000000000000");
     await raffle.connect(addr4).buyTicket(100);
-
+    
     await loa.connect(addr5).mint("20000000000000000000000000");
     await loa.connect(addr5).approve(raffle.address, "20000000000000000000000000");
     await raffle.connect(addr5).buyTicket(100);
-
+    
     //close raffle
     await raffle.setRaffleInfo(1, 10, 100, 102);
-
+    
     console.log(17);
-
+    
     await raffle.pickWinner(100);
-
+    
     console.log(18);
     console.log("getUserWinningTickets:", await raffle.connect(addr1).getUserWinningTickets(addr1.address));
-
+    
     await raffle.connect(addr1).withdraw(loa.address);
-    await raffle.connect(addr1).withdraw(loa.address);
-    await raffle.connect(addr1).withdraw(loa.address);
-    await raffle.connect(addr1).withdraw(loa.address);
-    await raffle.connect(addr1).withdraw(loa.address);
-    await raffle.connect(addr1).withdraw(loa.address);
-
+    // await raffle.connect(addr1).withdraw(loa.address);
+    // await raffle.connect(addr1).withdraw(loa.address);
+    // await raffle.connect(addr1).withdraw(loa.address);
+    // await raffle.connect(addr1).withdraw(loa.address);
+    // await raffle.connect(addr1).withdraw(loa.address);
+    
     console.log(20);
     
+    return;
     const tickets = await raffle.getUserTickets(addr1.address)
     console.log("getUserTickets :", tickets);
     await capsule.connect(addr1).claim(tickets, raffle.address, addr1.address);

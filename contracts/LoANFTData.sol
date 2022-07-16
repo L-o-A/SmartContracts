@@ -19,7 +19,8 @@ contract LoANFTData {
     string[] public _nft_attribute_names;
 
     mapping(uint256 => NFT) _nfts;
-    mapping(uint8=> mapping(uint8 => NFTAttribLimit)) _nft_attrib_by_level_hero;
+    mapping(uint8 => mapping(uint8 => NFTAttribLimit)) _nft_attrib_by_level_hero;
+    mapping(uint8 => mapping(uint8 => uint64[][])) _attributes_reserve_by_level_hero;
 
     IAdmin _admin;
 
@@ -100,24 +101,18 @@ contract LoANFTData {
 
     function populateAttribute(uint256 id, uint8 level, uint8 hero) public {
         NFT storage nft = _nfts[id];
-        NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
-        require(nftAttribLimit._total_attributes > 0, "Attribute not set hero level");
 
         nft.id = id;
         nft.hero = hero;
         nft.level = level;
-        nft.attributes = new uint64[](_nft_attribute_names.length + 1);
 
-        //set default values
-        for(uint8 i = 0; i < nftAttribLimit._default_attributes.length; i++) {
-            nft.attributes[nftAttribLimit._default_attributes[i]] = nftAttribLimit._min[nftAttribLimit._default_attributes[i]]  + 
-               random(nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]], i + block.timestamp);
+        if(_attributes_reserve_by_level_hero[level][hero].length == 0) {
+            populateAttributeReserve(level, hero, 1);
         }
-
-        uint8[] memory otherAttributes = randomSubList(nftAttribLimit._attributes, nftAttribLimit._total_attributes, id);
-        for(uint8 i = 0; i < otherAttributes.length; i++) {
-            nft.attributes[otherAttributes[i]] = nftAttribLimit._min[otherAttributes[i]] + 
-                random(nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]], i + block.timestamp);
+        
+        if(_attributes_reserve_by_level_hero[level][hero].length > 0) {
+            nft.attributes = _attributes_reserve_by_level_hero[level][hero][_attributes_reserve_by_level_hero[level][hero].length -1];
+            _attributes_reserve_by_level_hero[level][hero].pop();
         }
     }
 
@@ -315,5 +310,33 @@ contract LoANFTData {
     function random(uint256 limit, uint randNonce) public view returns (uint32) {
         if(limit == 0) return 0;
         return uint32(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, randNonce)))% limit);
+    }
+
+    function getAttributeReserveQty(uint8 level, uint8 hero) public view validAdmin returns (uint256) {
+        return _attributes_reserve_by_level_hero[level][hero].length;
+    }
+
+    function populateAttributeReserve(uint8 level, uint8 hero, uint32 qty) public {
+
+        NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
+        require(nftAttribLimit._total_attributes > 0, "Attribute not set hero level");
+
+        for(uint j= 0; j < qty; j ++) {
+            uint64[] memory attributes = new uint64[](_nft_attribute_names.length + 1);
+
+            //set default values
+            for(uint8 i = 0; i < nftAttribLimit._default_attributes.length; i++) {
+                attributes[nftAttribLimit._default_attributes[i]] = nftAttribLimit._min[nftAttribLimit._default_attributes[i]]  + 
+                random(nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]], i + block.timestamp);
+            }
+
+            uint8[] memory otherAttributes = randomSubList(nftAttribLimit._attributes, nftAttribLimit._total_attributes, j);
+            for(uint8 i = 0; i < otherAttributes.length; i++) {
+                attributes[otherAttributes[i]] = nftAttribLimit._min[otherAttributes[i]] + 
+                    random(nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]], i + block.timestamp);
+            }
+
+            _attributes_reserve_by_level_hero[level][hero].push(attributes);
+        }
     }
 }
