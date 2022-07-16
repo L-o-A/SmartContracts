@@ -415,16 +415,16 @@ describe("LIVE MP Test ", function () {
     // await _LoANFTData.populateAttributeReserve(6, 10, 435);
 
 
-    await _LoANFTData.populateAttributeReserve(8, 1, 400);
-    await _LoANFTData.populateAttributeReserve(8, 2, 400);
-    await _LoANFTData.populateAttributeReserve(8, 3, 400);
-    await _LoANFTData.populateAttributeReserve(8, 4, 400);
-    await _LoANFTData.populateAttributeReserve(8, 5, 400);
-    await _LoANFTData.populateAttributeReserve(8, 6, 400);
-    await _LoANFTData.populateAttributeReserve(8, 7, 400);
-    await _LoANFTData.populateAttributeReserve(8, 8, 400);
-    await _LoANFTData.populateAttributeReserve(8, 9, 400);
-    await _LoANFTData.populateAttributeReserve(8, 10, 400);
+    // await _LoANFTData.populateAttributeReserve(8, 1, 400);
+    // await _LoANFTData.populateAttributeReserve(8, 2, 400);
+    // await _LoANFTData.populateAttributeReserve(8, 3, 400);
+    // await _LoANFTData.populateAttributeReserve(8, 4, 400);
+    // await _LoANFTData.populateAttributeReserve(8, 5, 400);
+    // await _LoANFTData.populateAttributeReserve(8, 6, 400);
+    // await _LoANFTData.populateAttributeReserve(8, 7, 400);
+    // await _LoANFTData.populateAttributeReserve(8, 8, 400);
+    // await _LoANFTData.populateAttributeReserve(8, 9, 400);
+    // await _LoANFTData.populateAttributeReserve(8, 10, 400);
 
     await _LoANFTData.populateAttributeReserve(9, 1, 50);
     await _LoANFTData.populateAttributeReserve(9, 2, 50);

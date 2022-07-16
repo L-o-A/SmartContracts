@@ -298,7 +298,7 @@ contract LoANFTData {
                 subList[count++] = list[index + 1];
                 list[index + 1] = 0;
                 i++;
-            } else if(index - 1 >= 0 && list[index - 1] > 0) {
+            } else if(index >= 1 && list[index - 1] > 0) {
                 subList[count++] = list[index - 1];
                 list[index - 1] = 0;
                 i++;
