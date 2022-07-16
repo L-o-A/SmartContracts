@@ -191,6 +191,10 @@ contract CapsuleData {
         return (_capsule_types[id], level, _capsule_status[id], owner, endtime, amount);
     }
 
+    function getCapsuleSupply(uint8 capsuleType) public view validAdmin returns(uint256, uint256) {
+        return (_capsule_type_supply[capsuleType]._total_supply, _capsule_type_supply[capsuleType]._total_consumed);
+    }
+
 
     function markStatus(uint256 capsuleId, bool vested, bool unlocked, bool unstaked) public  {
         require(_admin.getCapsuleStakingAddress() == msg.sender, "You are not authorized.");

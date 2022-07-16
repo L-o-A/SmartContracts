@@ -346,6 +346,100 @@ describe("LIVE MP Test ", function () {
     await _LoANFTData.addNFTAttributeLimits(8, 10, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [2718200, 3444200, 129200, 107600, 58200, 268400, 24600, 176000, 289500, 142600], [2435100, 3352600, 112200, 103700, 56100, 253200, 23200, 166000, 273100, 134500], [1], [50000], [10000], 3);
     await _LoANFTData.addNFTAttributeLimits(9, 10, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [3397800, 3664000, 170000, 117000, 63300, 305000, 28000, 200000, 329000, 162000], [2831500, 3480800, 136000, 109200, 59100, 274500, 25200, 180000, 296100, 145800], [1], [50000], [10000], 4);
 
+
+
+    // await _LoANFTData.populateAttributeReserve(1, 1, 14075);
+    // await _LoANFTData.populateAttributeReserve(1, 2, 14075);
+    // await _LoANFTData.populateAttributeReserve(1, 3, 14075);
+    // await _LoANFTData.populateAttributeReserve(1, 4, 14075);
+    // await _LoANFTData.populateAttributeReserve(1, 5, 14075);
+    // await _LoANFTData.populateAttributeReserve(1, 6, 14075);
+    // await _LoANFTData.populateAttributeReserve(1, 7, 14075);
+    // await _LoANFTData.populateAttributeReserve(1, 8, 14075);
+    // await _LoANFTData.populateAttributeReserve(1, 9, 14075);
+    // await _LoANFTData.populateAttributeReserve(1, 10, 14075);
+
+    // await _LoANFTData.populateAttributeReserve(2, 1, 10000);
+    // await _LoANFTData.populateAttributeReserve(2, 2, 10000);
+    // await _LoANFTData.populateAttributeReserve(2, 3, 10000);
+    // await _LoANFTData.populateAttributeReserve(2, 4, 10000);
+    // await _LoANFTData.populateAttributeReserve(2, 5, 10000);
+    // await _LoANFTData.populateAttributeReserve(2, 6, 10000);
+    // await _LoANFTData.populateAttributeReserve(2, 7, 10000);
+    // await _LoANFTData.populateAttributeReserve(2, 8, 10000);
+    // await _LoANFTData.populateAttributeReserve(2, 9, 10000);
+    // await _LoANFTData.populateAttributeReserve(2, 10, 10000);
+
+    // await _LoANFTData.populateAttributeReserve(3, 1, 5925);
+    // await _LoANFTData.populateAttributeReserve(3, 2, 5925);
+    // await _LoANFTData.populateAttributeReserve(3, 3, 5925);
+    // await _LoANFTData.populateAttributeReserve(3, 4, 5925);
+    // await _LoANFTData.populateAttributeReserve(3, 5, 5925);
+    // await _LoANFTData.populateAttributeReserve(3, 6, 5925);
+    // await _LoANFTData.populateAttributeReserve(3, 7, 5925);
+    // await _LoANFTData.populateAttributeReserve(3, 8, 5925);
+    // await _LoANFTData.populateAttributeReserve(3, 9, 5925);
+    // await _LoANFTData.populateAttributeReserve(3, 10, 5925);
+
+    // await _LoANFTData.populateAttributeReserve(4, 1, 1471);
+    // await _LoANFTData.populateAttributeReserve(4, 2, 1471);
+    // await _LoANFTData.populateAttributeReserve(4, 3, 1471);
+    // await _LoANFTData.populateAttributeReserve(4, 4, 1471);
+    // await _LoANFTData.populateAttributeReserve(4, 5, 1471);
+    // await _LoANFTData.populateAttributeReserve(4, 6, 1471);
+    // await _LoANFTData.populateAttributeReserve(4, 7, 1471);
+    // await _LoANFTData.populateAttributeReserve(4, 8, 1471);
+    // await _LoANFTData.populateAttributeReserve(4, 9, 1471);
+    // await _LoANFTData.populateAttributeReserve(4, 10, 1471);
+
+    // await _LoANFTData.populateAttributeReserve(5, 1, 754);
+    // await _LoANFTData.populateAttributeReserve(5, 2, 754);
+    // await _LoANFTData.populateAttributeReserve(5, 3, 754);
+    // await _LoANFTData.populateAttributeReserve(5, 4, 754);
+    // await _LoANFTData.populateAttributeReserve(5, 5, 754);
+    // await _LoANFTData.populateAttributeReserve(5, 6, 754);
+    // await _LoANFTData.populateAttributeReserve(5, 7, 754);
+    // await _LoANFTData.populateAttributeReserve(5, 8, 754);
+    // await _LoANFTData.populateAttributeReserve(5, 9, 754);
+    // await _LoANFTData.populateAttributeReserve(5, 10, 754);
+
+    // await _LoANFTData.populateAttributeReserve(6, 1, 435);
+    // await _LoANFTData.populateAttributeReserve(6, 2, 435);
+    // await _LoANFTData.populateAttributeReserve(6, 3, 435);
+    // await _LoANFTData.populateAttributeReserve(6, 4, 435);
+    // await _LoANFTData.populateAttributeReserve(6, 5, 435);
+    // await _LoANFTData.populateAttributeReserve(6, 6, 435);
+    // await _LoANFTData.populateAttributeReserve(6, 7, 435);
+    // await _LoANFTData.populateAttributeReserve(6, 8, 435);
+    // await _LoANFTData.populateAttributeReserve(6, 9, 435);
+    // await _LoANFTData.populateAttributeReserve(6, 10, 435);
+
+
+    await _LoANFTData.populateAttributeReserve(8, 1, 400);
+    await _LoANFTData.populateAttributeReserve(8, 2, 400);
+    await _LoANFTData.populateAttributeReserve(8, 3, 400);
+    await _LoANFTData.populateAttributeReserve(8, 4, 400);
+    await _LoANFTData.populateAttributeReserve(8, 5, 400);
+    await _LoANFTData.populateAttributeReserve(8, 6, 400);
+    await _LoANFTData.populateAttributeReserve(8, 7, 400);
+    await _LoANFTData.populateAttributeReserve(8, 8, 400);
+    await _LoANFTData.populateAttributeReserve(8, 9, 400);
+    await _LoANFTData.populateAttributeReserve(8, 10, 400);
+
+    await _LoANFTData.populateAttributeReserve(9, 1, 50);
+    await _LoANFTData.populateAttributeReserve(9, 2, 50);
+    await _LoANFTData.populateAttributeReserve(9, 3, 50);
+    await _LoANFTData.populateAttributeReserve(9, 4, 50);
+    await _LoANFTData.populateAttributeReserve(9, 5, 50);
+    await _LoANFTData.populateAttributeReserve(9, 6, 50);
+    await _LoANFTData.populateAttributeReserve(9, 7, 50);
+    await _LoANFTData.populateAttributeReserve(9, 8, 50);
+    await _LoANFTData.populateAttributeReserve(9, 9, 50);
+    await _LoANFTData.populateAttributeReserve(9, 10, 50);
+
+
+
+
     console.log(16.1);
 
 
@@ -356,7 +450,6 @@ describe("LIVE MP Test ", function () {
 
     let capsules_data = await capsuleData.getUserCapsules(addr1.address);
     console.log("Capsules :", capsules_data);
-
 
     // const mintingFee = await _LoANFTData._minting_fee
 
