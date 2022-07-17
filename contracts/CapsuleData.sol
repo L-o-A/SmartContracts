@@ -102,6 +102,9 @@ contract CapsuleData {
 
         CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
 
+        capsuleSupply._total_supply = 0;
+        delete capsuleSupply.levels;
+
         for(uint32 i = 0; i < levels.length; i++) {
             require(capsuleSupply._consumed[levels[i]] < supply[i], "Supply cant be less than consumed");
             capsuleSupply._supply[levels[i]] = supply[i];
@@ -186,8 +189,9 @@ contract CapsuleData {
         _capsule_status[capsuleId] = 3;
     }
 
-    function random(uint256 limit, uint randNonce) public view returns (uint32) {
+    function random(uint256 limit, uint32 randNonce) public view returns (uint32) {
         if(limit == 0) return 0;
-        return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
+        // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
+        return uint32((block.timestamp + randNonce * randNonce) % limit);
     }
 }

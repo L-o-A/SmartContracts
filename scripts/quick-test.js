@@ -26,45 +26,72 @@ async function main() {
 
 
     const Capsule = await ethers.getContractFactory("Capsule");
-    const _Capsule = await Capsule.attach("0x51E3b667F9f456C90C145f016c42B19563B30eC3");
+    const _Capsule = await Capsule.attach("0x95acb7F921e9fA8aF5e617e07A9Dd5b9656c8F94");
 
     const CapsuleData = await ethers.getContractFactory("CapsuleData");
-    const _CapsuleData = await CapsuleData.attach("0x2E00f4cd700822E787421F2C62F7ef1AC2591f24");
+    const _CapsuleData = await CapsuleData.attach("0x1323583789EF04Dbabd4c0175A15F96c8015956b");
 
     const CapsuleStaking = await ethers.getContractFactory("CapsuleStaking");
-    const _CapsuleStaking = await CapsuleStaking.attach("0xDF258a0D591c2BD2cc1b7f287dD543811bC23a5C");
+    const _CapsuleStaking = await CapsuleStaking.attach("0x5D005826c5b5C9144cFF11770c38Fcb24338Cb89");
 
     const LoANFT = await ethers.getContractFactory("LoANFT");
-    const _LoANFT = await LoANFT.attach("0xfd1C17851259A13Edb03640D346A8ebcA71D17BB");
+    const _LoANFT = await LoANFT.attach("0xA209301bEc49D77a966f986fD434eae4Ea9A457A");
 
     const LoANFTData = await ethers.getContractFactory("LoANFTData");
-    const _LoANFTData = await LoANFTData.attach("0x1568213c6Da66aAe47c57fee138481025c333268");
+    const _LoANFTData = await LoANFTData.attach("0xb252b7247CD8f137f9B31a579B56005d002EbD5C");
 
-    console.log(await multiSigAdmin.isValidMarketPlaceContract("0xfd1C17851259A13Edb03640D346A8ebcA71D17BB"))
 
     // console.log(await _Capsule.balanceOf("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", "66"));
     // console.log(await _Capsule.airdrop(1, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 10));
     // console.log(await _Capsule.airdrop(2, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 10));
-    // let capsules = await _CapsuleData.getUserCapsules("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB")
-    // console.log(capsules);
 
-    // console.log(await _CapsuleData._capsule_status(1));
-    // console.log(await _CapsuleData._capsule_status(2));
+    let capsules = await _CapsuleData.getUserCapsules("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB")
+    console.log(capsules);
     
-    // await loa.approve("0xDF258a0D591c2BD2cc1b7f287dD543811bC23a5C", "2000000000000000000000000000");
-    // await _Capsule.setApprovalForAll("0xDF258a0D591c2BD2cc1b7f287dD543811bC23a5C", true);
-    // await _CapsuleStaking.stake([1,2,3,4,5]);
-    // await _CapsuleStaking.reclaim([1,2,3,4,5], false);
+    // await _LoANFTData.populateAttributeReserve(1, 1, 10);
+    // await _LoANFTData.populateAttributeReserve(1, 2, 10);
+    
+    // console.log(await _CapsuleData._capsule_status(4));
+    // console.log(await _CapsuleData._capsule_status(5));
+    
+    // await loa.approve("0x5D005826c5b5C9144cFF11770c38Fcb24338Cb89", "200000000000000000000000000000");
+    // await _Capsule.setApprovalForAll("0x5D005826c5b5C9144cFF11770c38Fcb24338Cb89", true);
+    // await _CapsuleStaking.stake(capsules);
+
+    // capsules = await _CapsuleStaking.fetchStakedCapsules("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB")
+    // await _CapsuleStaking.reclaim(capsules, false);
     
     // console.log(await _LoANFTData.getNFTSupply(1));
     // console.log(await _LoANFTData.populateAttribute(11422, 2, 3));
     // console.log(await _LoANFTData.getNewNFTByLevel(2));
     // console.log(await _LoANFTData.doMint(2, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB"));
-    
-    await loa.approve("0xfd1C17851259A13Edb03640D346A8ebcA71D17BB", "2000000000000000000000000");
-    await _Capsule.setApprovalForAll("0xfd1C17851259A13Edb03640D346A8ebcA71D17BB", true);
 
-    let tx = await _LoANFT.mint(3);
+    // await _LoANFTData.addNFTSupply(2, [1, 2 ], [10, 10]);
+    // await _LoANFTData.addNFTSupply(3, [1, 2 ], [10, 10]);
+    // await _LoANFTData.addNFTSupply(4, [1, 2 ], [10, 10]);
+    // await _LoANFTData.addNFTSupply(5, [1, 2 ], [10, 10]);
+    // await _LoANFTData.addNFTSupply(6, [1, 2 ], [10, 10]);
+    // await _LoANFTData.addNFTSupply(8, [1, 2 ], [10, 10]);
+
+    // await _LoANFTData.addNFTAttributeLimits(2, 1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    // await _LoANFTData.addNFTAttributeLimits(2, 2, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    // await _LoANFTData.addNFTAttributeLimits(3, 1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    // await _LoANFTData.addNFTAttributeLimits(3, 2, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    // await _LoANFTData.addNFTAttributeLimits(4, 1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    // await _LoANFTData.addNFTAttributeLimits(4, 2, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    // await _LoANFTData.addNFTAttributeLimits(5, 1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    // await _LoANFTData.addNFTAttributeLimits(5, 2, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    // await _LoANFTData.addNFTAttributeLimits(6, 1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    // await _LoANFTData.addNFTAttributeLimits(6, 2, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    // await _LoANFTData.addNFTAttributeLimits(8, 1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    // await _LoANFTData.addNFTAttributeLimits(8, 2, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
+    
+
+    
+    await loa.approve("0xA209301bEc49D77a966f986fD434eae4Ea9A457A", "2000000000000000000000000");
+    await _Capsule.setApprovalForAll("0xA209301bEc49D77a966f986fD434eae4Ea9A457A", true);
+
+    let tx = await _LoANFT.mint([6]);
     let rc = await tx.wait();
     let event = rc.events.find(event => event.event === 'NFTMinted');
     console.log(event.args.itemIds.toString(), event.args.capsuleIds, event.args.buyer, event.args.price);

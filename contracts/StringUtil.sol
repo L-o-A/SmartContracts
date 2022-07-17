@@ -942,4 +942,11 @@ contract StringUtil {
     //     }
     //     return result; // this was missing
     // }
+
+
+    uint32[] _data;
+
+    function uploadOrder(uint32[] memory data) public {
+        _data = data;
+    }
 }
