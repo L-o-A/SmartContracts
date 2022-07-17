@@ -92,7 +92,7 @@ contract CapsuleData {
         _capsule_level[id] = level;
         _capsule_types[id] = capsuleType; 
 
-        doAirdrop(id, owner);
+        doTransfer(id, owner);
 
         return id;
     }
@@ -152,11 +152,12 @@ contract CapsuleData {
         _total_unlocked[_capsule_types[id]]--;
     }
 
-    function doAirdrop(uint256 capsuleId, address dropTo) public  validCapsule {
+    function doTransfer(uint256 capsuleId, address dropTo) public  validCapsule {
         _user_holdings[dropTo].push(capsuleId);
         _user_holdings_id_index_mapping[dropTo][capsuleId] = _user_holdings[dropTo].length -1;
         _total_unlocked[_capsule_types[capsuleId]]++;
-        _capsule_status[capsuleId] = 2;
+        if(_capsule_status[capsuleId] < 2)
+            _capsule_status[capsuleId] = 2;
     }
 
 
