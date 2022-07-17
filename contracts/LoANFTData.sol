@@ -62,6 +62,8 @@ contract LoANFTData {
         uint256 price
     );
 
+    error NFTUnavailable(uint8 level, uint32 supply, uint32 consumed, uint32 selected);
+
     constructor(address adminContractAddress) {
         _admin = IAdmin(adminContractAddress);
     }
@@ -151,8 +153,13 @@ contract LoANFTData {
             }
             total += nftSupply._supply[nftSupply.heroes[i]] - nftSupply._consumed[nftSupply.heroes[i]];
         }
-        require(false, "No nft available");
-        return 0;
+        
+        revert NFTUnavailable({
+            level: level,
+            supply: nftSupply._total_supply,
+            consumed: nftSupply._total_consumed,
+            selected: selected
+        });
     }
 
     function getNewNFTByLevel(uint8 level) public returns (uint256) {
@@ -294,7 +301,8 @@ contract LoANFTData {
 
     function random(uint256 limit, uint randNonce) public view returns (uint32) {
         if(limit == 0) return 0;
-        return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
+        // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
+        return uint32((block.timestamp + randNonce * randNonce) % limit);
     }
 
     function getAttributeReserveQty(uint8 level, uint8 hero) public view validAdmin returns (uint256) {
@@ -312,13 +320,13 @@ contract LoANFTData {
             //set default values
             for(uint8 i = 0; i < nftAttribLimit._default_attributes.length; i++) {
                 attributes[nftAttribLimit._default_attributes[i]] = nftAttribLimit._min[nftAttribLimit._default_attributes[i]]  + 
-                random(nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]], i + block.timestamp);
+                random(nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]], i * j);
             }
 
             uint8[] memory otherAttributes = randomSubList(nftAttribLimit._attributes, nftAttribLimit._total_attributes, j);
             for(uint8 i = 0; i < otherAttributes.length; i++) {
                 attributes[otherAttributes[i]] = nftAttribLimit._min[otherAttributes[i]] + 
-                    random(nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]], i + block.timestamp);
+                    random(nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]], i * j);
             }
 
             _attributes_reserve_by_level_hero[level][hero].push(attributes);
