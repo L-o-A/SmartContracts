@@ -43,7 +43,8 @@ interface IERC1155 {
 
 interface ICapsuleDataContract {
     function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
-    function markStatus(uint256 capsuleId, bool vested, bool unlocked, bool unstaked) external;
+    function markStaked(uint256 capsuleId) external;
+    function markUnstaked(uint256 capsuleId, bool forced) external;
 }
 
 interface IERC20Contract {
@@ -89,7 +90,7 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
     event Staked(
         address owner,
-        uint256[] capsuleIds,
+        uint256 capsuleId,
         bool staked,
         bool vestingDone
     );
@@ -124,19 +125,18 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
             
             IERC1155(_admin.getCapsuleAddress()).safeTransferFrom(msg.sender, address(this), capsuleIds[i], 1, "0x00");
-            ICapsuleDataContract(_admin.getCapsuleDataAddress()).markStatus(capsuleIds[i], true, false, false);
+            ICapsuleDataContract(_admin.getCapsuleDataAddress()).markStaked(capsuleIds[i]);
+
             _capsuleStakeEndTime[capsuleIds[i]] = block.timestamp + _capsuleStakeTypeDuration[capsuleType] * 86400;
             _capsuleOwner[capsuleIds[i]] = msg.sender;
             _capsuleStakedAmount[capsuleIds[i]] = _capsuleStakeTypeLOATokens[capsuleType];
 
             _user_capsules[msg.sender].push(capsuleIds[i]);
             _user_capsule_id_to_index_mapping[msg.sender][capsuleIds[i]] = _user_capsules[msg.sender].length -1;
+            emit Staked(msg.sender, capsuleIds[i], true, false);
         }
 
-        require(_loaToken.allowance(msg.sender, address(this)) >= stakedAmount, "Not enough LOA permitted to spend.");
         require(_loaToken.transferFrom(msg.sender, address(this), stakedAmount), "Not enough LOA balance available.");
-
-        emit Staked(msg.sender, capsuleIds, true, false);
     }
 
     // reclaim my staked capsules once its matures after staking period is over
@@ -144,17 +144,13 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
         uint256 stakedAmount = 0;
         for (uint256 i = 0; i < capsuleIds.length; i++) {
-            (, , uint8 capsuleStatus,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleIds[i]);
-            require(capsuleStatus  == 3, "Capsule not staked.");
             require(_capsuleOwner[capsuleIds[i]] == msg.sender, "Capsule doesnt belong to user");
+
             if(!forced)
                 require(_capsuleStakeEndTime[capsuleIds[i]] < block.timestamp, "Capsule staking period is not over.");
 
+            ICapsuleDataContract(_admin.getCapsuleDataAddress()).markUnstaked(capsuleIds[i], forced);
             IERC1155(_admin.getCapsuleAddress()).safeTransferFrom(address(this), msg.sender, capsuleIds[i], 1, "0x00");
-            if(forced)
-                ICapsuleDataContract(_admin.getCapsuleDataAddress()).markStatus(capsuleIds[i], false, false, true);
-            else
-                ICapsuleDataContract(_admin.getCapsuleDataAddress()).markStatus(capsuleIds[i], false, true, false);
 
             stakedAmount += _capsuleStakedAmount[capsuleIds[i]];
 
@@ -168,15 +164,10 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
             delete _user_capsule_id_to_index_mapping[msg.sender][capsuleIds[i]];
             _user_capsules[msg.sender][index] = _user_capsules[msg.sender][ _user_capsules[msg.sender].length -1];
             _user_capsules[msg.sender].pop();
+
+            emit Staked(msg.sender, capsuleIds[i], false, !forced);
         }
-        if(!forced) {
-            _loaToken.transfer(msg.sender, stakedAmount);
-            emit Staked(msg.sender, capsuleIds, false, true);
-        } else {
-            if(_loaToken.balanceOf(address(this)) >= stakedAmount)
-                _loaToken.transfer(msg.sender, stakedAmount);
-            emit Staked(msg.sender, capsuleIds, false, false);
-        }
+        _loaToken.transfer(msg.sender, stakedAmount);
     }
 
     function fetchStakedCapsules(address owner) public view returns (uint256[] memory) {

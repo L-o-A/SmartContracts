@@ -216,77 +216,6 @@
 
 //     await multiSigAdmin.setNFTDataAddress(_LoANFTData.address);
 
-    
-
-//     console.log(12);
-
-//     await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000");
-
-//     let capsules = await capsuleData.getUserCapsules(addr1.address);
-    
-//     console.log("capsules count :", capsules.length);
-    
-//     console.log("ready to mint nft");
-//     await _LoANFT.connect(addr1).mint([capsules[0], capsules[1]]);
-//     console.log("nft minted");
-    
-//     capsules = await capsuleData.getUserCapsules(addr1.address);
-//     console.log("capsules count - 2:", capsules.length);
-
-//     return;
-
-//     console.log("getUserNFTs :", await _LoANFTData.getUserNFTs(addr1.address));
-
-    
-//     const NFTMarket = await ethers.getContractFactory("NFTMarket");
-//     const _NFTMarket = await NFTMarket.deploy(loa.address, multiSigAdmin.address);
-//     await _NFTMarket.deployed();
-
-//     await multiSigAdmin.setMarketAddress(_NFTMarket.address);
-    
-//     await _NFTMarket.updateFees([_LoANFT.address, capsule.address], ["20000000000000000000", "10000000000000000000"], [50, 40]);
-    
-//     await _LoANFT.connect(addr1).setApprovalForAll(_NFTMarket.address, true);
-//     await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
-
-//     const myNfts = await _LoANFTData.getUserNFTs(addr1.address);
-//     console.log("myNfts :", myNfts);
-
-
-//     await _NFTMarket.connect(addr1).list(_LoANFT.address, myNfts[0], "2000000000000000000000");
-//     console.log("\n\n before unlist", await _NFTMarket.fetchMarketItems());
-//     await _NFTMarket.connect(addr1).unlist(1);
-//     await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
-
-    
-//     await _NFTMarket.connect(addr1).list(_LoANFT.address, myNfts[0], "2000000000000000000000");
-    
-//     await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
-//     await _NFTMarket.connect(addr1).list(_LoANFT.address, myNfts[1], "2000000000000000000000");
-    
-//     console.log("\n\n", await _NFTMarket.fetchMarketItems());
-//     await loa.connect(addr2).approve(_NFTMarket.address, "2000000000000000000000");
-//     await _NFTMarket.connect(addr2).buy(2);
-//     console.log("\n\n", await _NFTMarket.fetchMarketItems());
-    
-//     console.log("\n\n", await _NFTMarket.getMarketItem(2));
-
-
-//     await loa.connect(addr2).approve(_NFTMarket.address, "20000000000000000000");
-//     await _LoANFT.connect(addr2).setApprovalForAll(_NFTMarket.address, true);
-//     await _NFTMarket.connect(addr2).list(_LoANFT.address, myNfts[0], "2000000000000000000000");
-
-
-//     console.log("\n\n", await _NFTMarket.fetchMarketItems());
-//     await _NFTMarket.connect(addr2).updatePrice(4, "4000000000000000000000");
-
-
-//     await loa.connect(addr3).approve(_NFTMarket.address, "2000000000000000000000");
-//     await _NFTMarket.connect(addr3).buy(3);
-
-//     await raffle.terminate();
-
-//     console.log("putNFTAttributeNames");
 
 //     await _LoANFTData.putNFTAttributeNames(["HASH-POWER", "MAX-HP", "MAX-PRANA", "MAXSPEED", "HP-REGEN", "PRANA-REGEN", "ATTACK-DAMAGE", "ATTACK-SPEED", "CRITICAL-DAMAGE", "ARMOUR", "MAGIC-DEFENCE"]);
 
@@ -383,6 +312,78 @@
 //     await _LoANFTData.addNFTAttributeLimits(7, 10, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [2265200, 3297600, 102000, 101400, 54900, 244000, 22400, 160000, 263200, 129600], [2095300, 3242600, 91800, 99100, 53600, 234900, 21600, 154000, 253300, 124700], [1], [50000], [10000], 1);
 //     await _LoANFTData.addNFTAttributeLimits(8, 10, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [2718200, 3444200, 129200, 107600, 58200, 268400, 24600, 176000, 289500, 142600], [2435100, 3352600, 112200, 103700, 56100, 253200, 23200, 166000, 273100, 134500], [1], [50000], [10000], 1);
 //     await _LoANFTData.addNFTAttributeLimits(9, 10, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [3397800, 3664000, 170000, 117000, 63300, 305000, 28000, 200000, 329000, 162000], [2831500, 3480800, 136000, 109200, 59100, 274500, 25200, 180000, 296100, 145800], [1], [50000], [10000], 1);
+
+
+    
+
+//     console.log(12);
+
+//     await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000");
+
+//     let capsules = await capsuleData.getUserCapsules(addr1.address);
+    
+//     console.log("capsules count :", capsules.length);
+    
+//     console.log("ready to mint nft");
+//     await _LoANFT.connect(addr1).mint([capsules[0], capsules[1]]);
+//     console.log("nft minted");
+    
+//     capsules = await capsuleData.getUserCapsules(addr1.address);
+//     console.log("capsules count - 2:", capsules.length);
+
+
+//     console.log("getUserNFTs :", await _LoANFTData.getUserNFTs(addr1.address));
+
+    
+//     const NFTMarket = await ethers.getContractFactory("NFTMarket");
+//     const _NFTMarket = await NFTMarket.deploy(loa.address, multiSigAdmin.address);
+//     await _NFTMarket.deployed();
+
+//     await multiSigAdmin.setMarketAddress(_NFTMarket.address);
+    
+//     await _NFTMarket.updateFees([_LoANFT.address, capsule.address], ["20000000000000000000", "10000000000000000000"], [50, 40]);
+    
+//     await _LoANFT.connect(addr1).setApprovalForAll(_NFTMarket.address, true);
+//     await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
+
+//     const myNfts = await _LoANFTData.getUserNFTs(addr1.address);
+//     console.log("myNfts :", myNfts);
+
+
+//     await _NFTMarket.connect(addr1).list(_LoANFT.address, myNfts[0], "2000000000000000000000");
+//     console.log("\n\n before unlist", await _NFTMarket.fetchMarketItems());
+//     await _NFTMarket.connect(addr1).unlist(1);
+//     await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
+
+    
+//     await _NFTMarket.connect(addr1).list(_LoANFT.address, myNfts[0], "2000000000000000000000");
+    
+//     await loa.connect(addr1).approve(_NFTMarket.address, "20000000000000000000");
+//     await _NFTMarket.connect(addr1).list(_LoANFT.address, myNfts[1], "2000000000000000000000");
+    
+//     console.log("\n\n", await _NFTMarket.fetchMarketItems());
+//     await loa.connect(addr2).approve(_NFTMarket.address, "2000000000000000000000");
+//     await _NFTMarket.connect(addr2).buy(2);
+//     console.log("\n\n", await _NFTMarket.fetchMarketItems());
+    
+//     console.log("\n\n", await _NFTMarket.getMarketItem(2));
+
+
+//     await loa.connect(addr2).approve(_NFTMarket.address, "20000000000000000000");
+//     await _LoANFT.connect(addr2).setApprovalForAll(_NFTMarket.address, true);
+//     await _NFTMarket.connect(addr2).list(_LoANFT.address, myNfts[0], "2000000000000000000000");
+
+
+//     console.log("\n\n", await _NFTMarket.fetchMarketItems());
+//     await _NFTMarket.connect(addr2).updatePrice(4, "4000000000000000000000");
+
+
+//     await loa.connect(addr3).approve(_NFTMarket.address, "2000000000000000000000");
+//     await _NFTMarket.connect(addr3).buy(3);
+
+//     await raffle.terminate();
+
+//     console.log("putNFTAttributeNames");
 
 
     
