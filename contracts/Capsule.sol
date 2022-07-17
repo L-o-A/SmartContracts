@@ -47,15 +47,9 @@ interface IRaffle {
 
 
 interface ICapsuleData {
-    function setCapsuleStatus(uint256 id, uint8 value) external;
-    function getCapsuleLevel(uint256 id) external view returns (uint8);
-    function setCapsuleLevel(uint256 id, uint8 value) external;
-    function getCapsuleType(uint256 id) external view returns (uint8);
-    function setCapsuleType(uint256 id, uint8 value) external;
-    function getNewCapsuleIdByType(uint8 kind) external returns (uint256);
-    function hasCapsuleTypeToIds(uint8 kind) external view returns (bool);
-    function burn(uint256 id, address owner) external;
-    function airdrop(uint256 id, address owner) external;
+    function getNewCapsuleIdByType(uint8 kind, address owner) external returns (uint256);
+    function doBurn(uint256 id, address owner) external;
+    function doAirdrop(uint256 id, address owner) external;
 }
 
 /**
@@ -83,14 +77,10 @@ contract Capsule is ERC1155, Ownable {
         _;
     }
 
-
     function burn(address owner, uint256 id) public {
         require(msg.sender == _admin.getNFTAddress(), "You are not authorized to burn");
-        // _capsule_status[id] = 6;
-        ICapsuleData(_admin.getCapsuleDataAddress()).setCapsuleStatus(id, 6);
         _burn(owner, id, 1);
-
-        ICapsuleData(_admin.getCapsuleDataAddress()).burn(id, owner);
+        ICapsuleData(_admin.getCapsuleDataAddress()).doBurn(id, owner);
     }
 
     function airdrop(uint8 capsuleType, address dropTo, uint8 units) public {
@@ -98,11 +88,8 @@ contract Capsule is ERC1155, Ownable {
         uint256[] memory capsuleIdsMinted = new uint256[](units);
 
         for(uint8 i =0; i < units; i++) {
-            uint256 capsuleId = ICapsuleData(_admin.getCapsuleDataAddress()).getNewCapsuleIdByType(capsuleType);
-
+            uint256 capsuleId = ICapsuleData(_admin.getCapsuleDataAddress()).getNewCapsuleIdByType(capsuleType, dropTo); 
             _mint(dropTo, capsuleId, 1, "");
-            ICapsuleData(_admin.getCapsuleDataAddress()).airdrop(capsuleId, dropTo);
-
             capsuleIdsMinted[i] = capsuleId;
         }
         emit CapsuleMinted(capsuleIdsMinted, msg.sender, 0);
@@ -123,11 +110,9 @@ contract Capsule is ERC1155, Ownable {
             require(status == 3, "Ticket is not a winner");
 
             // require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
-            uint256 capsuleId = ICapsuleData(_admin.getCapsuleDataAddress()).getNewCapsuleIdByType(capsuleType);
+            uint256 capsuleId = ICapsuleData(_admin.getCapsuleDataAddress()).getNewCapsuleIdByType(capsuleType, owner);
 
             _mint(owner, capsuleId, 1, "");
-
-            ICapsuleData(_admin.getCapsuleDataAddress()).airdrop(capsuleId, owner);
             _raffleContract.burn(owner, ticketId);
             
             capsuleIdsMinted[i] = capsuleId;
@@ -143,10 +128,8 @@ contract Capsule is ERC1155, Ownable {
         bytes memory data
     ) public virtual override {
         require(_admin.isValidCapsuleTransfer(msg.sender, from, to), "Not permitted to transfer");
-
-        ICapsuleData(_admin.getCapsuleDataAddress()).burn(id, from);
-        ICapsuleData(_admin.getCapsuleDataAddress()).airdrop(id, to);
-
+        ICapsuleData(_admin.getCapsuleDataAddress()).doBurn(id, from);
+        ICapsuleData(_admin.getCapsuleDataAddress()).doAirdrop(id, to);
 
         return super.safeTransferFrom(from, to, id, amount, data);
     }
@@ -162,8 +145,8 @@ contract Capsule is ERC1155, Ownable {
 
         for(uint256 i =0; i < ids.length; i++){
             uint256 id = ids[i];
-            ICapsuleData(_admin.getCapsuleDataAddress()).burn(id, from);
-            ICapsuleData(_admin.getCapsuleDataAddress()).airdrop(id, to);
+            ICapsuleData(_admin.getCapsuleDataAddress()).doBurn(id, from);
+            ICapsuleData(_admin.getCapsuleDataAddress()).doAirdrop(id, to);
         }
 
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);

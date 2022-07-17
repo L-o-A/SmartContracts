@@ -14,7 +14,8 @@ contract LoANFTData {
 
     mapping(uint8 => NFTSupply) public _nft_level_supply;
     mapping(uint8 => uint256) public _minting_fee;
-    mapping(address => uint256[]) _user_holdings;
+    mapping(address => uint256[]) public _user_holdings;
+    mapping(address => mapping(uint256 => uint256)) public _user_holdings_id_index;
 
     string[] public _nft_attribute_names;
 
@@ -125,6 +126,8 @@ contract LoANFTData {
         require(supply.length ==  heroes.length, "Args length not matching");
 
         NFTSupply storage nftSupply = _nft_level_supply[level];
+        nftSupply._total_supply = 0;
+        delete nftSupply.heroes;
 
         for(uint32 i = 0; i < heroes.length; i++) {
             require(nftSupply._consumed[heroes[i]] < supply[i], "Supply cant be less than consumed");
@@ -134,8 +137,8 @@ contract LoANFTData {
         nftSupply.heroes = heroes;
     }
 
-    function getNFTSupply(uint8 level) public view returns (uint32, uint32) {
-        return (_nft_level_supply[level]._total_supply, _nft_level_supply[level]._total_consumed);
+    function getNFTSupply(uint8 level) public view returns (uint32, uint32, uint8[] memory) {
+        return (_nft_level_supply[level]._total_supply, _nft_level_supply[level]._total_consumed, _nft_level_supply[level].heroes);
     }
 
     function pickNFTHero(uint8 level) public view returns (uint8) {
@@ -154,6 +157,7 @@ contract LoANFTData {
 
     function getNewNFTByLevel(uint8 level) public returns (uint256) {
         uint8 hero = pickNFTHero(level);
+
         NFTSupply storage nftSupply = _nft_level_supply[level];
 
         require(nftSupply._supply[hero] - nftSupply._consumed[hero] > 0, "No capsule available");
@@ -165,6 +169,7 @@ contract LoANFTData {
         uint256 id = _nftCounter.current();
         populateAttribute(id, level, hero);
         _nfts[id].status = 2;
+
         return id;
     }
 
@@ -182,15 +187,9 @@ contract LoANFTData {
         _;
     }
 
-    function getNFTDetail(uint256 id)
-        public
-        view
-        returns (
-            NFT memory
-        )
-    {
+    function getNFTDetail(uint256 id) public view returns (uint256, uint8, address, uint8, uint8, uint64[] memory) {
         require(_nfts[id].status == 2, "Id is not minted");
-        return (_nfts[id]);
+        return (_nfts[id].id, _nfts[id].status, _nfts[id].owner, _nfts[id].level, _nfts[id].hero, _nfts[id].attributes);
     }
 
     function getUserNFTs(address sender) public view returns (uint256[] memory) {
@@ -200,32 +199,20 @@ contract LoANFTData {
     function doTransferFrom( address from, address to, uint256 id) public {
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
         
-        for (uint256 j = 0; j < _user_holdings[from].length; j++) {
-            if (_user_holdings[from][j] == id) {
-                _user_holdings[from][j] = _user_holdings[from][
-                    _user_holdings[from].length - 1
-                ];
-                _user_holdings[from].pop();
-                break;
-            }
-        }
+        uint256 index = _user_holdings_id_index[from][id];
+        _user_holdings[from][index] = _user_holdings[from][_user_holdings[from].length -1];
+        _user_holdings_id_index[from][_user_holdings[from][_user_holdings[from].length -1]] = index;
+        _user_holdings[from].pop();
+        delete _user_holdings_id_index[from][id];
+        
         _user_holdings[to].push(id);
+        _user_holdings_id_index[to][id] = _user_holdings[to].length -1;
     }
 
     function doBatchTransfer(address from, address to, uint256[] memory ids) public {
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
-        for(uint256 i =0; i < ids.length; i++){
-            uint256 id = ids[i];
-            for (uint256 j = 0; j < _user_holdings[from].length; j++) {
-                if (_user_holdings[from][j] == id) {
-                    _user_holdings[from][j] = _user_holdings[from][
-                        _user_holdings[from].length - 1
-                    ];
-                    _user_holdings[from].pop();
-                    break;
-                }
-            }
-            _user_holdings[to].push(id);
+        for(uint256 i = 0; i < ids.length; i++){
+            doTransferFrom(from, to, ids[i]);
         }
     }
 
@@ -233,21 +220,18 @@ contract LoANFTData {
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
 
         for (uint8 i = 0; i < ids.length; i++) {
-            for (uint256 j = 0; j < _user_holdings[owner].length; j++) {
-                if (_user_holdings[owner][j] == ids[i]) {
-                    _user_holdings[owner][j] = _user_holdings[owner][
-                        _user_holdings[owner].length - 1
-                    ];
-                    _user_holdings[owner].pop();
-                    break;
-                }
-            }
+                uint256 index = _user_holdings_id_index[owner][ids[i]];
+            _user_holdings[owner][index] = _user_holdings[owner][_user_holdings[owner].length -1];
+            _user_holdings_id_index[owner][_user_holdings[owner][_user_holdings[owner].length -1]] = index;
+            _user_holdings[owner].pop();
+            delete _user_holdings_id_index[owner][ids[i]];
         }
 
         uint256 id = getNewNFTByLevel(fusionLevel);
 
         _nfts[id].owner = owner;
         _user_holdings[owner].push(id);
+        _user_holdings_id_index[owner][id] = _user_holdings[owner].length -1;
 
         return id;
     }
@@ -260,6 +244,7 @@ contract LoANFTData {
        
         _nfts[id].owner = owner;
         _user_holdings[owner].push(id);
+        _user_holdings_id_index[owner][id] = _user_holdings[owner].length -1;
 
         return (id, fee);
     }
@@ -309,7 +294,7 @@ contract LoANFTData {
 
     function random(uint256 limit, uint randNonce) public view returns (uint32) {
         if(limit == 0) return 0;
-        return uint32(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, randNonce)))% limit);
+        return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
     }
 
     function getAttributeReserveQty(uint8 level, uint8 hero) public view validAdmin returns (uint256) {

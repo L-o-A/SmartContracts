@@ -928,7 +928,7 @@ contract StringUtil {
 
     function random(uint256 limit, uint randNonce) public view returns (uint32) {
         if(limit == 0) return 0;
-        return uint32(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, randNonce)))% limit);
+        return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
     }
 
     // function stringToUint(string memory s) private pure returns (uint64) {

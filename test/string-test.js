@@ -16,10 +16,19 @@
 //     await stringUtil.deployed();
     
 
-//     console.log(await stringUtil.randomSubList([1,2,3,4,5,6,7,8,9], 3, 10));
-//     console.log(await stringUtil.randomSubList([1,2,3,4,5,6,7,8,9], 3, 10));
-//     console.log(await stringUtil.randomSubList([1,2,3,4,5,6,7,8,9], 3, 10));
-//     console.log(await stringUtil.randomSubList([1,2,3,4,5,6,7,8,9], 3, 10));
+//     // console.log(await stringUtil.randomSubList([1,2,3,4,5,6,7,8,9], 3, 10));
+//     // console.log(await stringUtil.randomSubList([1,2,3,4,5,6,7,8,9], 3, 10));
+//     // console.log(await stringUtil.randomSubList([1,2,3,4,5,6,7,8,9], 3, 10));
+//     // console.log(await stringUtil.randomSubList([1,2,3,4,5,6,7,8,9], 3, 10));
+
+
+//     console.log(await stringUtil.random(2, 1));
+//     // console.log(await stringUtil.random(2, 1));
+//     // console.log(await stringUtil.random(2, 1));
+//     // console.log(await stringUtil.random(2, 1));
+//     // console.log(await stringUtil.random(2, 1));
+
+
 //   });
 
 

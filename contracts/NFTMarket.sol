@@ -49,7 +49,7 @@ interface IERC20Contract {
 }
 
 interface INFTData {
-    function getNFTDetail(uint256 id) external view returns ( uint8, uint8, address, uint8, uint64[] memory);
+    function getNFTDetail(uint256 id) external view returns ( uint256, uint8, address, uint8, uint8, uint64[] memory);
 }
 
 interface ICapsuleDataContract {
@@ -157,7 +157,7 @@ contract NFTMarket is ERC1155Holder {
         _itemIds.increment();
         uint256 itemId = _itemIds.current();
         if(nftContract == _admin.getNFTAddress()) {
-            (uint8 hero, uint8 level, , , uint64[] memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
+            (,uint8 hero, , uint8 level , , uint64[] memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
             _listed_items.push(MarketItem(
                 itemId,
                 nftContract,
@@ -320,7 +320,7 @@ contract NFTMarket is ERC1155Holder {
         IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
 
         if(marketItem.nftContract == _admin.getNFTAddress()) {
-            (uint8 hero, uint8 level, , , uint64[] memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
+            (,uint8 hero,, uint8 level,, uint64[] memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
     
             emit MarketItemAction(
                 itemId,

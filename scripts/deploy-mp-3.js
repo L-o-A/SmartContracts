@@ -12,16 +12,16 @@ async function main() {
    const admin2 = "0x36Ee9c4520F9E7C15A0Cba1e032627eDc2B4C50D";
    const admin3 = "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da";
 
-   const multiSigAdmin_addr = "0x590CD0257F0D69dEb54E49122Fcef746d8a2720e";
-   const raffleHelper_addr = "0x500a5918C38B07DA72730AbF93535E6f8769A648";
-   const raffle_addr = "0x8b847974882560939784B190025A819598c86060";
-   const capsule_addr = "0x6790a268314e3D5a7308E0FF76721c216A4493d2";
-   const capsuleData_addr = "0xaf34F960a1820FC45F7EDfBE6814AA19129f1765";
-   const capsuleStaking_addr = "0xB47370fe145B72953567564068aAfC252b787bF0";
-   const _LoANFTData_addr = null;
-   const _LoANFT_addr = "0x06d1dA4b026cdFde739F5da268D8864e230e1DDc";
-   const _LoANFTFusion_addr = "0xC8D346D0F7f2Fb56d7e6a8757Dc944353fEA1Ab6";
-   const _NFTMarket_addr = "0x8356ED237814347e0c2237F7979F702F43E134Eb";
+   const multiSigAdmin_addr = '0x590CD0257F0D69dEb54E49122Fcef746d8a2720e';
+   const raffleHelper_addr = '0xBD6fd8638cd89862f9562cEdA9E26ff4Ea55588D';
+   const raffle_addr = '0x575f8fD5425E8AC90fDaB0aDDdbB69fe8588cDF1';
+   const capsule_addr = "0x51E3b667F9f456C90C145f016c42B19563B30eC3";
+   const capsuleData_addr = "0x2E00f4cd700822E787421F2C62F7ef1AC2591f24";
+   const capsuleStaking_addr = "0xDF258a0D591c2BD2cc1b7f287dD543811bC23a5C";
+   const _LoANFTData_addr = "0x1568213c6Da66aAe47c57fee138481025c333268";
+   const _LoANFT_addr = null;
+   const _LoANFTFusion_addr = '0xC8D346D0F7f2Fb56d7e6a8757Dc944353fEA1Ab6';
+   const _NFTMarket_addr = "0x9D800580d52D78c1aF2191C1A7305Ed22619a8C6";
 
 
    //ROPSTEN
@@ -205,11 +205,11 @@ async function main() {
 
 
    
-   await capsuleStaking.setCapsuleStakingRule(1, 0, "1000000000000000000000");
-   await capsuleStaking.setCapsuleStakingRule(2, 0, "2000000000000000000000");
-   await capsuleStaking.setCapsuleStakingRule(3, 0, "3000000000000000000000");
-   await capsuleStaking.setCapsuleStakingRule(4, 0, "4000000000000000000000");
-   await capsuleStaking.setCapsuleStakingRule(5, 0, "5000000000000000000000");
+//    await capsuleStaking.setCapsuleStakingRule(1, 0, "1000000000000000000000");
+//    await capsuleStaking.setCapsuleStakingRule(2, 0, "2000000000000000000000");
+//    await capsuleStaking.setCapsuleStakingRule(3, 0, "3000000000000000000000");
+//    await capsuleStaking.setCapsuleStakingRule(4, 0, "4000000000000000000000");
+//    await capsuleStaking.setCapsuleStakingRule(5, 0, "5000000000000000000000");
    console.log(6);
 
 
@@ -227,25 +227,25 @@ async function main() {
    
    
    
-//    await capsuleData.addCapsuleSupply(1, [1, 2, 3, 4, 5, 6, 8], [50000, 25500, 14500, 4400, 2200, 1660, 920]);
-//    await capsuleData.addCapsuleSupply(2, [1, 2, 3], [90750, 49500, 24750]);
-//    await capsuleData.addCapsuleSupply(3, [4, 5, 6], [7926, 4323, 2161]);
-//    await capsuleData.addCapsuleSupply(4, [8], [3080]);
-//    await capsuleData.addCapsuleSupply(5, [9], [100]);
+   await capsuleData.addCapsuleSupply(1, [1, 2, 3, 4, 5, 6, 8], [50000, 25500, 14500, 4400, 2200, 1660, 920]);
+   await capsuleData.addCapsuleSupply(2, [1, 2, 3], [90750, 49500, 24750]);
+   await capsuleData.addCapsuleSupply(3, [4, 5, 6], [7926, 4323, 2161]);
+   await capsuleData.addCapsuleSupply(4, [8], [3080]);
+   await capsuleData.addCapsuleSupply(5, [9], [100]);
    
    console.log(15.1);
 
-   await _LoANFTData.addNFTSupply(1, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075]);
-   await _LoANFTData.addNFTSupply(2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000]);
-   await _LoANFTData.addNFTSupply(3, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925]);
-   await _LoANFTData.addNFTSupply(4, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1471, 1470, 1470, 1470, 1470, 1471, 1469, 1470, 1470, 1470]);
-   await _LoANFTData.addNFTSupply(5, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [754, 755, 755, 755, 755, 754, 755, 755, 755, 755]);
-   await _LoANFTData.addNFTSupply(6, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [435, 435, 435, 435, 435, 435, 436, 435, 435, 435]);
-   await _LoANFTData.addNFTSupply(8, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [400, 400, 400, 400, 400, 400, 400, 400, 400, 400]);
-   await _LoANFTData.addNFTSupply(9, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [50, 50, 50, 50, 50, 50, 50, 50, 50, 50]);
+//    await _LoANFTData.addNFTSupply(1, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075]);
+//    await _LoANFTData.addNFTSupply(2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000]);
+//    await _LoANFTData.addNFTSupply(3, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925]);
+//    await _LoANFTData.addNFTSupply(4, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1471, 1470, 1470, 1470, 1470, 1471, 1469, 1470, 1470, 1470]);
+//    await _LoANFTData.addNFTSupply(5, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [754, 755, 755, 755, 755, 754, 755, 755, 755, 755]);
+//    await _LoANFTData.addNFTSupply(6, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [435, 435, 435, 435, 435, 435, 436, 435, 435, 435]);
+//    await _LoANFTData.addNFTSupply(8, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [400, 400, 400, 400, 400, 400, 400, 400, 400, 400]);
+//    await _LoANFTData.addNFTSupply(9, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [50, 50, 50, 50, 50, 50, 50, 50, 50, 50]);
 
 
-   console.log(16);
+//    console.log(16);
 
 //    await _LoANFTData.addNFTAttributeLimits(1, 1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [759500, 1299400, 108800, 72800, 37400, 204100, 31100, 108000, 172300, 91300], [651000, 1264300, 102400, 71400, 36700, 196600, 30200, 104000, 165900, 87900], [1], [50000], [10000], 1);
 //    await _LoANFTData.addNFTAttributeLimits(2, 1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [976500, 1369700, 121600, 75600, 38900, 219200, 32800, 116000, 185000, 98000], [868000, 1334600, 115200, 74200, 38200, 211700, 31900, 112000, 178600, 94600], [1], [50000], [10000], 1);
@@ -268,7 +268,7 @@ async function main() {
 //    await _LoANFTData.addNFTAttributeLimits(9, 2, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [4766400, 2282400, 155000, 169500, 72000, 315000, 28000, 200000, 507000, 162000], [3972000, 2092200, 124000, 158200, 67200, 283500, 25200, 180000, 456300, 145800], [1], [50000], [10000], 4);
    
 //    await _LoANFTData.addNFTAttributeLimits(1, 3, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1112200, 1407500, 12400, 117500, 49900, 170100, 15100, 108000, 273800, 87500], [953300, 1369400, 6200, 115300, 49000, 163800, 14600, 104000, 263600, 84200], [1], [50000], [10000], 1);
-   await _LoANFTData.addNFTAttributeLimits(2, 3, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1429900, 1483600, 24800, 122000, 51800, 182700, 16200, 116000, 294100, 94000], [1271000, 1445500, 18600, 119800, 50900, 176400, 15700, 112000, 283900, 90700], [1], [50000], [10000], 1);
+//    await _LoANFTData.addNFTAttributeLimits(2, 3, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1429900, 1483600, 24800, 122000, 51800, 182700, 16200, 116000, 294100, 94000], [1271000, 1445500, 18600, 119800, 50900, 176400, 15700, 112000, 283900, 90700], [1], [50000], [10000], 1);
 //    await _LoANFTData.addNFTAttributeLimits(3, 3, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1747700, 1559600, 37200, 126600, 53800, 195300, 17400, 124000, 314300, 100400], [1588800, 1521600, 31000, 124300, 52800, 189000, 16800, 120000, 304200, 97200], [1], [50000], [10000], 1);
 //    await _LoANFTData.addNFTAttributeLimits(4, 3, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [2144900, 1654700, 52700, 132200, 56200, 211100, 18800, 134000, 339700, 108500], [1906600, 1597700, 43400, 128800, 54700, 201600, 17900, 128000, 324500, 103700], [1], [50000], [10000], 2);
 //    await _LoANFTData.addNFTAttributeLimits(5, 3, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [2462600, 1730800, 65100, 136700, 58100, 223700, 19900, 142000, 360000, 115000], [2303800, 1692800, 58900, 134500, 57100, 217400, 19300, 138000, 349800, 111800], [1], [50000], [10000], 2);

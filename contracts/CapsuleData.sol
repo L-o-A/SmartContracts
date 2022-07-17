@@ -70,36 +70,13 @@ contract CapsuleData {
         _;
     }
 
+    // Modifier
     modifier validCapsule() {
         require(_admin.getCapsuleAddress() == msg.sender, "You are not authorized.");
         _;
     }
 
-    function getCapsuleStatus(uint256 id) public view validCapsule returns (uint8) {
-        return _capsule_status[id];
-    }
-
-    function setCapsuleStatus(uint256 id, uint8 val) public validCapsule {
-        _capsule_status[id] = val;
-    }
-
-    function getCapsuleLevel(uint256 id) public view validCapsule returns (uint8) {
-        return _capsule_level[id];
-    }
-
-    function setCapsuleLevel(uint256 id, uint8 val) public validCapsule {
-        _capsule_level[id] = val;
-    }
-
-    function getCapsuleType(uint256 id) public view validCapsule returns (uint8) {
-        return _capsule_types[id];
-    }
-
-    function setCapsuleType(uint256 id, uint8 val) public validCapsule {
-        _capsule_types[id] = val;
-    }
-
-    function getNewCapsuleIdByType(uint8 capsuleType) public validCapsule returns (uint256) {
+    function getNewCapsuleIdByType(uint8 capsuleType, address owner) public validCapsule returns (uint256) {
         uint8 level = pickCapsuleLevel(capsuleType);
         require(level > 0, "No capsule available");
         CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
@@ -115,13 +92,9 @@ contract CapsuleData {
         _capsule_level[id] = level;
         _capsule_types[id] = capsuleType; 
 
-        return id;
-    }
+        doAirdrop(id, owner);
 
-    function hasCapsuleTypeToIds(uint8 capsuleType) public view validCapsule returns (bool) {
-        uint8 level = pickCapsuleLevel(capsuleType);
-        CapsuleSupply storage capsuleSupply = _capsule_type_supply[level];
-        return capsuleSupply._total_supply - capsuleSupply._total_consumed > 0;
+        return id;
     }
 
     function addCapsuleSupply(uint8 capsuleType, uint8[] memory levels, uint32[] memory supply) public {
@@ -139,7 +112,7 @@ contract CapsuleData {
 
     function pickCapsuleLevel(uint8 capsuleType) public view returns (uint8) {
         CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
-        uint32 selected = random(capsuleSupply._total_supply - capsuleSupply._total_consumed, _capsuleCounter.current()) + 1;
+        uint32 selected = random(capsuleSupply._total_supply - capsuleSupply._total_consumed, capsuleSupply._total_consumed) + 1;
         uint32 total = 0;
         for(uint i = 0; i < capsuleSupply.levels.length; i ++) {
             if(capsuleSupply._supply[capsuleSupply.levels[i]] - capsuleSupply._consumed[capsuleSupply.levels[i]] + total >= selected) {
@@ -166,18 +139,21 @@ contract CapsuleData {
         return _user_holdings[owner];
     }
 
-    function burn(uint256 id, address owner) public  validCapsule {
+    function doBurn(uint256 id, address owner) public  validCapsule {
         uint256 idx = _user_holdings_id_index_mapping[owner][id];
         _user_holdings[owner][idx] = _user_holdings[owner][_user_holdings[owner].length - 1];
         delete _user_holdings_id_index_mapping[owner][id];
         _user_holdings_id_index_mapping[owner][_user_holdings[owner][_user_holdings[owner].length - 1]] = idx;
         _user_holdings[owner].pop();
+        _capsule_status[id] = 6;
+        _total_unlocked[_capsule_types[id]]--;
     }
 
-    function airdrop(uint256 capsuleId, address dropTo) public  validCapsule {
+    function doAirdrop(uint256 capsuleId, address dropTo) public  validCapsule {
         _user_holdings[dropTo].push(capsuleId);
         _user_holdings_id_index_mapping[dropTo][capsuleId] = _user_holdings[dropTo].length -1;
         _total_unlocked[_capsule_types[capsuleId]]++;
+        _capsule_status[capsuleId] = 2;
     }
 
 
@@ -196,25 +172,22 @@ contract CapsuleData {
     }
 
 
-    function markStatus(uint256 capsuleId, bool vested, bool unlocked, bool unstaked) public  {
+    function markUnstaked (uint256 capsuleId, bool forced) public  {
         require(_admin.getCapsuleStakingAddress() == msg.sender, "You are not authorized.");
-        if(vested) {
-            require(_capsule_status[capsuleId] == 2, "Token is not allocated.");
-            _capsule_status[capsuleId] = 3;
-        }
-        else if(unlocked) {
-            require(_capsule_status[capsuleId] == 3, "Token is not vested.");
-            _capsule_status[capsuleId] = 4;
-        }
-        else if(unstaked) {
-            require(_capsule_status[capsuleId] == 3, "Token is not vested.");
+        if(forced)
             _capsule_status[capsuleId] = 2;
-        }
+        else
+            _capsule_status[capsuleId] = 4;
     }
 
+    function markStaked(uint256 capsuleId) public  {
+        require(_admin.getCapsuleStakingAddress() == msg.sender, "You are not authorized.");
+        require(_capsule_status[capsuleId] == 2, "Token is not allocated.");
+        _capsule_status[capsuleId] = 3;
+    }
 
     function random(uint256 limit, uint randNonce) public view returns (uint32) {
-        require(limit > 0, "Divide by zero");
-        return uint32(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, randNonce)))% limit);
+        if(limit == 0) return 0;
+        return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
     }
 }
