@@ -446,23 +446,20 @@ describe("LIVE MP Test ", function () {
     //------------------------------------------------------------------------------------------------------------------------
     //------------------------------------------------------------------------------------------------------------------------
 
-    // await capsule.airdrop(1, addr1.address, 3);
-    // await capsule.airdrop(1, addr1.address, 3);
-    // await capsule.airdrop(1, addr1.address, 3);
+    await capsule.airdrop(1, addr1.address, 3);
+    await capsule.airdrop(2, addr1.address, 3);
+    await capsule.airdrop(3, addr1.address, 3);
 
     let capsules_data = await capsuleData.getUserCapsules(addr1.address);
     console.log("Capsules :", capsules_data);
 
-    return;
 
     // const mintingFee = await _LoANFTData._minting_fee
 
-    await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000000000");
-    await _LoANFT.connect(addr1).mint([capsules_data[0]]);
+    // await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000000000");
+    // await _LoANFT.connect(addr1).mint([capsules_data[0]]);
 
     console.log("nfts : ", await _LoANFTData.getUserNFTs(addr1.address));
-
-    console.log(await _LoANFTData.getNFTDetail(1));
 
 
     
@@ -512,6 +509,8 @@ describe("LIVE MP Test ", function () {
     await loa.connect(addr1).approve(capsuleStaking.address, "200000000000000000000000");
     const userCapsules = await capsuleData.getUserCapsules(addr1.address);
     console.log("user Capsules -0", await capsuleData.getUserCapsules(addr1.address));
+
+    console.log("capsule status", userCapsules[0] , await capsuleData._capsule_status(userCapsules[0]));
     
     await capsuleStaking.connect(addr1).stake(userCapsules);
     
@@ -522,7 +521,6 @@ describe("LIVE MP Test ", function () {
     console.log("user Capsules -2", await capsuleData.getUserCapsules(addr1.address));
     console.log(23);
     
-    return;
     
     
     await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000");
@@ -531,10 +529,12 @@ describe("LIVE MP Test ", function () {
     
     await loa.connect(addr1).approve(_LoANFT.address, "200000000000000000000000");
     
+    console.log("nfts : ", await _LoANFTData.getUserNFTs(addr1.address));
     
     console.log("ready to mint nft");
-    await _LoANFT.connect(addr1).mint([capsules[0], capsules[1], capsules[2]]);
+    await _LoANFT.connect(addr1).mint(capsules);
     
+    console.log("nfts : ", await _LoANFTData.getUserNFTs(addr1.address));
     console.log(24);
     
     

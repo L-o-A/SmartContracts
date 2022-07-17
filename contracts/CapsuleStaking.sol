@@ -107,8 +107,8 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
     }
 
     // set capsule staking rules (duration of stake, amount of LOA to be staked) for each capsule type
-    function setCapsuleStakingRule(uint8 capsuleType, uint32 stakingDays, uint256 loaTokens) validAdmin public {
-        _capsuleStakeTypeDuration[capsuleType] = stakingDays;
+    function setCapsuleStakingRule(uint8 capsuleType, uint32 stakingSecs, uint256 loaTokens) validAdmin public {
+        _capsuleStakeTypeDuration[capsuleType] = stakingSecs;
         _capsuleStakeTypeLOATokens[capsuleType] = loaTokens;
     }
 
@@ -127,7 +127,7 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
             IERC1155(_admin.getCapsuleAddress()).safeTransferFrom(msg.sender, address(this), capsuleIds[i], 1, "0x00");
             ICapsuleDataContract(_admin.getCapsuleDataAddress()).markStaked(capsuleIds[i]);
 
-            _capsuleStakeEndTime[capsuleIds[i]] = block.timestamp + _capsuleStakeTypeDuration[capsuleType] * 86400;
+            _capsuleStakeEndTime[capsuleIds[i]] = block.timestamp + _capsuleStakeTypeDuration[capsuleType];
             _capsuleOwner[capsuleIds[i]] = msg.sender;
             _capsuleStakedAmount[capsuleIds[i]] = _capsuleStakeTypeLOATokens[capsuleType];
 

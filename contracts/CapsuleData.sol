@@ -92,7 +92,8 @@ contract CapsuleData {
         _capsule_level[id] = level;
         _capsule_types[id] = capsuleType; 
 
-        doTransfer(id, owner);
+        _user_holdings[owner].push(id);
+        _user_holdings_id_index_mapping[owner][id] = _user_holdings[owner].length -1;
 
         return id;
     }
@@ -149,15 +150,17 @@ contract CapsuleData {
         _user_holdings_id_index_mapping[owner][_user_holdings[owner][_user_holdings[owner].length - 1]] = idx;
         _user_holdings[owner].pop();
         _capsule_status[id] = 6;
-        _total_unlocked[_capsule_types[id]]--;
     }
 
-    function doTransfer(uint256 capsuleId, address dropTo) public  validCapsule {
+    function doTransfer(uint256 capsuleId, address owner, address dropTo) public  validCapsule {
+        uint256 idx = _user_holdings_id_index_mapping[owner][capsuleId];
+        _user_holdings[owner][idx] = _user_holdings[owner][_user_holdings[owner].length - 1];
+        delete _user_holdings_id_index_mapping[owner][capsuleId];
+        _user_holdings_id_index_mapping[owner][_user_holdings[owner][_user_holdings[owner].length - 1]] = idx;
+        _user_holdings[owner].pop();
+
         _user_holdings[dropTo].push(capsuleId);
         _user_holdings_id_index_mapping[dropTo][capsuleId] = _user_holdings[dropTo].length -1;
-        _total_unlocked[_capsule_types[capsuleId]]++;
-        if(_capsule_status[capsuleId] < 2)
-            _capsule_status[capsuleId] = 2;
     }
 
 
@@ -180,8 +183,10 @@ contract CapsuleData {
         require(_admin.getCapsuleStakingAddress() == msg.sender, "You are not authorized.");
         if(forced)
             _capsule_status[capsuleId] = 2;
-        else
+        else {
             _capsule_status[capsuleId] = 4;
+            _total_unlocked[_capsule_types[capsuleId]]++;
+        }
     }
 
     function markStaked(uint256 capsuleId) public  {
