@@ -18,7 +18,7 @@ async function main() {
    const capsule_addr = "0x95acb7F921e9fA8aF5e617e07A9Dd5b9656c8F94";
    const capsuleData_addr = "0x1323583789EF04Dbabd4c0175A15F96c8015956b";
    const capsuleStaking_addr = "0x5D005826c5b5C9144cFF11770c38Fcb24338Cb89";
-   const _LoANFTData_addr = null;
+   const _LoANFTData_addr = "0xaBf7db6e1A5d968882403F80eF30060E57c51b62";
    const _LoANFT_addr = "0xA209301bEc49D77a966f986fD434eae4Ea9A457A";
    const _LoANFTFusion_addr = '0xC8D346D0F7f2Fb56d7e6a8757Dc944353fEA1Ab6';
    const _NFTMarket_addr = "0x9D800580d52D78c1aF2191C1A7305Ed22619a8C6";
