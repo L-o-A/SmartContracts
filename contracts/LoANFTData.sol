@@ -307,7 +307,7 @@ contract LoANFTData {
     function random(uint256 limit, uint randNonce) public view returns (uint256) {
         if(limit == 0) return 0;
         // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
-        return uint256((_nftCounter.current() * _nftCounter.current() + randNonce * randNonce) % limit);
+        return uint256((_lastCall * _nftCounter.current() * _nftCounter.current() + randNonce * randNonce) % limit);
     }
 
     function getAttributeReserveQty(uint8 level, uint8 hero) public view validAdmin returns (uint256) {

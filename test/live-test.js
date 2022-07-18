@@ -533,10 +533,10 @@ describe("LIVE MP Test ", function () {
     
     console.log("ready to mint nft");
     await _LoANFT.connect(addr1).mint(capsules[0]);
+    await _LoANFT.connect(addr1).mint(capsules[1]);
     
     console.log("nfts : ", await _LoANFTData.getUserNFTs(addr1.address));
     console.log(24);
-    
     
     raffleHelper = await (await ethers.getContractFactory("RaffleHelper")).deploy(multiSigAdmin.address);
     await raffleHelper.deployed();
