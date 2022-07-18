@@ -131,11 +131,11 @@ contract LoANFT is ERC1155, Ownable {
         emit NFTMinted(id, 0, owner, price);
     }
 
-    function mint(uint256[] memory capsuleIds) public {
+    function mint(uint256 capsuleId) public {
 
         uint256 mintingFee = 0;
-        for(uint256 i = 0; i < capsuleIds.length; i++) {
-            uint256 capsuleId = capsuleIds[i];
+        // for(uint256 i = 0; i < capsuleIds.length; i++) {
+        //     uint256 capsuleId = capsuleIds[i];
             require(IERC1155Contract(_admin.getCapsuleAddress()).balanceOf( msg.sender, capsuleId) > 0, "Capsule is not owned by user");
             (, uint8 capsuleLevel, uint8 capsule_status,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleId);
 
@@ -148,7 +148,7 @@ contract LoANFT is ERC1155, Ownable {
             IERC1155Contract(_admin.getCapsuleAddress()).burn(msg.sender, capsuleId);
             _mint(msg.sender, id, 1, "");
             emit NFTMinted(id, capsuleId, msg.sender, 0);
-        }
+        // }
         require(IERC20Contract(_loaAddress).transferFrom(msg.sender, _admin.getTreasury(), mintingFee) , "Not enough minting fee available");
     }
 

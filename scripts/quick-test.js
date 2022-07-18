@@ -13,7 +13,7 @@ async function main() {
     loa = await (await ethers.getContractFactory("MYERC20")).attach("0xD0C2eB52D221ADE2897e78264E457777032744ce");
 
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-    const multiSigAdmin = await MultiSigAdmin.attach("0x590CD0257F0D69dEb54E49122Fcef746d8a2720e");
+    const multiSigAdmin = await MultiSigAdmin.attach("0x830fd6c2686813084eE5C762cfcdfe91E794319b");
 
     // await multiSigAdmin.setFusionAddress(_LoANFTFusion.address);
     // await multiSigAdmin.setMarketAddress(_NFTMarket.address);
@@ -35,23 +35,34 @@ async function main() {
     const _CapsuleStaking = await CapsuleStaking.attach("0xf7c71c4D9253A52794CD0BBc736a54C1e404eC50");
 
     const LoANFT = await ethers.getContractFactory("LoANFT");
-    const _LoANFT = await LoANFT.attach("0xA209301bEc49D77a966f986fD434eae4Ea9A457A");
+    const _LoANFT = await LoANFT.attach("0xC827616F07C0E3BB8602AAB1a70A7CF1dA38DCd3");
 
     const LoANFTData = await ethers.getContractFactory("LoANFTData");
-    const _LoANFTData = await LoANFTData.attach("0xaBf7db6e1A5d968882403F80eF30060E57c51b62");
-
+    const _LoANFTData = await LoANFTData.attach("0xBB58bDD791C453b2DE786cC536D84aEe9F7b3Eb5");
 
     // console.log(await _Capsule.balanceOf("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", "66"));
-    console.log(await _Capsule.airdrop(1, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 2));
-    console.log(await _Capsule.airdrop(2, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 2));
+    // console.log(await _Capsule.airdrop(1, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 2));
+    // console.log(await _Capsule.airdrop(2, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 2));
 
-    let capsules = await _CapsuleData.getUserCapsules("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB")
+    console.log(await multiSigAdmin.getCapsuleAddress());
+    // await multiSigAdmin.setCapsuleAddress(_Capsule.address);
+    // await multiSigAdmin.setCapsuleDataAddress(_CapsuleData.address);
+
+    console.log("getCapsuleDataAddress ", await multiSigAdmin.getCapsuleDataAddress());
+
+
+    let capsules = await _CapsuleData.getUserCapsules("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB");
     console.log(capsules);
     
-    // await _LoANFTData.populateAttributeReserve(1, 1, 10);
-    // await _LoANFTData.populateAttributeReserve(1, 2, 10);
-    
-    // console.log(await _CapsuleData._capsule_status(4));
+    // for(level = 1; level < 10; level++) {
+    //     if(level == 7) continue;
+    //     for(hero = 1; hero < 11; hero++) {
+    //         await _LoANFTData.populateAttributeReserve(level, hero, 5);
+    //         console.log("processed ", level, hero);
+    //     }
+    // } // 0.7 BnB for 500
+
+    console.log(await _CapsuleData._capsule_status(2));
     // console.log(await _CapsuleData._capsule_status(5));
     
     // await loa.approve("0x5D005826c5b5C9144cFF11770c38Fcb24338Cb89", "200000000000000000000000000000");
@@ -67,17 +78,20 @@ async function main() {
     // console.log(await _LoANFTData.doMint(2, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB"));
 
     
-    // await loa.approve("0xA209301bEc49D77a966f986fD434eae4Ea9A457A", "2000000000000000000000000");
-    // await _Capsule.setApprovalForAll("0xA209301bEc49D77a966f986fD434eae4Ea9A457A", true);
+    // await loa.approve("0xC827616F07C0E3BB8602AAB1a70A7CF1dA38DCd3", "2000000000000000000000000");
+    // await _Capsule.setApprovalForAll("0xC827616F07C0E3BB8602AAB1a70A7CF1dA38DCd3", true);
 
-    // let tx = await _LoANFT.mint([6]);
-    // let rc = await tx.wait();
-    // let event = rc.events.find(event => event.event === 'NFTMinted');
-    // console.log(event.args.itemIds.toString(), event.args.capsuleIds, event.args.buyer, event.args.price);
+    let tx = await _LoANFT.mint([2,3]);
+    let rc = await tx.wait();
+    let event = rc.events.find(event => event.event === 'NFTMinted');
+    console.log(event.args.itemIds.toString(), event.args.capsuleIds, event.args.buyer, event.args.price);
 
 
     
     console.log(await _LoANFTData.getUserNFTs("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB"));
+
+
+
     // console.log(await _LoANFT.balanceOf("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", "1"));
     // console.log(await _LoANFT.balanceOf("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", "2"));
     

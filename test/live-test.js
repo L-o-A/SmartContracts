@@ -532,7 +532,7 @@ describe("LIVE MP Test ", function () {
     console.log("nfts : ", await _LoANFTData.getUserNFTs(addr1.address));
     
     console.log("ready to mint nft");
-    await _LoANFT.connect(addr1).mint(capsules);
+    await _LoANFT.connect(addr1).mint(capsules[0]);
     
     console.log("nfts : ", await _LoANFTData.getUserNFTs(addr1.address));
     console.log(24);

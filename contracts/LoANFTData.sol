@@ -163,11 +163,12 @@ contract LoANFTData {
     }
 
     function getNewNFTByLevel(uint8 level) public returns (uint256) {
-        uint8 hero = pickNFTHero(level);
 
         NFTSupply storage nftSupply = _nft_level_supply[level];
+        require(nftSupply._total_supply - nftSupply._total_consumed > 0, "Supply error");
 
-        require(nftSupply._supply[hero] - nftSupply._consumed[hero] > 0, "No capsule available");
+        uint8 hero = pickNFTHero(level);
+        require(nftSupply._supply[hero] - nftSupply._consumed[hero] > 0, "No Hero NFT available");
 
         nftSupply._consumed[hero] +=1;
         nftSupply._total_consumed +=1;
@@ -302,7 +303,7 @@ contract LoANFTData {
     function random(uint256 limit, uint randNonce) public view returns (uint32) {
         if(limit == 0) return 0;
         // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
-        return uint32((block.timestamp + randNonce * randNonce) % limit);
+        return uint32((block.timestamp + randNonce) % limit);
     }
 
     function getAttributeReserveQty(uint8 level, uint8 hero) public view validAdmin returns (uint256) {
