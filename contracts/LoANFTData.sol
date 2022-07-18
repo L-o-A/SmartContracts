@@ -170,6 +170,7 @@ contract LoANFTData {
         require(nftSupply._total_supply - nftSupply._total_consumed > 0, "Supply error");
 
         uint8 hero = pickNFTHero(level);
+        require(hero > 0, "Hero not found");
         require(nftSupply._supply[hero] - nftSupply._consumed[hero] > 0, "No Hero NFT available");
 
         nftSupply._consumed[hero] +=1;
@@ -316,6 +317,7 @@ contract LoANFTData {
 
         NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
         require(nftAttribLimit._total_attributes > 0, "Attribute not set hero level");
+        require(_nft_attribute_names.length > 0, "Attribute names not set");
 
         for(uint j= 0; j < qty; j ++) {
             uint64[] memory attributes = new uint64[](_nft_attribute_names.length + 1);
