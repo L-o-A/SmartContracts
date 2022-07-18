@@ -3,7 +3,7 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
     console.log("Closing Raffle...");
 
-    const RAFFLE_ADDRESS = "0xAF3AA341055bD6FD449de97BB88Fa1C4bAB3fa56";
+    const RAFFLE_ADDRESS = "0xD9257Db73A958D6e8881cF2C60768364482A191d";
 
     const Raffle = await ethers.getContractFactory("Raffle");
     const raffle = await Raffle.attach(RAFFLE_ADDRESS);
@@ -13,11 +13,11 @@ async function main() {
     const oneDayAgo = parseInt(new Date().getTime() / 1000 - 86400 + "");
     const now = parseInt(new Date().getTime() / 1000);
 
-    await raffle.setRaffleInfo(1, twoDaysAgo + "", oneDayAgo + "", now + "");
+    // await raffle.setRaffleInfo(1, twoDaysAgo + "", oneDayAgo + "", now + "");
 
 
     console.log("raffle closed")
-    // await raffle.pickWinner(100);
+    await raffle.pickWinner(100);
     // await raffle.pickWinner(100);
     // await raffle.pickWinner(100);
 
