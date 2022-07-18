@@ -22,6 +22,7 @@ contract LoANFTData {
     mapping(uint256 => NFT) _nfts;
     mapping(uint8 => mapping(uint8 => NFTAttribLimit)) _nft_attrib_by_level_hero;
     mapping(uint8 => mapping(uint8 => uint64[][])) _attributes_reserve_by_level_hero;
+    uint256 _lastCall;
 
     IAdmin _admin;
 
@@ -66,6 +67,7 @@ contract LoANFTData {
 
     constructor(address adminContractAddress) {
         _admin = IAdmin(adminContractAddress);
+        _lastCall = block.timestamp;
     }
 
     function addNFTAttributeLimits(
@@ -225,6 +227,7 @@ contract LoANFTData {
     }
 
     function doFusion(address owner, uint256[] memory ids, uint8 fusionLevel ) public returns (uint256) {
+        _lastCall = block.timestamp;
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
 
         for (uint8 i = 0; i < ids.length; i++) {
@@ -245,6 +248,7 @@ contract LoANFTData {
     }
 
     function doMint(uint8 capsuleLevel, address owner) public returns (uint256, uint256) {
+        _lastCall = block.timestamp;
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
 
         uint256 id = getNewNFTByLevel(capsuleLevel);
@@ -257,7 +261,7 @@ contract LoANFTData {
         return (id, fee);
     }
 
-    function repopulatePropery(uint256 id) public {
+    function repopulateProperty(uint256 id) public {
         require(msg.sender == _admin.getAxionAddress(), "Not authorized axion");
         populateAttribute(id, _nfts[id].level, _nfts[id].hero);
     }
@@ -303,7 +307,7 @@ contract LoANFTData {
     function random(uint256 limit, uint randNonce) public view returns (uint32) {
         if(limit == 0) return 0;
         // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
-        return uint32((block.timestamp + randNonce) % limit);
+        return uint32((_lastCall + randNonce * randNonce) % limit);
     }
 
     function getAttributeReserveQty(uint8 level, uint8 hero) public view validAdmin returns (uint256) {
