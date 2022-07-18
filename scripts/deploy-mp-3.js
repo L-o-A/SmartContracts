@@ -24,18 +24,6 @@ async function main() {
    const _NFTMarket_addr = null;
 
 
-   //ROPSTEN
-//    const multiSigAdmin_addr = "0xd9B8A07A1A6b768ba0B294d248e4D693389cAb28";
-//    const raffleHelper_addr = "0x44eA380498BA643E24d822511Da6a70Df47e01e4";
-//    const raffle_addr = "0xe87D8910E007a8BAF3334fD6301dfC12f3D5DE09";
-//    const capsule_addr = "0x4eda3F084e76e09CF1980018c1E89055453E1B36";
-//    const capsuleData_addr = "0xA218cEAC4d24E0486C30635A635B7E93c9F179Ab";
-//    const capsuleStaking_addr = "0xB2e0A5Fc0cc106Cc256b176b666619F90bf78ce9";
-//    const _LoANFTData_addr = null;
-//    const _LoANFT_addr = "0xEF6B385a4f3c35Dd95A768258bbC18C17D820b21";
-//    const _LoANFTFusion_addr = "0x66a6a92005747a745F589f989052fd08F43f1145";
-//    const _NFTMarket_addr = "0xfc5Aa7b168BAB32e86429704d883bF9C7b18111C";
-
 
 
    loa = await (await ethers.getContractFactory("MYERC20")).attach("0xD0C2eB52D221ADE2897e78264E457777032744ce");
@@ -237,6 +225,7 @@ async function main() {
 
 
 
+   await _LoANFTData.addNFTSupply(1, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075, 14075]);
    await _LoANFTData.addNFTSupply(2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000]);
    await _LoANFTData.addNFTSupply(3, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925, 5925]);
    await _LoANFTData.addNFTSupply(4, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1471, 1470, 1470, 1470, 1470, 1471, 1469, 1470, 1470, 1470]);
