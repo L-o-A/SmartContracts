@@ -49,7 +49,7 @@ interface IRaffle {
 interface ICapsuleData {
     function getNewCapsuleIdByType(uint8 kind, address owner) external returns (uint256);
     function doBurn(uint256 id, address owner) external;
-    function doAirdrop(uint256 id, address owner) external;
+    function doTransfer(uint256 id, address owner, address to) external;
 }
 
 /**
@@ -128,8 +128,7 @@ contract Capsule is ERC1155, Ownable {
         bytes memory data
     ) public virtual override {
         require(_admin.isValidCapsuleTransfer(msg.sender, from, to), "Not permitted to transfer");
-        ICapsuleData(_admin.getCapsuleDataAddress()).doBurn(id, from);
-        ICapsuleData(_admin.getCapsuleDataAddress()).doAirdrop(id, to);
+        ICapsuleData(_admin.getCapsuleDataAddress()).doTransfer(id, from, to);
 
         return super.safeTransferFrom(from, to, id, amount, data);
     }
@@ -145,8 +144,7 @@ contract Capsule is ERC1155, Ownable {
 
         for(uint256 i =0; i < ids.length; i++){
             uint256 id = ids[i];
-            ICapsuleData(_admin.getCapsuleDataAddress()).doBurn(id, from);
-            ICapsuleData(_admin.getCapsuleDataAddress()).doAirdrop(id, to);
+            ICapsuleData(_admin.getCapsuleDataAddress()).doTransfer(id, from, to);
         }
 
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);

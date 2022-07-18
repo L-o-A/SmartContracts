@@ -137,8 +137,11 @@ contract LoANFT is ERC1155, Ownable {
         for(uint256 i = 0; i < capsuleIds.length; i++) {
             uint256 capsuleId = capsuleIds[i];
             require(IERC1155Contract(_admin.getCapsuleAddress()).balanceOf( msg.sender, capsuleId) > 0, "Capsule is not owned by user");
-            (, uint8 capsuleLevel, ,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleId);
+            (, uint8 capsuleLevel, uint8 capsule_status,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleId);
+
             require(capsuleLevel > 0, "Capsule level not found");
+            require(capsule_status == 4, "Capsule is not unlocked");
+
             (uint256 id, uint256 fee) = _nftData.doMint(capsuleLevel, msg.sender);
             mintingFee = mintingFee + fee;
             require(id > 0, "NFT not found");
