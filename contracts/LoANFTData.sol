@@ -227,7 +227,6 @@ contract LoANFTData {
     }
 
     function doFusion(address owner, uint256[] memory ids, uint8 fusionLevel ) public returns (uint256) {
-        _lastCall = block.timestamp;
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
 
         for (uint8 i = 0; i < ids.length; i++) {
@@ -243,12 +242,11 @@ contract LoANFTData {
         _nfts[id].owner = owner;
         _user_holdings[owner].push(id);
         _user_holdings_id_index[owner][id] = _user_holdings[owner].length -1;
-
+        _lastCall = block.timestamp;
         return id;
     }
 
     function doMint(uint8 capsuleLevel, address owner) public returns (uint256, uint256) {
-        _lastCall = block.timestamp;
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
 
         uint256 id = getNewNFTByLevel(capsuleLevel);
@@ -257,7 +255,7 @@ contract LoANFTData {
         _nfts[id].owner = owner;
         _user_holdings[owner].push(id);
         _user_holdings_id_index[owner][id] = _user_holdings[owner].length -1;
-
+        _lastCall = block.timestamp;
         return (id, fee);
     }
 
