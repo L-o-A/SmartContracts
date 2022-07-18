@@ -249,6 +249,7 @@ contract LoANFTData {
 
     function doMint(uint8 capsuleLevel, address owner) public returns (uint256, uint256) {
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
+        require(capsuleLevel > 0, "Invalid level");
 
         uint256 id = getNewNFTByLevel(capsuleLevel);
         uint256 fee = _minting_fee[capsuleLevel];
