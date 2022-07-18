@@ -7,7 +7,7 @@ async function main() {
 
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
     console.log(90);
-    const multiSigAdmin = await MultiSigAdmin.attach("0x44765D53328CaD452ecc90E5864524C7a9e5111B");
+    const multiSigAdmin = await MultiSigAdmin.attach("0x41901A1b2dF581b92b70cD9189a52d945E7A7307");
     console.log(91);
 
     const RaffleHelper = await ethers.getContractFactory("RaffleHelper");

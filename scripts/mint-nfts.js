@@ -9,24 +9,21 @@ async function main() {
     // const [owner, addr1, addr2] = await ethers.getSigners();
     const user = "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da";
 
-    const LoANFT = await ethers.getContractFactory("LoANFT");
-    const _LoANFT = await LoANFT.attach('0xe571DD4cE3b09552E8b1e825571359E5c8346428');
-
-    const _LoANFTData = await (await ethers.getContractFactory("LoANFTData")).attach('0x8C2f2a23b230b3e3539020c04C2EFF66defdf9F9');
-
-    console.log(user);
-
-    const CapsuleData = await ethers.getContractFactory("CapsuleData");
-    const _capsuleData = await CapsuleData.attach('0x414a9790372780f5d1e37aB3120F3526AC1cd282');
+    const _LoANFT = await (await ethers.getContractFactory("LoANFT")).attach('0x02F83a21d0516f028D51EBBA5560d7e5Ce7F0cbb');
+    const _LoANFTData = await (await ethers.getContractFactory("LoANFTData")).attach('0x3c4F2e0ce4f151e9552d51D29cAF89088e058877');
+    const _capsuleData = await (await ethers.getContractFactory("CapsuleData")).attach('0x444fFeE9C8B7C7B93Fd184125707C28069d4E8B6');
 
     const capsules = await _capsuleData.getUserCapsules(user);
 
-    console.log(capsules); //['1', '2', '13', '14', '15', '16']
-    console.log("len", capsules.length);
+    console.log(capsules);
+    // console.log("len", capsules.length);
+    // console.log("getNFTDetail", await _LoANFTData.getNFTDetail(1));
+
+    // return;
 
     let cap = capsules[capsules.length - 1];
-    console.log("cap", cap);
-    // cap = 18;
+    // console.log("cap", cap);
+    cap = 4;
     const detail = await _capsuleData.getCapsuleDetail(cap);
     console.log("detail", detail);
     const _minting_fee = await _LoANFTData._minting_fee(detail[0]);
@@ -41,6 +38,8 @@ async function main() {
 
     console.log("ready to mint nft");
     await _LoANFT.mint(cap);
+    console.log("minted");
+
 
 }
 main();

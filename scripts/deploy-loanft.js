@@ -10,7 +10,7 @@ async function main() {
     const admin3 = "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da";
 
     const multiSigAdmin_addr = "0x41901A1b2dF581b92b70cD9189a52d945E7A7307";
-    const _LoANFTData_addr = "0x2122895b6fF81E123CA888ddafe4fa78a73C886C";
+    const _LoANFTData_addr = null;
     const _LoANFT_addr = "0x02F83a21d0516f028D51EBBA5560d7e5Ce7F0cbb";
     const _NFTMarket_addr = "0xBC5e5cFF2680480fE69A2894351DA1b81693eBFf";
     const _capsule_addr = "0xC6FD3b4A75f50622ec69FFE7C80cd14048673488";
@@ -30,12 +30,12 @@ async function main() {
         console.log("_LoANFTData.address :", _LoANFTData.address);
     }
 
-    console.log("getNFTSupply 1", await _LoANFTData.getNFTSupply(1));
-    console.log("getNFTSupply 2", await _LoANFTData.getNFTSupply(2));
-    console.log("getNFTSupply 3", await _LoANFTData.getNFTSupply(3));
-    console.log("getNFTSupply 4", await _LoANFTData.getNFTSupply(4));
-    console.log("getNFTSupply 5", await _LoANFTData.getNFTSupply(5));
-    return;
+    // console.log("getNFTSupply 1", await _LoANFTData.getNFTSupply(1));
+    // console.log("getNFTSupply 2", await _LoANFTData.getNFTSupply(2));
+    // console.log("getNFTSupply 3", await _LoANFTData.getNFTSupply(3));
+    // console.log("getNFTSupply 4", await _LoANFTData.getNFTSupply(4));
+    // console.log("getNFTSupply 5", await _LoANFTData.getNFTSupply(5));
+    // return;
 
     let _LoANFT;
     if (_LoANFT_addr == null) {
