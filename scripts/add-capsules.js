@@ -3,66 +3,40 @@ const { ethers, upgrades } = require("hardhat");
 async function main() {
    console.log("Adding Capsules...");
 
-   // const Capsule = await ethers.getContractFactory("Capsule");
-   // const capsule = await Capsule.attach("0xcf42951d10D9BeAd202f335278A0fF8b6Fbfb24b");
+   const capsule = await (await ethers.getContractFactory("Capsule")).attach("0xC6FD3b4A75f50622ec69FFE7C80cd14048673488");
+   const _capsuleData = await (await ethers.getContractFactory("CapsuleData")).attach('0x444fFeE9C8B7C7B93Fd184125707C28069d4E8B6');
 
-   const CapsuleData = await ethers.getContractFactory("CapsuleData");
-   const capsuleData = await CapsuleData.attach("0x51Bb854F0794B9b5d8723715cae65da23b896e56");
+   // console.log("getCapsuleSupply 1", await _capsuleData.getCapsuleSupply(1));
+   // console.log("getCapsuleSupply 2", await _capsuleData.getCapsuleSupply(2));
+   // console.log("getCapsuleSupply 3", await _capsuleData.getCapsuleSupply(3));
+   // console.log("getCapsuleSupply 4", await _capsuleData.getCapsuleSupply(4));
+   // console.log("getCapsuleSupply 5", await _capsuleData.getCapsuleSupply(5));
 
-   // const base = 340;
+   // await _capsuleData.addCapsuleSupply(1, [1, 2, 3, 4, 5, 6, 8], [50000, 25500, 14500, 4400, 2200, 1660, 920]);
+   // await _capsuleData.addCapsuleSupply(2, [1, 2, 3], [90750, 49500, 24750]);
+   // await _capsuleData.addCapsuleSupply(3, [4, 5, 6], [7926, 4323, 2161]);
+   // await _capsuleData.addCapsuleSupply(4, [8], [3080]);
+   // await _capsuleData.addCapsuleSupply(5, [9], [100]);
 
-   let ids = [];
-   let levels = [];
-   let types = [];
+   const caps = await _capsuleData.getUserCapsules("0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da");
 
-
-   // for (let i = 1; i <= 200; i++) {
-   //    ids.push(i);
-   //    levels.push(1);
-   //    types.push(1);
+   console.log("caps", caps);
+   // for (let index = 0; index < caps.length; index++) {
+   //    console.log(caps[index], await _capsuleData.getCapsuleDetail(caps[index]));
    // }
+   await capsule.airdrop(1, "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da", 2);
+   await capsule.airdrop(2, "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da", 2);
+   await capsule.airdrop(3, "0xD2eCFbb2A94431Da360f267eAa9183E53FDdeaE2", 2);
+   await capsule.airdrop(4, "0xD2eCFbb2A94431Da360f267eAa9183E53FDdeaE2", 2);
+   await capsule.airdrop(5, "0xD2eCFbb2A94431Da360f267eAa9183E53FDdeaE2", 2);
 
-   // console.log(await capsuleData.getNewCapsuleIdByType(1));
-
-   // await capsuleData.modifyCapsules(true, ids, levels, types);
-
-
-   await capsuleData.addCapsuleSupply(1, [1, 2, 3, 4, 5, 6, 8], [50000, 25500, 14500, 4400, 2200, 1660, 920]);
-   await capsuleData.addCapsuleSupply(2, [1, 2, 3], [90750, 49500, 24750]);
-   await capsuleData.addCapsuleSupply(3, [4, 5, 6], [7926, 4323, 2161]);
-   await capsuleData.addCapsuleSupply(4, [8], [3080]);
-   await capsuleData.addCapsuleSupply(5, [9], [100]);
+   // await capsule.airdrop(1, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 2);
+   // await capsule.airdrop(2, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 2);
+   // await capsule.airdrop(3, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 2);
+   // await capsule.airdrop(4, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 2);
+   // await capsule.airdrop(5, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 2);
 
    console.log("added");
-
-      // await capsuleData.modifyCapsules(true,
-      // [base + 1, base + 2, base + 3, base + 4, base + 5, base + 6, base + 7, base + 8, base + 9, base + 10, base + 11, base + 12, base + 13, base + 14, base + 15, base + 16, base + 17, base + 18, base + 19, base + 20, base + 21, base + 22, base + 23, base + 24, base + 25, base + 26, base + 27, base + 28, base + 29, base + 30, base + base + 31, base + 32, base + 33, base + 34, base + 35, base + 36, base + 37, base + 38, base + 39, base + 40],
-      // [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      // [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
-
-   // await capsuleData.modifyCapsules(true, [61, 62, 63, 64, 65, 66, 67, 68, 69, 70], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]);
-   // console.log(1);
-   // await capsuleData.modifyCapsules(true, [71, 72, 73, 74, 75, 76, 77, 78, 79, 80], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]);
-   // console.log(2);
-
-   // await capsuleData.modifyCapsules(true, [81, 82, 83, 84, 85, 86, 87, 88, 89, 90], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]);
-   // console.log(3);
-
-   // await capsuleData.modifyCapsules(true, [91, 92, 93, 94, 95, 96, 97, 98, 99, 100], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [5, 5, 5, 5, 5, 5, 5, 5, 5, 5]);
-   // console.log(4);
-
-   // await capsuleData.modifyCapsules(true, [91, 92, 93, 94, 95, 96, 97, 98, 99, 100], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [5, 5, 5, 5, 5, 5, 5, 5, 5, 5]);
-   // console.log(4);
-
-   // await capsule.airdrop(2, "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da", 2);
-   // await capsule.airdrop(3, "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da", 2);
-   // await capsule.airdrop(4, "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da", 2);
-   // await capsule.airdrop(5, "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da", 2);
-
-   // await capsule.airdrop(2, "0xD2eCFbb2A94431Da360f267eAa9183E53FDdeaE2", 2);
-   // await capsule.airdrop(3, "0xD2eCFbb2A94431Da360f267eAa9183E53FDdeaE2", 2);
-   // await capsule.airdrop(4, "0xD2eCFbb2A94431Da360f267eAa9183E53FDdeaE2", 2);
-   // await capsule.airdrop(5, "0xD2eCFbb2A94431Da360f267eAa9183E53FDdeaE2", 2);
 }
 
 main();
