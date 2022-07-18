@@ -157,7 +157,7 @@ contract NFTMarket is ERC1155Holder {
         _itemIds.increment();
         uint256 itemId = _itemIds.current();
         if(nftContract == _admin.getNFTAddress()) {
-            (,uint8 hero, , uint8 level , , uint64[] memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
+            (, , , uint8 level , uint8 hero, uint64[] memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
             _listed_items.push(MarketItem(
                 itemId,
                 nftContract,
