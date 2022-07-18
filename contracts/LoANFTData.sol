@@ -317,7 +317,7 @@ contract LoANFTData {
 
         NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
         require(nftAttribLimit._total_attributes > 0, "Attribute not set hero level");
-        require(_nft_attribute_names.length > 0, "Attribute names not set");
+        require(_nft_attribute_names.length >= qty, "Attribute names not set");
 
         for(uint j= 0; j < qty; j ++) {
             uint64[] memory attributes = new uint64[](_nft_attribute_names.length + 1);
