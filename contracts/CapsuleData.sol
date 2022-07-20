@@ -116,7 +116,7 @@ contract CapsuleData {
 
     function pickCapsuleLevel(uint8 capsuleType) public view returns (uint8) {
         CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
-        uint32 selected = random(capsuleSupply._total_supply - capsuleSupply._total_consumed, capsuleSupply._total_consumed) + 1;
+        uint32 selected = _admin.random(capsuleSupply._total_supply - capsuleSupply._total_consumed, capsuleSupply._total_consumed) + 1;
         uint32 total = 0;
         for(uint i = 0; i < capsuleSupply.levels.length; i ++) {
             if(capsuleSupply._supply[capsuleSupply.levels[i]] - capsuleSupply._consumed[capsuleSupply.levels[i]] + total >= selected) {
@@ -195,9 +195,9 @@ contract CapsuleData {
         _capsule_status[capsuleId] = 3;
     }
 
-    function random(uint256 limit, uint32 randNonce) public view returns (uint32) {
-        if(limit == 0) return 0;
-        // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
-        return uint32((block.timestamp + randNonce * randNonce) % limit);
-    }
+    // function random(uint256 limit, uint32 randNonce) public view returns (uint32) {
+    //     if(limit == 0) return 0;
+    //     // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
+    //     return uint32((block.timestamp + randNonce * randNonce) % limit);
+    // }
 }
