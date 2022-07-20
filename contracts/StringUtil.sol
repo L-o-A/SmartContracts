@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
-
+import "hardhat/console.sol";
 
 /*
  * @title String & slice utility library for Solidity contracts.
@@ -902,34 +902,34 @@ contract StringUtil {
     }
 
 
-    function randomSubList(uint8[] memory list, uint8 units, uint randNonce) public view returns (uint8[] memory) {
-        uint8[] memory subList = new uint8[](units);
-        uint8 count = 0;
-        uint8 nonceIncrementor = 0;
+    // function randomSubList(uint8[] memory list, uint8 units, uint randNonce) public view returns (uint8[] memory) {
+    //     uint8[] memory subList = new uint8[](units);
+    //     uint8 count = 0;
+    //     uint8 nonceIncrementor = 0;
 
-        for(uint8 i = 0; i < units; ) {
-            uint32 index = random(uint256(list.length), randNonce + nonceIncrementor++);
-            if(list[index] > 0) {
-                subList[count++] = list[index];
-                list[index] = 0;
-                i++;
-            } else if(list.length > index + 1 && list[index + 1] > 0) {
-                subList[count++] = list[index + 1];
-                list[index + 1] = 0;
-                i++;
-            } else if(index - 1 >= 0 && list[index - 1] > 0) {
-                subList[count++] = list[index - 1];
-                list[index - 1] = 0;
-                i++;
-            }
-        }
-        return subList;
-    }
+    //     for(uint8 i = 0; i < units; ) {
+    //         uint32 index = random(uint256(list.length), randNonce + nonceIncrementor++);
+    //         if(list[index] > 0) {
+    //             subList[count++] = list[index];
+    //             list[index] = 0;
+    //             i++;
+    //         } else if(list.length > index + 1 && list[index + 1] > 0) {
+    //             subList[count++] = list[index + 1];
+    //             list[index + 1] = 0;
+    //             i++;
+    //         } else if(index - 1 >= 0 && list[index - 1] > 0) {
+    //             subList[count++] = list[index - 1];
+    //             list[index - 1] = 0;
+    //             i++;
+    //         }
+    //     }
+    //     return subList;
+    // }
 
-    function random(uint256 limit, uint randNonce) public view returns (uint32) {
-        if(limit == 0) return 0;
-        return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
-    }
+    // function random(uint256 limit, uint randNonce) public view returns (uint32) {
+    //     if(limit == 0) return 0;
+    //     return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
+    // }
 
     // function stringToUint(string memory s) private pure returns (uint64) {
     //     bytes memory b = bytes(s);
@@ -943,10 +943,21 @@ contract StringUtil {
     //     return result; // this was missing
     // }
 
+    mapping(uint64 => uint64[])_random_values;
 
-    uint32[] _data;
+    function random(uint256 limit, uint randNonce) public view returns (uint64) {
+        if(limit == 0) return 0;
+        // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
+        uint64 index = uint32((block.timestamp * randNonce) % 10);
+        console.log(index);
+        uint64 radix = uint32((block.timestamp * randNonce) % 500);
+        console.log(radix);
+        uint64 val = _random_values[index][radix];
+        return uint64(val % limit);
+    }
 
-    function uploadOrder(uint32[] memory data) public {
-        _data = data;
+    function setRandomValues(uint64 index, uint64[] memory random_values) public {
+        require(random_values.length == 500, "Incomplete");
+        _random_values[index] = random_values;
     }
 }
