@@ -147,7 +147,7 @@ contract LoANFTData {
 
     function pickNFTHero(uint8 level) public view returns (uint8) {
         NFTSupply storage nftSupply = _nft_level_supply[level];
-        uint32 selected = uint32(random(nftSupply._total_supply - nftSupply._total_consumed, _nftCounter.current())) + 1;
+        uint32 selected = uint32(_admin.random(nftSupply._total_supply - nftSupply._total_consumed, _nftCounter.current())) + 1;
         uint32 total = 0;
         for(uint i = 0; i < nftSupply.heroes.length; i ++) {
             if(nftSupply._supply[nftSupply.heroes[i]] - nftSupply._consumed[nftSupply.heroes[i]] + total >= selected) {
@@ -286,7 +286,7 @@ contract LoANFTData {
         uint8 nonceIncrementor = 0;
 
         for(uint8 i = 0; i < units; ) {
-            uint32 index = uint32(random(uint256(list.length), randNonce + nonceIncrementor++));
+            uint32 index = uint32(_admin.random(uint256(list.length), randNonce + nonceIncrementor++));
             if(list[index] > 0) {
                 subList[count++] = list[index];
                 list[index] = 0;
@@ -320,32 +320,17 @@ contract LoANFTData {
             //set default values
             for(uint8 i = 0; i < nftAttribLimit._default_attributes.length; i++) {
                 attributes[nftAttribLimit._default_attributes[i]] = nftAttribLimit._min[nftAttribLimit._default_attributes[i]]  + 
-                uint32(random(nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]], i * j));
+                uint32(_admin.random(nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]], i * j));
             }
 
             uint8[] memory otherAttributes = randomSubList(nftAttribLimit._attributes, nftAttribLimit._total_attributes, j);
             for(uint8 i = 0; i < otherAttributes.length; i++) {
                 attributes[otherAttributes[i]] = nftAttribLimit._min[otherAttributes[i]] + 
-                    uint32(random(nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]], i * j));
+                    uint32(_admin.random(nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]], i * j));
             }
 
             _attributes_reserve_by_level_hero[level][hero].push(attributes);
         }
     }
-
-
-    function random(uint256 limit, uint randNonce) public view returns (uint32) {
-        if(limit == 0) return 0;
-        // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
-        // return uint32(uint256(keccak256(abi.encodePacked(_lastCall * _nftCounter.current(), msg.sender, randNonce))) % limit);
-        // return uint256((_lastCall * _nftCounter.current() * _nftCounter.current() + randNonce * randNonce) % limit);
-        return _random_values[uint32((block.timestamp * randNonce) % _random_values.length)][uint32((block.timestamp * randNonce) % 500)];
-    }
-
-    uint32[][] _random_values;
-
-    function setRandomValues(uint32[] memory random_values) public validAdmin {
-        require(random_values.length == 500, "Incomplete");
-        _random_values.push(random_values);
-    }
+    
 }

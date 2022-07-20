@@ -15,4 +15,5 @@ interface IAdmin {
     function getNFTDataAddress() external view returns (address);
     function getFusionAddress() external view returns (address);
     function getAxionAddress() external view returns (address);
+    function random(uint256 limit, uint randNonce) external view returns (uint32);
 }
