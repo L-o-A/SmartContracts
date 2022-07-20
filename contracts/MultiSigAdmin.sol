@@ -168,7 +168,8 @@ contract MultiSigAdmin {
         // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
         // return uint32(uint256(keccak256(abi.encodePacked(_lastCall * _nftCounter.current(), msg.sender, randNonce))) % limit);
         // return uint256((_lastCall * _nftCounter.current() * _nftCounter.current() + randNonce * randNonce) % limit);
-        return _random_values[uint32((block.timestamp * randNonce) % _random_values.length)][uint32((block.timestamp * randNonce) % 500)];
+        uint64 val = _random_values[uint32((block.timestamp * randNonce) % _random_values.length)][uint32((block.timestamp * randNonce) % 500)];
+        return uint32((val * val)% limit);
     }
 
     function setRandomValues(uint32[] memory random_values) public validAdmin {
