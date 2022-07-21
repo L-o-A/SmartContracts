@@ -75,22 +75,19 @@ describe("RAFFLE ", function () {
 
     // console.log(balance - await ethers.provider.getBalance(owner.address));
 
-    for(let j = 0; j < 10; j++){
+    for(let j = 0; j < 3; j++){
         let rands = [];
-        for(let i = 0; i < 500; i++) {
-            rands.push(Math.floor((Math.random() * 10000000000) + 1))
+        for(let i = 0; i < 10; i++) {
+            rands.push(Math.floor((Math.random() * 1000) + 1))
         }
 
         // console.log(rands);
         await stringUtil.setRandomValues(j, rands);
     }
 
-    console.log(await stringUtil.random(100, 1))
-    console.log(await stringUtil.random(100, 2))
-    console.log(await stringUtil.random(100, 3))
-    console.log(await stringUtil.random(100, 4))
-    console.log(await stringUtil.random(100, 5))
-    console.log(await stringUtil.random(100, 6))
+    for(let j = 0; j < 100; j++){
+      console.log(await stringUtil.random(100, j))
+    }
   });
 
 

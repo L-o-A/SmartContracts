@@ -945,19 +945,17 @@ contract StringUtil {
 
     mapping(uint64 => uint64[])_random_values;
 
-    function random(uint256 limit, uint randNonce) public view returns (uint64) {
+    function random(uint64 limit, uint randNonce) public view returns (uint64) {
         if(limit == 0) return 0;
         // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
-        uint64 index = uint32((block.timestamp * randNonce) % 10);
-        console.log(index);
-        uint64 radix = uint32((block.timestamp * randNonce) % 500);
-        console.log(radix);
+        uint64 index = uint64((block.timestamp * randNonce) % 3);
+        uint64 radix = uint64((block.timestamp * randNonce) % 10);
         uint64 val = _random_values[index][radix];
         return uint64(val % limit);
     }
 
     function setRandomValues(uint64 index, uint64[] memory random_values) public {
-        require(random_values.length == 500, "Incomplete");
+        require(random_values.length == 10, "Incomplete");
         _random_values[index] = random_values;
     }
 }
