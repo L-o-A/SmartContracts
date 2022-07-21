@@ -18,6 +18,7 @@ contract MultiSigAdmin {
     address _axionAddress;
     address _nftDataAddress;
     mapping(uint64 => uint64[])_random_values;
+    uint64 _max_rand_index;
 
     constructor() {
         _admins[msg.sender] = 1;
@@ -145,6 +146,7 @@ contract MultiSigAdmin {
 
         if(_capsuleStakingAddress == sender 
                 || _capsuleAddress == sender 
+                || _capsuleDataAddress == sender 
                 || _nftAddress == sender 
                 || _marketAddress == sender 
                 || _nftFusionAddress == sender 
@@ -163,18 +165,20 @@ contract MultiSigAdmin {
         return false;
     }
 
-    function random(uint64 limit, uint randNonce) public view returns (uint64) {
+    function random(uint limit, uint64 randNonce) public view returns (uint64) {
+        require(isValidMarketPlaceContract(msg.sender), "Invalid access");
         if(limit == 0) return 0;
         unchecked {
-            uint64 index = uint64((block.timestamp * randNonce) % 100);
-            uint64 radix = uint64((block.timestamp * randNonce) % 500);
+            uint64 index = uint64((block.timestamp * randNonce) % _max_rand_index);
+            uint64 radix = uint64((block.timestamp * randNonce) % _random_values[index].length);
             uint64 val = _random_values[index][radix];
             return uint64(val % limit);
         }
     }
 
-    function setRandomValues(uint64 index, uint64[] memory random_values) public {
+    function setRandomValues(uint64[] memory random_values) public validAdmin {
         require(random_values.length == 500, "Incomplete");
-        _random_values[index] = random_values;
+        _random_values[_max_rand_index] = random_values;
+        _max_rand_index++;
     }
 }
