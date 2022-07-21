@@ -17,8 +17,8 @@ contract MultiSigAdmin {
     address _nftFusionAddress;
     address _axionAddress;
     address _nftDataAddress;
-    mapping(uint64 => uint64[])_random_values;
-    uint64 _max_rand_index;
+    // mapping(uint64 => uint64[]) public _random_values;
+    // uint64 public _max_rand_index;
 
     constructor() {
         _admins[msg.sender] = 1;
@@ -165,22 +165,34 @@ contract MultiSigAdmin {
         return false;
     }
 
-    function random(uint256 limit, uint256 randNonce1, uint256 randNonce2) public view returns (uint64) {
+    function random(uint256 limit, uint256 randNonce) public view returns (uint64) {
         require(isValidMarketPlaceContract(msg.sender), "Invalid access");
         if(limit == 0) return 0;
         unchecked {
-            uint64 index = uint64((randNonce2 * randNonce1) % _max_rand_index);
-            console.log("index :", index);
-            uint64 radix = uint64((randNonce2 * randNonce1 * randNonce1) % _random_values[index].length);
-            console.log("radix :", radix);
-            uint64 val = _random_values[index][radix];
-            return uint64(val % limit);
+            // uint64 index = uint64(( randNonce1) % _max_rand_index);
+            // // console.log("index :", index);
+            // uint64 radix = uint64((randNonce2) % _random_values[index].length);
+            // // console.log("radix :", radix);
+            // uint64 val = _random_values[index][radix];
+            // return uint64(val % limit);
+            // uint64[] memory vals = _random_values[1];
+            // return vals[5]%limit;
+            return uint64(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
         }
     }
 
-    function setRandomValues(uint64[] memory random_values) public validAdmin {
-        require(random_values.length == 500, "Incomplete");
-        _random_values[_max_rand_index] = random_values;
-        _max_rand_index++;
+    // function setRandomValues(uint64[] memory random_values) public validAdmin {
+    //     // require(random_values.length == 500, "Incomplete");
+    //     delete _random_values[_max_rand_index];
+    //     _random_values[_max_rand_index] = random_values;
+    //     _max_rand_index++;
+    // }
+
+    function getArray(uint64 units,uint64 limit, uint256 randNonce) public view returns (uint64[] memory) {
+        uint64[] memory arr = new uint64[](units);
+        for (uint256 i = 0; i < units; i++) {
+            arr[i] = random(limit, randNonce);
+        }
+        return arr;
     }
 }

@@ -75,19 +75,38 @@ describe("RAFFLE ", function () {
 
     // console.log(balance - await ethers.provider.getBalance(owner.address));
 
-    for(let j = 0; j < 3; j++){
-        let rands = [];
-        for(let i = 0; i < 10; i++) {
-            rands.push(Math.floor((Math.random() * 1000) + 1))
-        }
+    // for (let j = 0; j < 10; j++) {
+    //     let rands = [];
+    //   for (let i = 0; i < 500; i++) {
+    //     rands.push(Math.floor((Math.random() * 4000000000) + 1))
+    //     }
 
-        // console.log(rands);
-        await stringUtil.setRandomValues(j, rands);
+    //   await stringUtil.setRandomValues(rands);
+    //   console.log(j, "------------------------------");
+    // }
+
+    // for (let j = 1; j < 100; j++) {
+    //   console.log("----------------", await stringUtil.random(100, j, j + 1));
+    // }
+    // return;
+
+    const _multiSigAdmin = await (await ethers.getContractFactory("MultiSigAdmin")).deploy();
+    await _multiSigAdmin.deployed();
+    await _multiSigAdmin.setAxionAddress("0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da");
+
+    for (let j = 0; j < 10; j++) {
+      let rands = [];
+      for (let i = 0; i < 500; i++) {
+        rands.push(Math.floor((Math.random() * 4000000000) + 1))
+      }
+
+      await _multiSigAdmin.setRandomValues(rands);
+      console.log(j, "------------------------------");
+    }
+    for (let j = 0; j < 100; j++) {
+      console.log(await _multiSigAdmin.random(100, j, j + 1))
     }
 
-    for(let j = 0; j < 100; j++){
-      console.log(await stringUtil.random(100, j))
-    }
   });
 
 

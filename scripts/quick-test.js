@@ -13,7 +13,7 @@ async function main() {
     loa = await (await ethers.getContractFactory("MYERC20")).attach("0xD0C2eB52D221ADE2897e78264E457777032744ce");
 
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-    const multiSigAdmin = await MultiSigAdmin.attach("0xe01D32D0b93326adec15543Fa3F7a1f700F67e59");
+    const multiSigAdmin = await MultiSigAdmin.attach("0x85186B2dF6d490a5C78DE04949F449e85A012b69");
 
     // await multiSigAdmin.setFusionAddress(_LoANFTFusion.address);
     // await multiSigAdmin.setMarketAddress(_NFTMarket.address);
@@ -26,22 +26,23 @@ async function main() {
 
 
     const Capsule = await ethers.getContractFactory("Capsule");
-    const _Capsule = await Capsule.attach("0xdcf3c8EC638E881555031DB9c590F82eC4928136");
+    const _Capsule = await Capsule.attach("0xCC04F782bC18794a2747852E223Bfad317A6521d");
 
     const CapsuleData = await ethers.getContractFactory("CapsuleData");
-    const _CapsuleData = await CapsuleData.attach("0xb6f8eE0844c2517064766AdF7a5830E826952aCA");
+    const _CapsuleData = await CapsuleData.attach("0x82cB6F70FCF721bEa1C2cFF432161eb233D36239");
 
     const CapsuleStaking = await ethers.getContractFactory("CapsuleStaking");
-    const _CapsuleStaking = await CapsuleStaking.attach("0x9217e76678153f4bd2bf6BCFd5C4cb41D74DdafE");
+    const _CapsuleStaking = await CapsuleStaking.attach("0x1f8Cc9a68993DD0225407E7E673498bd90545b35");
 
     const LoANFT = await ethers.getContractFactory("LoANFT");
-    const _LoANFT = await LoANFT.attach("0x9a3C3816f77458e60b87dbbD395FcC13794e1833");
+    const _LoANFT = await LoANFT.attach("0x057c9aCfe20f9DBD43f7c129474E030A57AAB510");
 
     const LoANFTData = await ethers.getContractFactory("LoANFTData");
-    const _LoANFTData = await LoANFTData.attach("0xB21BAB7fcbae465C4d4dE59b6d8002371707FB66");
+    const _LoANFTData = await LoANFTData.attach("0xdcC3D875Aa6C649B8fd674394daa85D2dD2e4921");
 
     // console.log(await _Capsule.balanceOf("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", "66"));
-    // console.log(await _Capsule.airdrop(1, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 20));
+    console.log(await _Capsule.airdrop(1, "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da", 20));
+    return;
     // console.log(await _Capsule.airdrop(2, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 20));
     // console.log(await _Capsule.airdrop(3, "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 20));
 
@@ -51,8 +52,8 @@ async function main() {
 
 
 
-    let capsules = await _CapsuleData.getUserCapsules("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB");
-    console.log(capsules);
+    let capsules = await _CapsuleData.getUserCapsules("0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da");
+    console.log("capsules", capsules);
     
     // for(level = 1; level < 10; level++) {
     //     if(level == 7) continue;
@@ -88,7 +89,7 @@ async function main() {
 
     
     // console.log(await _LoANFTData.getUserNFTs("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB"));
-    console.log(await _LoANFTData._user_holdings("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB", 0));
+    console.log("_user_holdings", await _LoANFTData._user_holdings("0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da", 0));
 
 
 
