@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract MultiSigAdmin {
 
@@ -165,12 +165,14 @@ contract MultiSigAdmin {
         return false;
     }
 
-    function random(uint limit, uint64 randNonce) public view returns (uint64) {
+    function random(uint256 limit, uint256 randNonce1, uint256 randNonce2) public view returns (uint64) {
         require(isValidMarketPlaceContract(msg.sender), "Invalid access");
         if(limit == 0) return 0;
         unchecked {
-            uint64 index = uint64((block.timestamp * randNonce) % _max_rand_index);
-            uint64 radix = uint64((block.timestamp * randNonce) % _random_values[index].length);
+            uint64 index = uint64((randNonce2 * randNonce1) % _max_rand_index);
+            console.log("index :", index);
+            uint64 radix = uint64((randNonce2 * randNonce1 * randNonce1) % _random_values[index].length);
+            console.log("radix :", radix);
             uint64 val = _random_values[index][radix];
             return uint64(val % limit);
         }
