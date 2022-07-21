@@ -948,10 +948,12 @@ contract StringUtil {
     function random(uint64 limit, uint randNonce) public view returns (uint64) {
         if(limit == 0) return 0;
         // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
-        uint64 index = uint64((block.timestamp * randNonce) % 3);
-        uint64 radix = uint64((block.timestamp * randNonce) % 10);
-        uint64 val = _random_values[index][radix];
-        return uint64(val % limit);
+        unchecked{ 
+            uint64 index = uint64((block.timestamp ** 10) % 3);
+            uint64 radix = uint64((block.timestamp ** 10) % 10);
+            uint64 val = _random_values[index][radix];
+            return uint64(val % limit);
+        }
     }
 
     function setRandomValues(uint64 index, uint64[] memory random_values) public {

@@ -165,10 +165,12 @@ contract MultiSigAdmin {
 
     function random(uint64 limit, uint randNonce) public view returns (uint64) {
         if(limit == 0) return 0;
-        uint64 index = uint64((block.timestamp * randNonce) % 100);
-        uint64 radix = uint64((block.timestamp * randNonce) % 500);
-        uint64 val = _random_values[index][radix];
-        return uint64(val % limit);
+        unchecked {
+            uint64 index = uint64((block.timestamp * randNonce) % 100);
+            uint64 radix = uint64((block.timestamp * randNonce) % 500);
+            uint64 val = _random_values[index][radix];
+            return uint64(val % limit);
+        }
     }
 
     function setRandomValues(uint64 index, uint64[] memory random_values) public {
