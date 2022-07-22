@@ -3,6 +3,11 @@ pragma solidity ^0.8.7;
 
 import "hardhat/console.sol";
 
+
+interface IRandom {
+    function random(uint256 limit, uint256 randNonce) external view returns (uint64);
+}
+
 contract MultiSigAdmin {
 
     mapping(address=> uint8) public _admins;
@@ -17,6 +22,7 @@ contract MultiSigAdmin {
     address _nftFusionAddress;
     address _axionAddress;
     address _nftDataAddress;
+    address _randomAddress;
     mapping(uint64 => uint64[])_random_values;
     uint64 _max_rand_index;
 
@@ -116,6 +122,14 @@ contract MultiSigAdmin {
         return _nftDataAddress;
     }
 
+    function setRandomGeneratorAddress(address randomAddress) public validAdmin {
+        _randomAddress = randomAddress;
+    }
+
+    function getRandomGeneratorAddress() public view returns (address) {
+        return _randomAddress;
+    }
+
     function modifyAdmin(address adminAddress, bool add) validAdmin public {
         if(add) {
             _admins[adminAddress] = 1;
@@ -165,22 +179,7 @@ contract MultiSigAdmin {
         return false;
     }
 
-    function random(uint256 limit, uint256 randNonce1, uint256 randNonce2) public view returns (uint64) {
-        require(isValidMarketPlaceContract(msg.sender), "Invalid access");
-        if(limit == 0) return 0;
-        unchecked {
-            uint64 index = uint64((randNonce2 * randNonce1) % _max_rand_index);
-            console.log("index :", index);
-            uint64 radix = uint64((randNonce2 * randNonce1 * randNonce1) % _random_values[index].length);
-            console.log("radix :", radix);
-            uint64 val = _random_values[index][radix];
-            return uint64(val % limit);
-        }
-    }
-
-    function setRandomValues(uint64[] memory random_values) public validAdmin {
-        require(random_values.length == 500, "Incomplete");
-        _random_values[_max_rand_index] = random_values;
-        _max_rand_index++;
+    function random(uint256 limit, uint256 randNonce) public view returns (uint64) {
+        return IRandom(_randomAddress).random(limit, randNonce);
     }
 }
