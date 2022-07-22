@@ -261,10 +261,10 @@ contract LoANFTData {
         return (id, fee);
     }
 
-    function repopulateProperty(uint256 id) public {
-        require(msg.sender == _admin.getAxionAddress(), "Not authorized axion");
-        populateAttribute(id, _nfts[id].level, _nfts[id].hero);
-    }
+    // function repopulateProperty(uint256 id) public {
+    //     require(msg.sender == _admin.getAxionAddress(), "Not authorized axion");
+    //     populateAttribute(id, _nfts[id].level, _nfts[id].hero);
+    // }
 
     function putNFTAttributeNames (string[] memory nft_attribute_names) public validAdmin {
         _nft_attribute_names = nft_attribute_names;

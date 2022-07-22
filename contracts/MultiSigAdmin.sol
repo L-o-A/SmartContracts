@@ -4,7 +4,7 @@ pragma solidity ^0.8.7;
 import "hardhat/console.sol";
 
 
-interface IRandom {
+interface ILOAUtil {
     function random(uint256 limit, uint256 randNonce) external view returns (uint64);
 }
 
@@ -22,9 +22,7 @@ contract MultiSigAdmin {
     address _nftFusionAddress;
     address _axionAddress;
     address _nftDataAddress;
-    address _randomAddress;
-    mapping(uint64 => uint64[])_random_values;
-    uint64 _max_rand_index;
+    address _util_address;
 
     constructor() {
         _admins[msg.sender] = 1;
@@ -122,12 +120,12 @@ contract MultiSigAdmin {
         return _nftDataAddress;
     }
 
-    function setRandomGeneratorAddress(address randomAddress) public validAdmin {
-        _randomAddress = randomAddress;
+    function setUtilAddress(address utilAddress) public validAdmin {
+        _util_address = utilAddress;
     }
 
-    function getRandomGeneratorAddress() public view returns (address) {
-        return _randomAddress;
+    function getUtilAddress() public view returns (address) {
+        return _util_address;
     }
 
     function modifyAdmin(address adminAddress, bool add) validAdmin public {
@@ -180,6 +178,6 @@ contract MultiSigAdmin {
     }
 
     function random(uint256 limit, uint256 randNonce) public view returns (uint64) {
-        return IRandom(_randomAddress).random(limit, randNonce);
+        return ILOAUtil(_util_address).random(limit, randNonce);
     }
 }

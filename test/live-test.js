@@ -25,6 +25,7 @@ describe("LIVE MP Test ", function () {
     const _LoANFT_addr = null;
     const _LoANFTFusion_addr = null;
     const _NFTMarket_addr = null;
+    const _UTIL_address = null;
 
 
 
@@ -50,6 +51,19 @@ describe("LIVE MP Test ", function () {
         // await multiSigAdmin.modifyAdmin(admin3, true);
         await multiSigAdmin.modifyAdmin(treasury, true);
         await multiSigAdmin.setTreasury(treasury);
+    }
+
+
+    let _LOAUtil;
+    if(_UTIL_address  == null) {
+        const LOAUtil = await ethers.getContractFactory("LOAUtil");
+        _LOAUtil = await LOAUtil.deploy();
+        await _LOAUtil.deployed();
+        console.log("LOAUtil.address :", _LOAUtil.address);
+    } else {
+        const LOAUtil = await ethers.getContractFactory("LOAUtil");
+        _LOAUtil = await LOAUtil.attach(_UTIL_address);
+        console.log("LOAUtil.address :", _LOAUtil.address);
     }
 
 
@@ -176,6 +190,7 @@ describe("LIVE MP Test ", function () {
     await multiSigAdmin.setCapsuleDataAddress(capsuleData.address);
     await multiSigAdmin.setNFTDataAddress(_LoANFTData.address);
     await multiSigAdmin.setNFTAddress(_LoANFT.address);
+    await multiSigAdmin.setUtilAddress(_LOAUtil.address);
 
     await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
 
