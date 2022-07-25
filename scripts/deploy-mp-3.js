@@ -211,11 +211,11 @@ async function main() {
 //    }
    console.log(3);
 
-    // await capsuleStaking.setCapsuleStakingRule(1, 0, "500000000000000000000");
-    // await capsuleStaking.setCapsuleStakingRule(2, 0, "500000000000000000000");
-    // await capsuleStaking.setCapsuleStakingRule(3, 0, "3000000000000000000000");
-    // await capsuleStaking.setCapsuleStakingRule(4, 0, "10000000000000000000000");
-    // await capsuleStaking.setCapsuleStakingRule(5, 0, "100000000000000000000000");
+    await capsuleStaking.setCapsuleStakingRule(1, 300, "500000000000000000000");
+    await capsuleStaking.setCapsuleStakingRule(2, 300, "500000000000000000000");
+    await capsuleStaking.setCapsuleStakingRule(3, 300, "3000000000000000000000");
+    await capsuleStaking.setCapsuleStakingRule(4, 300, "10000000000000000000000");
+    await capsuleStaking.setCapsuleStakingRule(5, 300, "100000000000000000000000");
    console.log(6);
 
    //    await _LoANFTData.updateFees([1, 2, 3, 4, 5], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000", "3000000000000000000000", "3000000000000000000000"]);
