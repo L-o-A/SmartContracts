@@ -12,27 +12,28 @@ async function main() {
    const admin2 = "0x36Ee9c4520F9E7C15A0Cba1e032627eDc2B4C50D";
    const admin3 = "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da";
 
-    // multiSigAdmin.address : 0xa21e13444b75fFEBd8B5f6BD7D526c61F87185AB
+    // multiSigAdmin.address : 0x66A86D15849f39E461Ae4B23e9CF1aa8ED66D1Fc
     // raffleHelper.address : 0x7e31F872460a9fdd89F5c49570ceeC988270DBAb
     // raffle.address : 0xeb500C3f67f0a794EDec6d33e01f85826494a34F
-    // capsule.address : 0xe93e8b45ae6b8B00D1551f0359d013B4a59C7297
-    // capsuleData.address : 0xb46a97FB88BAcCcA92637BbCcf601fCee9D4EB99
-    // capsuleStaking.address : 0x29942D05a41319851FAAc2EEa99caE247B510839
-    // _LoANFTData.address : 0xf4b0BbB500Ea98c36495C50D96050456204d5979
-    // _LoANFT.address : 0x68E9aCd9b99dc9eD771214Ade788C6fc7af7aC07
-    // _LoANFTFusion.address : 0x0CC89576f0Ba20fc28941c17Ec5Ba09E99633256
-    // _NFTMarket.address : 0x53F3C54Ab3e592343C07025ADBF4E36D1060Eff8
+    // capsule.address : 0x0583A78979CD8F12Eb5B1B1F55a957D5Cefe7567
+    // capsuleData.address : 0x1D75E5855b752733C9bfF33848e127323aDb4A23
+    // capsuleStaking.address : 0x744c927F01C8C04883A5c651ee9bff2f2854a55B
+    // _LoANFTData.address : 0xf989A58F93346eb78Ab07Afc12cE13C01d932c40
+    // _LoANFT.address : 0x142AdBb712C9e152038B338207b641eb697720CD
+    // _LoANFTFusion.address : 0x48228b1B789F583fbf48E1569e8c9ED51F5Db889
+    // _NFTMarket.address : 0x402a7B558E3F5A71C1Dd29D180965775810c5Da0
 
-    const multiSigAdmin_addr = null;
+    const multiSigAdmin_addr = "0x66A86D15849f39E461Ae4B23e9CF1aa8ED66D1Fc";
     const raffleHelper_addr = "0x7e31F872460a9fdd89F5c49570ceeC988270DBAb";
     const raffle_addr = "0xeb500C3f67f0a794EDec6d33e01f85826494a34F";
-    const capsule_addr = null;
-    const capsuleData_addr = null;
-    const capsuleStaking_addr = null;
-    const _LoANFTData_addr = null;
-    const _LoANFT_addr = null;
-    const _LoANFTFusion_addr = null;
-    const _NFTMarket_addr = null;
+    const capsule_addr = "0x0583A78979CD8F12Eb5B1B1F55a957D5Cefe7567";
+    const capsuleData_addr = "0x1D75E5855b752733C9bfF33848e127323aDb4A23";
+    const capsuleStaking_addr = "0x744c927F01C8C04883A5c651ee9bff2f2854a55B";
+    const _LoANFTData_addr = "0xf989A58F93346eb78Ab07Afc12cE13C01d932c40";
+    const _LoANFT_addr = "0x142AdBb712C9e152038B338207b641eb697720CD";
+    const _LoANFTFusion_addr = "0x48228b1B789F583fbf48E1569e8c9ED51F5Db889";
+    const _NFTMarket_addr = null; //"0x402a7B558E3F5A71C1Dd29D180965775810c5Da0";
+    const _UTIL_addr = "0xFD165685A4D42028e83ad1067eE0D404d0AC8fA6";
 
    loa = await (await ethers.getContractFactory("MYERC20")).attach("0xD0C2eB52D221ADE2897e78264E457777032744ce");
 
@@ -166,21 +167,31 @@ async function main() {
        console.log("_NFTMarket.address :", _NFTMarket.address);
    }
 
-   console.log(1);
+    let _LOAUtil;
+    if (_UTIL_addr == null) {
+        const LOAUtil = await ethers.getContractFactory("LOAUtil");
+        _LOAUtil = await LOAUtil.deploy();
+        await _LOAUtil.deployed();
+        console.log("_LOAUtil.address :", _LOAUtil.address);
+    } else {
+        const LOAUtil = await ethers.getContractFactory("LOAUtil");
+        _LOAUtil = await LOAUtil.attach(_UTIL_addr);
+        console.log("_LOAUtil.address :", _LOAUtil.address);
+    }
 
-   
+    console.log(1);
 
+    // await multiSigAdmin.setFusionAddress(_LoANFTFusion.address);
+    await multiSigAdmin.setMarketAddress(_NFTMarket.address);
+    // await multiSigAdmin.setCapsuleAddress(capsule.address);
+    // await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
+    // await multiSigAdmin.setCapsuleDataAddress(capsuleData.address);
+    // await multiSigAdmin.setNFTDataAddress(_LoANFTData.address);
+    // await multiSigAdmin.setNFTAddress(_LoANFT.address);
+    // await multiSigAdmin.setUtilAddress(_LOAUtil.address);
+    // await multiSigAdmin.setAxionAddress(admin3);
 
-    await multiSigAdmin.setFusionAddress(_LoANFTFusion.address);
-   await multiSigAdmin.setMarketAddress(_NFTMarket.address);
-    await multiSigAdmin.setCapsuleAddress(capsule.address);
-    await multiSigAdmin.setCapsuleStakingAddress(capsuleStaking.address);
-    await multiSigAdmin.setCapsuleDataAddress(capsuleData.address);
-    await multiSigAdmin.setNFTDataAddress(_LoANFTData.address);
-    await multiSigAdmin.setNFTAddress(_LoANFT.address);
-    await multiSigAdmin.setAxionAddress(admin3);
-
-    await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
+    // await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
 
 //    await raffleHelper.putRafflePrices([500,1000, 1500, 2500],
 //        ["1000000000000000000000", "1100000000000000000000", "1333000000000000000000", "1666000000000000000000", "2000000000000000000000"], 
@@ -200,30 +211,28 @@ async function main() {
 //    }
    console.log(3);
 
-
-   
-    await capsuleStaking.setCapsuleStakingRule(1, 0, "500000000000000000000");
-    await capsuleStaking.setCapsuleStakingRule(2, 0, "500000000000000000000");
-    await capsuleStaking.setCapsuleStakingRule(3, 0, "3000000000000000000000");
-    await capsuleStaking.setCapsuleStakingRule(4, 0, "10000000000000000000000");
-    await capsuleStaking.setCapsuleStakingRule(5, 0, "100000000000000000000000");
+    // await capsuleStaking.setCapsuleStakingRule(1, 0, "500000000000000000000");
+    // await capsuleStaking.setCapsuleStakingRule(2, 0, "500000000000000000000");
+    // await capsuleStaking.setCapsuleStakingRule(3, 0, "3000000000000000000000");
+    // await capsuleStaking.setCapsuleStakingRule(4, 0, "10000000000000000000000");
+    // await capsuleStaking.setCapsuleStakingRule(5, 0, "100000000000000000000000");
    console.log(6);
 
    //    await _LoANFTData.updateFees([1, 2, 3, 4, 5], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000", "3000000000000000000000", "3000000000000000000000"]);
     // below is correct
-    await _LoANFTData.updateFees([1, 2, 3, 4, 5], ["100000000000000000000", "100000000000000000000", "250000000000000000000", "500000000000000000000", "1000000000000000000000"]);
+    // await _LoANFTData.updateFees([1, 2, 3, 4, 5], ["100000000000000000000", "100000000000000000000", "250000000000000000000", "500000000000000000000", "1000000000000000000000"]);
 
    console.log(9);
 
-   await _LoANFTData.putNFTAttributeNames(["HASH-POWER", "MAX-HP", "MAX-PRANA", "MAXSPEED", "HP-REGEN", "PRANA-REGEN", "ATTACK-DAMAGE", "ATTACK-SPEED", "CRITICAL-DAMAGE", "ARMOUR", "MAGIC-DEFENCE"]);
+//    await _LoANFTData.putNFTAttributeNames(["HASH-POWER", "MAX-HP", "MAX-PRANA", "MAXSPEED", "HP-REGEN", "PRANA-REGEN", "ATTACK-DAMAGE", "ATTACK-SPEED", "CRITICAL-DAMAGE", "ARMOUR", "MAGIC-DEFENCE"]);
 
 
    console.log(13);
 
-    await _NFTMarket.updateFees([_LoANFT.address, capsule.address], ["800000000000000000000", "100000000000000000000"], [50, 50]);
+    await _NFTMarket.updateFees([_LoANFT.address, capsule.address], ["800000000000000000000", "800000000000000000000"], [50, 50]);
    console.log(14);
    
-   
+    return;
    
     await capsuleData.addCapsuleSupply(1, [1, 2, 3, 4, 5, 6, 8], [50000, 25500, 14500, 4400, 2200, 1660, 920]);
     await capsuleData.addCapsuleSupply(2, [1, 2, 3], [90750, 49500, 24750]);

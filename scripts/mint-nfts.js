@@ -8,21 +8,10 @@ async function main() {
 
     const user = "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da";
 
-    // multiSigAdmin.address : 0xa21e13444b75fFEBd8B5f6BD7D526c61F87185AB
-    // raffleHelper.address : 0x7e31F872460a9fdd89F5c49570ceeC988270DBAb
-    // raffle.address : 0xeb500C3f67f0a794EDec6d33e01f85826494a34F
-    // capsule.address : 0xe93e8b45ae6b8B00D1551f0359d013B4a59C7297
-    // capsuleData.address : 0xb46a97FB88BAcCcA92637BbCcf601fCee9D4EB99
-    // capsuleStaking.address : 0x29942D05a41319851FAAc2EEa99caE247B510839
-    // _LoANFTData.address : 0xf4b0BbB500Ea98c36495C50D96050456204d5979
-    // _LoANFT.address : 0x68E9aCd9b99dc9eD771214Ade788C6fc7af7aC07
-    // _LoANFTFusion.address : 0x0CC89576f0Ba20fc28941c17Ec5Ba09E99633256
-    // _NFTMarket.address : 0x53F3C54Ab3e592343C07025ADBF4E36D1060Eff8
-
-    const _multiSigAdmin = await (await ethers.getContractFactory("MultiSigAdmin")).attach("0xa21e13444b75fFEBd8B5f6BD7D526c61F87185AB");
-    const _LoANFT = await (await ethers.getContractFactory("LoANFT")).attach('0x68E9aCd9b99dc9eD771214Ade788C6fc7af7aC07');
-    const _LoANFTData = await (await ethers.getContractFactory("LoANFTData")).attach('0xf4b0BbB500Ea98c36495C50D96050456204d5979');
-    const _capsuleData = await (await ethers.getContractFactory("CapsuleData")).attach('0xb46a97FB88BAcCcA92637BbCcf601fCee9D4EB99');
+    const _multiSigAdmin = await (await ethers.getContractFactory("MultiSigAdmin")).attach("0x66A86D15849f39E461Ae4B23e9CF1aa8ED66D1Fc");
+    const _LoANFT = await (await ethers.getContractFactory("LoANFT")).attach('0x142AdBb712C9e152038B338207b641eb697720CD');
+    const _LoANFTData = await (await ethers.getContractFactory("LoANFTData")).attach('0xf989A58F93346eb78Ab07Afc12cE13C01d932c40');
+    const _capsuleData = await (await ethers.getContractFactory("CapsuleData")).attach('0x1D75E5855b752733C9bfF33848e127323aDb4A23');
 
     const capsules = await _capsuleData.getUserCapsules(user);
 
@@ -39,6 +28,8 @@ async function main() {
             unlocked.push(capsules[i]);
         }
     }
+
+    console.log("unlocked", unlocked.length);
     if (unlocked.length < 1) {
         console.log("no capsules unlocked");
         return;

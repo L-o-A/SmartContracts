@@ -320,7 +320,7 @@ contract NFTMarket is ERC1155Holder {
         IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
 
         if(marketItem.nftContract == _admin.getNFTAddress()) {
-            (,uint8 hero,, uint8 level,, uint64[] memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
+            (, , , uint8 level, uint8 hero, uint64[] memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
     
             emit MarketItemAction(
                 itemId,
