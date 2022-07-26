@@ -7,22 +7,18 @@ async function main() {
 
     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
     console.log(90);
-    const multiSigAdmin = await MultiSigAdmin.attach("0x41901A1b2dF581b92b70cD9189a52d945E7A7307");
+    const multiSigAdmin = await MultiSigAdmin.attach("0x66A86D15849f39E461Ae4B23e9CF1aa8ED66D1Fc");
     console.log(91);
 
     const RaffleHelper = await ethers.getContractFactory("RaffleHelper");
     const raffleHelper = await RaffleHelper.deploy(multiSigAdmin.address);
     await raffleHelper.deployed();
     console.log("raffleHelper.address :", raffleHelper.address);
-    // const RaffleHelper = await ethers.getContractFactory("RaffleHelper");
-    // const raffleHelper = await RaffleHelper.attach("0x20366BaE0D21943457C61fE401a34Ef26581570B");
-    // console.log("raffleHelper.address :", raffleHelper.address);
 
-    // await raffleHelper.putRafflePrices([10,40, 100],["10000000000000000000", "20000000000000000000", "30000000000000000000", "40000000000000000000"], [30, 200, 400], [150, 300]);
 
-    await raffleHelper.putRafflePrices([500,1000, 1500, 2500],
-        ["1000000000000000000000", "1100000000000000000000", "1333000000000000000000", "1666000000000000000000", "2000000000000000000000"], 
-        [100, 200, 300, 400, 500], [500,1000, 1500, 2500]);
+    await raffleHelper.putRafflePrices([500, 1000, 1500, 2500],
+        ["1000000000000000000000", "1100000000000000000000", "1333000000000000000000", "1666000000000000000000", "2000000000000000000000"],
+        [100, 200, 300, 400, 500], [500, 1000, 1500, 2500]);
 
     const Raffle = await ethers.getContractFactory("Raffle");
     const raffle = await Raffle.deploy(loa, raffleHelper.address, multiSigAdmin.address);
@@ -40,7 +36,7 @@ async function main() {
     const oneDayAgo = parseInt(new Date().getTime()/1000 +  86400  + "");
     const tomorrow = parseInt(new Date().getTime()/1000 +  2* 86400  + "");
     
-    await raffle.setRaffleInfo(1, twoDaysAgo + "", oneDayAgo + "", tomorrow + "");
+    await raffle.setRaffleInfo(1, "1658750400", "1658836800", "1659182400");
     console.log(2);
     
     multiSigAdmin.modifyRaffleAddress(raffle.address, true);
