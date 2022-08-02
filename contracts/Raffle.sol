@@ -130,12 +130,9 @@ contract Raffle {
         uint256 index = _user_tickets_id_to_index[owner][id];
         _user_tickets[owner][index] = _user_tickets[owner][_user_tickets[owner].length - 1];
         _user_tickets_id_to_index[owner][_user_tickets[owner][index]] = index;
-        
-
         index = _user_winning_tickets_id_to_index[owner][id];
         _user_winning_tickets[owner][index] = _user_winning_tickets[owner][_user_winning_tickets[owner].length - 1];
         _user_winning_tickets_id_to_index[owner][_user_winning_tickets[owner][index]] = index;
-
         _user_tickets[owner].pop();
         _user_winning_tickets[owner].pop();
         delete _user_tickets_id_to_index[owner][id];
@@ -176,6 +173,7 @@ contract Raffle {
         require( IERC20Contract(_loaContract).balanceOf(msg.sender) >= amount, "Required LOA balance is not available.");
 
         IERC20Contract(_loaContract).transferFrom(msg.sender, address(this), amount);
+        
         _total_loa_staked += amount;
 
         uint256 ticketPrice = amount / units;
@@ -209,7 +207,6 @@ contract Raffle {
         uint256[] storage ticketIds = _raffle_tickets;
 
         uint64 rewards = _helper.getCurrentRewards(_raffle_supply);
-
         if(count > rewards - _raffle_winner_count) {
             count = rewards - _raffle_winner_count;
         }
@@ -227,6 +224,7 @@ contract Raffle {
 
             _raffle_winning_tickets_count[_ticket_owner[winners[i]]] += 1;
             _user_winning_tickets[_ticket_owner[winners[i]]].push(winners[i]);
+            _user_winning_tickets_id_to_index[_ticket_owner[winners[i]]][winners[i]] = _user_winning_tickets[_ticket_owner[winners[i]]].length-1;
 
             _raffle_tickets_count[_ticket_owner[winners[i]]] -= 1;
 
@@ -260,7 +258,13 @@ contract Raffle {
             return;
         }
         if(_raffle_status == 3){
-            if(_user_winning_tickets[msg.sender].length > 0){
+            if(_user_winning_tickets[msg.sender].length > 30){
+                uint256[] memory selected = new uint256[](30);
+                for (uint256 i = 0; i < 30; i++) {
+                    selected[i] = _user_winning_tickets[msg.sender][i];
+                }
+                CapsuleInterface(_admin.getCapsuleAddress()).claim(selected, address(this), msg.sender);
+            } else {
                 CapsuleInterface(_admin.getCapsuleAddress()).claim(_user_winning_tickets[msg.sender], address(this), msg.sender);
             }
             cleanup();
@@ -280,7 +284,7 @@ contract Raffle {
         if(_raffle_status == 3) {
             uint256[] storage ticketIds = _user_tickets[msg.sender];
             if(ticketIds.length > 0){
-                uint256 loop_end = ticketIds.length > 100 ? (ticketIds.length - 100) : 0;
+                uint256 loop_end = ticketIds.length > 50 ? (ticketIds.length - 50) : 0;
                 for(uint256 j = ticketIds.length ; j > loop_end; j--) {
 
                     if(_ticket_status[ticketIds[j-1]] != 3) {

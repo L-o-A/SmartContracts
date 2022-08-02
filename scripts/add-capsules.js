@@ -19,12 +19,12 @@ async function main() {
    // }
    // return;
 
-   // console.log("getCapsuleSupply 1", await _capsuleData.getCapsuleSupply(1));
-   // console.log("getCapsuleSupply 2", await _capsuleData.getCapsuleSupply(2));
-   // console.log("getCapsuleSupply 3", await _capsuleData.getCapsuleSupply(3));
-   // console.log("getCapsuleSupply 4", await _capsuleData.getCapsuleSupply(4));
-   // console.log("getCapsuleSupply 5", await _capsuleData.getCapsuleSupply(5));
-
+   console.log("getCapsuleSupply 1", await _capsuleData.getCapsuleSupply(1));
+   console.log("getCapsuleSupply 2", await _capsuleData.getCapsuleSupply(2));
+   console.log("getCapsuleSupply 3", await _capsuleData.getCapsuleSupply(3));
+   console.log("getCapsuleSupply 4", await _capsuleData.getCapsuleSupply(4));
+   console.log("getCapsuleSupply 5", await _capsuleData.getCapsuleSupply(5));
+// return;
    // await _capsuleData.addCapsuleSupply(1, [1, 2, 3, 4, 5, 6, 8], [50000, 25500, 14500, 4400, 2200, 1660, 920]);
    // await _capsuleData.addCapsuleSupply(2, [1, 2, 3], [90750, 49500, 24750]);
    // await _capsuleData.addCapsuleSupply(3, [4, 5, 6], [7926, 4323, 2161]);
@@ -36,12 +36,12 @@ async function main() {
    // await capsule.airdrop(2, user1, 5);
    // await capsule.airdrop(3, user1, 5);
    // await capsule.airdrop(4, user1, 5);
-   // await capsule.airdrop(5, user1, 5);
+   await capsule.airdrop(5, user1, 1);
 
    // await capsule.airdrop(1, user2, 5);
    // await capsule.airdrop(2, user2, 5);
    // await capsule.airdrop(3, user2, 5);
-   await capsule.airdrop(4, user2, 5);
+   // await capsule.airdrop(4, user2, 5);
    // await capsule.airdrop(5, user2, 5);
 
    // await capsule.airdrop(1, user3, 5);
