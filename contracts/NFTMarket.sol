@@ -261,6 +261,7 @@ contract NFTMarket is ERC1155Holder {
     }
 
     function updatePrice(uint256 itemId, uint256 price) public {
+        require(price > 0, "Listing price is zero");
         uint256 index = _listed_items_to_index[itemId];
         MarketItem storage marketItem = _listed_items[index];
         
