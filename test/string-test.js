@@ -36,7 +36,9 @@ describe("RAFFLE ", function () {
   it("String Test -5", async function () {
 
     const [owner, addr1, addr2] = await ethers.getSigners();
-    
+
+    return;
+
     const StringUtil = await ethers.getContractFactory("StringUtil");
     const stringUtil = await StringUtil.deploy();
     await stringUtil.deployed();

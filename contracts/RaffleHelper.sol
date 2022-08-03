@@ -96,7 +96,6 @@ contract RaffleHelper {
             price = _raffle_price_range.length > 0 ? _raffle_price_range[_raffle_price_range.length - 1] : 0;
             amount += price * remaining;
         }
-        // console.log(amount);
         return amount;
     }
 

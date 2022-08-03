@@ -7,7 +7,7 @@ describe("LIVE MP Test ", function () {
   it("LIVE MP Test", async function () {
 
     const [owner, addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
-    
+      return;
 
     // const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce"; //BSC Testnet
    //  const loa = "0xcc631F7362A60213589E84D598F7dDD8630b525b"; //ROSTEN
@@ -226,17 +226,17 @@ describe("LIVE MP Test ", function () {
     console.log(6);
 
 
-    await _LoANFTData.updateFees([1, 2, 3, 4, 5], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000", "3000000000000000000000", "3000000000000000000000"]);
+    // await _LoANFTData.updateFees([1, 2, 3, 4, 5], ["1000000000000000000000", "2000000000000000000000", "3000000000000000000000", "3000000000000000000000", "3000000000000000000000"]);
     console.log(8);
 
     console.log(9);
 
-    await _LoANFTData.putNFTAttributeNames(["HASH-POWER", "MAX-HP", "MAX-PRANA", "MAXSPEED", "HP-REGEN", "PRANA-REGEN", "ATTACK-DAMAGE", "ATTACK-SPEED", "CRITICAL-DAMAGE", "ARMOUR", "MAGIC-DEFENCE"]);
+    // await _LoANFTData.putNFTAttributeNames(["HASH-POWER", "MAX-HP", "MAX-PRANA", "MAXSPEED", "HP-REGEN", "PRANA-REGEN", "ATTACK-DAMAGE", "ATTACK-SPEED", "CRITICAL-DAMAGE", "ARMOUR", "MAGIC-DEFENCE"]);
 
 
     console.log(13);
 
-    await _NFTMarket.updateFees([_LoANFT.address, capsule.address], ["200000000000000000000", "100000000000000000000"], [50, 50]);
+    // await _NFTMarket.updateFees([_LoANFT.address, capsule.address], ["200000000000000000000", "100000000000000000000"], [50, 50]);
     console.log(14);
     
     
@@ -461,12 +461,12 @@ describe("LIVE MP Test ", function () {
     //------------------------------------------------------------------------------------------------------------------------
     //------------------------------------------------------------------------------------------------------------------------
 
-    await capsule.airdrop(1, addr1.address, 3);
-    await capsule.airdrop(2, addr1.address, 3);
-    await capsule.airdrop(3, addr1.address, 3);
+    // await capsule.airdrop(1, addr1.address, 3);
+    // await capsule.airdrop(2, addr1.address, 3);
+    // await capsule.airdrop(3, addr1.address, 3);
 
-    let capsules_data = await capsuleData.getUserCapsules(addr1.address);
-    console.log("Capsules :", capsules_data);
+    // let capsules_data = await capsuleData.getUserCapsules(addr1.address);
+    // console.log("Capsules :", capsules_data);
 
 
     // const mintingFee = await _LoANFTData._minting_fee
@@ -474,13 +474,16 @@ describe("LIVE MP Test ", function () {
     // await loa.connect(addr1).approve(_LoANFT.address, "20000000000000000000000000");
     // await _LoANFT.connect(addr1).mint([capsules_data[0]]);
 
-    console.log("nfts : ", await _LoANFTData.getUserNFTs(addr1.address));
+    // console.log("nfts : ", await _LoANFTData.getUserNFTs(addr1.address));
 
 
     
     
     await loa.connect(addr1).approve(raffle.address, "20000000000000000000000000");
-    await raffle.connect(addr1).buyTicket(10);
+      await raffle.connect(addr1).buyTicket(400);
+
+      await loa.connect(addr2).approve(raffle.address, "20000000000000000000000000");
+      await raffle.connect(addr2).buyTicket(500);
     
     console.log(16.2);
     
@@ -497,27 +500,30 @@ describe("LIVE MP Test ", function () {
     
     console.log(17);
     
-    await raffle.pickWinner(100);
+      await raffle.pickWinner(500);
     
     console.log(18);
-    console.log("getUserWinningTickets:", await raffle.connect(addr1).getUserWinningTickets(addr1.address));
+      console.log("getUserWinningTickets 1:", await raffle.connect(addr1).getUserWinningTickets(addr1.address));
+      console.log("getUserWinningTickets 2:", await raffle.connect(addr2).getUserWinningTickets(addr2.address));
     
-    await raffle.connect(addr1).withdraw(loa.address);
+      await raffle.connect(addr1).withdraw(loa.address);
+      await raffle.connect(addr2).withdraw(loa.address);
     // await raffle.connect(addr1).withdraw(loa.address);
     // await raffle.connect(addr1).withdraw(loa.address);
     // await raffle.connect(addr1).withdraw(loa.address);
     // await raffle.connect(addr1).withdraw(loa.address);
     // await raffle.connect(addr1).withdraw(loa.address);
+      return;
     
     console.log(20);
     
     // return;
-    const tickets = await raffle.getUserTickets(addr1.address)
-    console.log("getUserTickets :", tickets);
-    await capsule.connect(addr1).claim(tickets, raffle.address, addr1.address);
+    // const tickets = await raffle.getUserTickets(addr1.address)
+    // console.log("getUserTickets :", tickets);
+    // await capsule.connect(addr1).claim(tickets, raffle.address, addr1.address);
     
     console.log(21);
-    console.log(await capsuleData.getUserCapsules(addr1.address));
+    // console.log(await capsuleData.getUserCapsules(addr1.address));
     
     
     await capsule.connect(addr1).setApprovalForAll(capsuleStaking.address, true);
