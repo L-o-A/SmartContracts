@@ -31,11 +31,15 @@ module.exports = {
       },
       allowUnlimitedContractSize:true
     },
-    bsctestnet: {
+    bscmainnet: {
       url: secret.BSC_CHAINLINK_URL,
+      accounts: [secret.WALLET_LIVE_PRI_KEY],
+    },
+    bsctestnet: {
+      url: secret.BSC_TESTNET_CHAINLINK_URL,
       accounts: [secret.WALLET_PRI_KEY],
-      // gas: 2100000,
-      // gasPrice: 8000000000
+      gas: 2100000,
+      gasPrice: 8000000000
     },
     ropsten: {
       url: secret.ROPSTEN_ALCHEMY_URL,
