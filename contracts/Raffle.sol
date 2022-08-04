@@ -128,11 +128,14 @@ contract Raffle {
 
         _ticket_status[id] = 4;
         uint256 index = _user_tickets_id_to_index[owner][id];
+
         _user_tickets[owner][index] = _user_tickets[owner][_user_tickets[owner].length - 1];
-        _user_tickets_id_to_index[owner][_user_tickets[owner][index]] = index;
+        _user_tickets_id_to_index[owner][_user_tickets[owner][_user_tickets[owner].length - 1]] = index;
+
         index = _user_winning_tickets_id_to_index[owner][id];
         _user_winning_tickets[owner][index] = _user_winning_tickets[owner][_user_winning_tickets[owner].length - 1];
         _user_winning_tickets_id_to_index[owner][_user_winning_tickets[owner][index]] = index;
+
         _user_tickets[owner].pop();
         _user_winning_tickets[owner].pop();
         delete _user_tickets_id_to_index[owner][id];
@@ -258,7 +261,9 @@ contract Raffle {
             return;
         }
         if(_raffle_status == 3){
-            if(_user_winning_tickets[msg.sender].length > 30){
+            if(_user_winning_tickets[msg.sender].length == 0){
+                cleanup();
+            } else if(_user_winning_tickets[msg.sender].length > 30){
                 uint256[] memory selected = new uint256[](30);
                 for (uint256 i = 0; i < 30; i++) {
                     selected[i] = _user_winning_tickets[msg.sender][i];
@@ -267,7 +272,6 @@ contract Raffle {
             } else {
                 CapsuleInterface(_admin.getCapsuleAddress()).claim(_user_winning_tickets[msg.sender], address(this), msg.sender);
             }
-            cleanup();
         }
         if(_refund_address_to_amount[msg.sender] > 0) {
             require( IERC20Contract(_loaContract).balanceOf(address(this)) >= _refund_address_to_amount[msg.sender], "Low tresury balance");
