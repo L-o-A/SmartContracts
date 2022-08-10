@@ -679,7 +679,12 @@ contract LoANFTData {
 
     error NFTUnavailable(uint8 level, uint32 supply, uint32 consumed, uint32 selected);
 
-    constructor(address adminContractAddress) {
+    // constructor(address adminContractAddress) {
+    //     _admin = IAdmin(adminContractAddress);
+    //     _lastCall = block.timestamp;
+    // }
+
+    function init(address adminContractAddress) public {
         _admin = IAdmin(adminContractAddress);
         _lastCall = block.timestamp;
     }

@@ -46,7 +46,10 @@ describe("LIVE MP Test ", function () {
             console.log("multiSigAdmin.address :", multiSigAdmin.address);
         } else {
             const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-            multiSigAdmin = await MultiSigAdmin.deploy();
+            // multiSigAdmin = await MultiSigAdmin.deploy();
+            multiSigAdmin = await upgrades.deployProxy(MultiSigAdmin, [], {
+                initializer: "init",
+            });
             await multiSigAdmin.deployed();
             console.log("multiSigAdmin.address :", multiSigAdmin.address);
 
@@ -134,7 +137,10 @@ describe("LIVE MP Test ", function () {
         let _LoANFTData;
         if (_LoANFTData_addr == null) {
             const LoANFTData = await ethers.getContractFactory("LoANFTData");
-            _LoANFTData = await LoANFTData.deploy(multiSigAdmin.address);
+            // _LoANFTData = await LoANFTData.deploy(multiSigAdmin.address);
+            _LoANFTData = await upgrades.deployProxy(LoANFTData, [multiSigAdmin.address], {
+                initializer: "init",
+            });
             await _LoANFTData.deployed()
             console.log("_LoANFTData.address :", _LoANFTData.address);
         } else {

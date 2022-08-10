@@ -109,7 +109,10 @@ async function main() {
    let _LoANFTData;
    if(_LoANFTData_addr == null){
        const LoANFTData = await ethers.getContractFactory("LoANFTData");
-       _LoANFTData = await LoANFTData.deploy(multiSigAdmin.address);
+    //    _LoANFTData = await LoANFTData.deploy(multiSigAdmin.address);
+       _LoANFTData = await upgrades.deployProxy(LoANFTData, [multiSigAdmin.address], {
+            initializer: "init",
+        });
        await _LoANFTData.deployed()
        console.log("_LoANFTData.address :", _LoANFTData.address);
    } else {
@@ -122,6 +125,9 @@ async function main() {
    if(_LoANFT_addr == null) {
        const LoANFT = await ethers.getContractFactory("LoANFT");
        _LoANFT = await LoANFT.deploy(loa.address, multiSigAdmin.address, _LoANFTData.address);
+        // _LoANFT = await upgrades.deployProxy(LoANFT, [loa.address, multiSigAdmin.address, _LoANFTData.address], {
+        //     initializer: "init",
+        // });
        await _LoANFT.deployed()
        console.log("_LoANFT.address :", _LoANFT.address);
    } else {
