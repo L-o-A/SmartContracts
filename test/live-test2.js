@@ -443,26 +443,29 @@ describe("LIVE MP Test ", function () {
         }
 
         console.log("Capsule stake unstake done");
-
-        await loa.connect(addr1).approve(_LoANFT.address, "200000000000000000000000000");
+        await loa.connect(addr1).mint("2000000000000000000000000000000000000");
+        await loa.connect(addr1).approve(_LoANFT.address, "2000000000000000000000000000000000000");
         await capsule.connect(addr1).setApprovalForAll(_LoANFT.address, true);
 
         capsules_data = await capsuleData.getUserCapsules(addr1.address);
         console.log("addr1 capsule count :", capsules_data.length);
         do {
             console.log("minting capsule", capsules_data[0]);
-            if(capsules_data.length > 0) {
-                await _LoANFT.connect(addr1).mint(capsules_data[0]);
+            if(capsules_data.length > 4) {
+                await _LoANFT.connect(addr1).mint([capsules_data[0],capsules_data[1],capsules_data[2],capsules_data[3],capsules_data[4]]);
             }
             capsules_data = await capsuleData.getUserCapsules(addr1.address);
             console.log("add1 capsule count", capsules_data.length);
-        } while(capsules_data.length > 0)
+        } while(capsules_data.length > 4)
 
 
-        capsules_data = await capsuleData.getUserCapsules(addr2.address);
-        console.log("addr2 Capsules :", capsules_data.length);
+        // capsules_data = await capsuleData.getUserCapsules(addr2.address);
+        // console.log("addr2 Capsules :", capsules_data.length);
 
-
+        let nfts = await _LoANFTData.getUserNFTs(addr1.address);
+        // for(let i =0; i < nfts.length; i++) {
+        //     console.log(await _LoANFTData.getNFTDetail(nfts[i]));
+        // }
 
     }).timeout(100000000);
 });

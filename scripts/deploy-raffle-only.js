@@ -36,7 +36,7 @@ async function main() {
     const oneDayAgo = parseInt(new Date().getTime()/1000 +  86400  + "");
     const tomorrow = parseInt(new Date().getTime()/1000 +  2* 86400  + "");
     
-    await raffle.setRaffleInfo(1, "1658750400", "1658836800", "1659182400");
+    await raffle.setRaffleInfo(1, twoDaysAgo, oneDayAgo, tomorrow);
     console.log(2);
     
     multiSigAdmin.modifyRaffleAddress(raffle.address, true);

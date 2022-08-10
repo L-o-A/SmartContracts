@@ -8,7 +8,8 @@
     "deployDev": "npx hardhat run --network bsctestnet scripts/deploy-mp-1.js",
     "verify-1": "npx hardhat verify --network bsctestnet",
     "deploy-2": "env $(cat .env) npx hardhat run --network mumbai scripts/deploy-mp-1.js",
-    "verify-2": "env $(cat .env) npx hardhat verify --network bsctestnet <address>"
+    "verify-2": "env $(cat .env) npx hardhat verify --network bsctestnet <address>",
+    "flatten": "npx hardhat flatten > flattened.sol"
   },
   "author": "Arun",
   "license": "ISC",

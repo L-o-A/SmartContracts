@@ -7,7 +7,7 @@ async function main() {
    const capsule = await (await ethers.getContractFactory("Capsule")).attach("0x0583A78979CD8F12Eb5B1B1F55a957D5Cefe7567");
    const _capsuleData = await (await ethers.getContractFactory("CapsuleData")).attach('0x1D75E5855b752733C9bfF33848e127323aDb4A23');
    const _capsuleStaking = await (await ethers.getContractFactory("CapsuleStaking")).attach('0x744c927F01C8C04883A5c651ee9bff2f2854a55B');
-   const user1 = "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da";
+   const user1 = "0x587c9B1F39F2f703E75c86D1eCEE5Cf28BF27326";
    const user2 = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
    const user3 = "0xD2eCFbb2A94431Da360f267eAa9183E53FDdeaE2";
 
@@ -19,11 +19,11 @@ async function main() {
    // }
    // return;
 
-   console.log("getCapsuleSupply 1", await _capsuleData.getCapsuleSupply(1));
-   console.log("getCapsuleSupply 2", await _capsuleData.getCapsuleSupply(2));
-   console.log("getCapsuleSupply 3", await _capsuleData.getCapsuleSupply(3));
-   console.log("getCapsuleSupply 4", await _capsuleData.getCapsuleSupply(4));
-   console.log("getCapsuleSupply 5", await _capsuleData.getCapsuleSupply(5));
+   // console.log("getCapsuleSupply 1", await _capsuleData.getCapsuleSupply(1));
+   // console.log("getCapsuleSupply 2", await _capsuleData.getCapsuleSupply(2));
+   // console.log("getCapsuleSupply 3", await _capsuleData.getCapsuleSupply(3));
+   // console.log("getCapsuleSupply 4", await _capsuleData.getCapsuleSupply(4));
+   // console.log("getCapsuleSupply 5", await _capsuleData.getCapsuleSupply(5));
 // return;
    // await _capsuleData.addCapsuleSupply(1, [1, 2, 3, 4, 5, 6, 8], [50000, 25500, 14500, 4400, 2200, 1660, 920]);
    // await _capsuleData.addCapsuleSupply(2, [1, 2, 3], [90750, 49500, 24750]);
@@ -36,7 +36,7 @@ async function main() {
    // await capsule.airdrop(2, user1, 5);
    // await capsule.airdrop(3, user1, 5);
    // await capsule.airdrop(4, user1, 5);
-   await capsule.airdrop(5, user1, 1);
+   await capsule.airdrop(1, user1, 10);
 
    // await capsule.airdrop(1, user2, 5);
    // await capsule.airdrop(2, user2, 5);

@@ -48,12 +48,21 @@ async function main() {
 
     // await multiSigAdmin.setAxionAddress("0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB");
 
-    // console.log(await multiSigAdmin.getAxionAddress());
+    console.log(await multiSigAdmin.getUtilAddress());//0xFD165685A4D42028e83ad1067eE0D404d0AC8fA6 original
+
+    const LOAUtil = await ethers.getContractFactory("LOAUtil");
+    _LOAUtil = await LOAUtil.deploy();
+    await _LOAUtil.deployed();
+    console.log("_LOAUtil.address :", _LOAUtil.address);
+
+    await multiSigAdmin.setUtilAddress(_LOAUtil.address);
+
+
     // await multiSigAdmin.setNFTAddress("0xffc9a7cd3b88d37d705b1c1ce8bd87b13baa59fb"); // me
     // await multiSigAdmin.setNFTDataAddress("0xf989A58F93346eb78Ab07Afc12cE13C01d932c40"); // original
     // await multiSigAdmin.setNFTAddress("0x142AdBb712C9e152038B338207b641eb697720CD"); // original
-    console.log(await multiSigAdmin.getNFTAddress());
-    console.log(await multiSigAdmin.getNFTDataAddress());
+    // console.log(await multiSigAdmin.getNFTAddress());
+    // console.log(await multiSigAdmin.getNFTDataAddress());
 
     // await loa.approve(_LoANFT.address, "200000000000000000000000000000");
 
@@ -64,13 +73,13 @@ async function main() {
     // }
 
     // console.log(await _CapsuleData.getCapsuleDetail(762));
-    console.log(await _LoANFTData._minting_fee(1));
-    console.log(await _LoANFTData._minting_fee(2));
-    console.log(await _LoANFTData._minting_fee(3));
-    console.log(await _LoANFTData._minting_fee(4));
-    console.log(await _LoANFTData._minting_fee(5));
-    console.log(await _LoANFTData._minting_fee(6));
-    console.log(await _LoANFTData._minting_fee(7));
+    // console.log(await _LoANFTData._minting_fee(1));
+    // console.log(await _LoANFTData._minting_fee(2));
+    // console.log(await _LoANFTData._minting_fee(3));
+    // console.log(await _LoANFTData._minting_fee(4));
+    // console.log(await _LoANFTData._minting_fee(5));
+    // console.log(await _LoANFTData._minting_fee(6));
+    // console.log(await _LoANFTData._minting_fee(7));
 
 
     // console.log(await _LoANFT.mint(762));
@@ -78,7 +87,7 @@ async function main() {
     // console.log(await _Capsule.balanceOf("0xffc9a7cd3b88d37d705b1c1ce8bd87b13baa59fb", 762));
     // console.log(await _CapsuleData.getCapsuleDetail(762));
 
-    // let tx = await _LoANFT.mint(762);
+    // let tx = await _LoANFT.mint(1004);
     // console.log(tx);
     // let rc = await tx.wait();
     // console.log(rc);

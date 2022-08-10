@@ -1,10 +1,12 @@
+// File contracts/LoANFT.sol
+
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IAdmin.sol";
-import "./LoANFTData.sol";
 
 // import "hardhat/console.sol";
 
@@ -20,6 +22,8 @@ interface IERC20Contract {
         address to,
         uint256 amount
     ) external returns (bool);
+
+    function allowance(address _owner, address _spender) external view returns (uint256);
 }
 
 interface IERC1155Contract {
@@ -49,7 +53,7 @@ interface ILoANFTData {
     function doTransferFrom( address from, address to, uint256 id) external;
     function doBatchTransfer(address from, address to, uint256[] memory ids) external;
     function doFusion(address owner, uint256[] memory ids, uint8 fusionLevel ) external returns (uint256);
-    function doMint(uint8 capsuleLevel, address owner) external returns (uint256, uint256);
+    function doMint(uint8 capsuleType, uint8 capsuleLevel, address owner) external returns (uint256, uint256);
 }
 
 contract LoANFT is ERC1155, Ownable {
@@ -64,6 +68,8 @@ contract LoANFT is ERC1155, Ownable {
         address indexed buyer,
         uint256 price
     );
+
+    error MintingFeeError(uint256 fee);
 
     constructor(address loaAddress, address adminContractAddress, address nftData)
         ERC1155("https://nft.leagueofancients.com/api/nft/{id}.json")
@@ -131,25 +137,29 @@ contract LoANFT is ERC1155, Ownable {
         emit NFTMinted(id, 0, owner, price);
     }
 
-    function mint(uint256 capsuleId) public {
+    function mint(uint256[] memory capsuleIds) public {
 
         uint256 mintingFee = 0;
-        // for(uint256 i = 0; i < capsuleIds.length; i++) {
-        //     uint256 capsuleId = capsuleIds[i];
+        for(uint256 i = 0; i < capsuleIds.length; i++) {
+            uint256 capsuleId = capsuleIds[i];
             require(IERC1155Contract(_admin.getCapsuleAddress()).balanceOf( msg.sender, capsuleId) > 0, "Capsule is not owned by user");
-            (, uint8 capsuleLevel, uint8 capsule_status,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleId);
+            (uint8 capsuleType, uint8 capsuleLevel, uint8 capsule_status,,,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleId);
 
             require(capsuleLevel > 0, "Capsule level not found");
             require(capsule_status == 4, "Capsule is not unlocked");
 
-            (uint256 id, uint256 fee) = _nftData.doMint(capsuleLevel, msg.sender);
+            (uint256 id, uint256 fee) = _nftData.doMint(capsuleType, capsuleLevel, msg.sender);
             mintingFee = mintingFee + fee;
             require(id > 0, "NFT not found");
             IERC1155Contract(_admin.getCapsuleAddress()).burn(msg.sender, capsuleId);
             _mint(msg.sender, id, 1, "");
             emit NFTMinted(id, capsuleId, msg.sender, 0);
-        // }
-        require(IERC20Contract(_loaAddress).transferFrom(msg.sender, _admin.getTreasury(), mintingFee) , "Not enough minting fee available");
+        }
+
+        if(IERC20Contract(_loaAddress).allowance(msg.sender, address(this)) < mintingFee) {
+            revert MintingFeeError({fee: mintingFee });
+        }
+        IERC20Contract(_loaAddress).transferFrom(msg.sender, _admin.getTreasury(), mintingFee);
     }
 
 
