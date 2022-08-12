@@ -98,7 +98,7 @@ contract CapsuleData {
         return id;
     }
 
-    function addCapsuleSupply(uint8 capsuleType, uint8[] memory levels, uint32[] memory supply) public {
+    function addCapsuleSupply(uint8 capsuleType, uint8[] memory levels, uint32[] memory supply) public validAdmin {
         require(supply.length ==  levels.length, "Args length not matching");
 
         CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
@@ -114,7 +114,7 @@ contract CapsuleData {
         capsuleSupply.levels = levels;
     }
 
-    function pickCapsuleLevel(uint8 capsuleType) public view returns (uint8) {
+    function pickCapsuleLevel(uint8 capsuleType) private view returns (uint8) {
         CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
         uint32 selected = _admin.random(capsuleSupply._total_supply - capsuleSupply._total_consumed, capsuleSupply._total_consumed) + 1;
         uint32 total = 0;
@@ -195,9 +195,4 @@ contract CapsuleData {
         _capsule_status[capsuleId] = 3;
     }
 
-    // function random(uint256 limit, uint32 randNonce) public view returns (uint32) {
-    //     if(limit == 0) return 0;
-    //     // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
-    //     return uint32((block.timestamp + randNonce * randNonce) % limit);
-    // }
 }

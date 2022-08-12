@@ -33,15 +33,6 @@ interface IERC1155Contract {
         returns (uint256);
 
     function burn(address tokenOwner, uint256 id) external;
-
-    function getCapsuleDetail(uint256 id)
-        external
-        view
-        returns (
-            uint8,
-            uint8,
-            uint8, address, uint256, uint256
-        );
 }
 
 
