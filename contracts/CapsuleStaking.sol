@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "./IAdmin.sol";
 // import "hardhat/console.sol";
 
 /**
@@ -35,12 +36,16 @@ interface IERC1155 {
     
     function isApprovedForAll(address _owner, address _operator) external view returns (bool);
 
-    function markStatus(uint256 capsuleId, bool vested, bool unlocked, bool unstaked) external;
 
-    function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
 }
 
 
+
+interface ICapsuleDataContract {
+    function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
+    function markStaked(uint256 capsuleId) external;
+    function markUnstaked(uint256 capsuleId, bool forced) external;
+}
 
 interface IERC20Contract {
     // External ERC20 contract
@@ -57,13 +62,7 @@ interface IERC20Contract {
         address to,
         uint256 amount
     ) external returns (bool);
-}
-
-interface Admin {
-    function isValidAdmin(address adminAddress) external pure returns (bool);
-    function getTreasury() external view returns (address);
-    function isValidRaffleAddress(address addr) external view returns (bool);
-    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
+    function allowance(address _owner, address _spender) external view returns (uint256);
 }
 
 /**
@@ -72,11 +71,10 @@ interface Admin {
 contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
     IERC20Contract public _loaToken;
-    IERC1155 public _capsuleToken;
-    Admin _admin;
+    IAdmin _admin;
 
     constructor(address erc20Contract, address adminContractAddress) {
-        _admin = Admin(adminContractAddress);
+        _admin = IAdmin(adminContractAddress);
         _loaToken = IERC20Contract(erc20Contract);
     }
 
@@ -87,9 +85,12 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
     mapping(uint8 => uint32) public _capsuleStakeTypeDuration; // mapping of a capsule staked type
     mapping(uint8 => uint256) public _capsuleStakeTypeLOATokens; // mapping of a capsule staked LOA token
 
+    mapping(address => uint256[]) _user_capsules;
+    mapping(address => mapping(uint256=> uint256)) _user_capsule_id_to_index_mapping;
+
     event Staked(
         address owner,
-        uint256[] capsuleIds,
+        uint256 capsuleId,
         bool staked,
         bool vestingDone
     );
@@ -105,14 +106,9 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
         return (_capsuleOwner[id], _capsuleStakeEndTime[id], _capsuleStakedAmount[id]);
     }
 
-    //update capsule Contract, treasury contract 
-    function setAddresses(address capsuleContract) public validAdmin {
-        _capsuleToken = IERC1155(capsuleContract);
-    }
-
     // set capsule staking rules (duration of stake, amount of LOA to be staked) for each capsule type
-    function setCapsuleStakingRule(uint8 capsuleType, uint32 stakingDays, uint256 loaTokens) validAdmin public {
-        _capsuleStakeTypeDuration[capsuleType] = stakingDays;
+    function setCapsuleStakingRule(uint8 capsuleType, uint32 stakingSecs, uint256 loaTokens) validAdmin public {
+        _capsuleStakeTypeDuration[capsuleType] = stakingSecs;
         _capsuleStakeTypeLOATokens[capsuleType] = loaTokens;
     }
 
@@ -122,22 +118,25 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
         uint256 stakedAmount = 0;
 
         for (uint256 i = 0; i < capsuleIds.length; i++) {
-            require(_capsuleToken.balanceOf(msg.sender, capsuleIds[i]) > 0, "Capsule doesnt belong to user");
-            (uint8 capsuleType, , uint8 capsuleStatus, , ,) = _capsuleToken.getCapsuleDetail(capsuleIds[i]);
+            require(IERC1155(_admin.getCapsuleAddress()).balanceOf(msg.sender, capsuleIds[i]) > 0, "Capsule doesnt belong to user");
+            (uint8 capsuleType, , uint8 capsuleStatus, , ,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleIds[i]);
             require(capsuleStatus  == 2, "Capsule not ready for staking.");
             stakedAmount += _capsuleStakeTypeLOATokens[capsuleType];
 
             
-            _capsuleToken.safeTransferFrom(msg.sender, address(this), capsuleIds[i], 1, "0x00");
-            _capsuleToken.markStatus(capsuleIds[i], true, false, false);
-            _capsuleStakeEndTime[capsuleIds[i]] = block.timestamp + _capsuleStakeTypeDuration[capsuleType] * 86400;
+            IERC1155(_admin.getCapsuleAddress()).safeTransferFrom(msg.sender, address(this), capsuleIds[i], 1, "0x00");
+            ICapsuleDataContract(_admin.getCapsuleDataAddress()).markStaked(capsuleIds[i]);
+
+            _capsuleStakeEndTime[capsuleIds[i]] = block.timestamp + _capsuleStakeTypeDuration[capsuleType];
             _capsuleOwner[capsuleIds[i]] = msg.sender;
             _capsuleStakedAmount[capsuleIds[i]] = _capsuleStakeTypeLOATokens[capsuleType];
+
+            _user_capsules[msg.sender].push(capsuleIds[i]);
+            _user_capsule_id_to_index_mapping[msg.sender][capsuleIds[i]] = _user_capsules[msg.sender].length -1;
+            emit Staked(msg.sender, capsuleIds[i], true, false);
         }
 
         require(_loaToken.transferFrom(msg.sender, address(this), stakedAmount), "Not enough LOA balance available.");
-
-        emit Staked(msg.sender, capsuleIds, true, false);
     }
 
     // reclaim my staked capsules once its matures after staking period is over
@@ -145,32 +144,34 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
 
         uint256 stakedAmount = 0;
         for (uint256 i = 0; i < capsuleIds.length; i++) {
-            (, , uint8 capsuleStatus,,,) = _capsuleToken.getCapsuleDetail(capsuleIds[i]);
-            require(capsuleStatus  == 3, "Capsule not staked.");
             require(_capsuleOwner[capsuleIds[i]] == msg.sender, "Capsule doesnt belong to user");
+
             if(!forced)
                 require(_capsuleStakeEndTime[capsuleIds[i]] < block.timestamp, "Capsule staking period is not over.");
 
-            _capsuleToken.safeTransferFrom(address(this), msg.sender, capsuleIds[i], 1, "0x00");
-            if(forced)
-                _capsuleToken.markStatus(capsuleIds[i], false, false, true);
-            else
-                _capsuleToken.markStatus(capsuleIds[i], false, true, false);
+            ICapsuleDataContract(_admin.getCapsuleDataAddress()).markUnstaked(capsuleIds[i], forced);
+            IERC1155(_admin.getCapsuleAddress()).safeTransferFrom(address(this), msg.sender, capsuleIds[i], 1, "0x00");
 
             stakedAmount += _capsuleStakedAmount[capsuleIds[i]];
 
             delete _capsuleStakeEndTime[capsuleIds[i]];
             delete _capsuleOwner[capsuleIds[i]];
             delete _capsuleStakedAmount[capsuleIds[i]];
+
+            uint256 index = _user_capsule_id_to_index_mapping[msg.sender][capsuleIds[i]];
+
+            _user_capsule_id_to_index_mapping[msg.sender][_user_capsules[msg.sender][_user_capsules[msg.sender].length -1]] = index;
+            delete _user_capsule_id_to_index_mapping[msg.sender][capsuleIds[i]];
+            _user_capsules[msg.sender][index] = _user_capsules[msg.sender][ _user_capsules[msg.sender].length -1];
+            _user_capsules[msg.sender].pop();
+
+            emit Staked(msg.sender, capsuleIds[i], false, !forced);
         }
-        if(!forced) {
-            _loaToken.transfer(msg.sender, stakedAmount);
-            emit Staked(msg.sender, capsuleIds, false, true);
-        } else {
-            if(_loaToken.balanceOf(address(this)) >= stakedAmount)
-                _loaToken.transfer(msg.sender, stakedAmount);
-            emit Staked(msg.sender, capsuleIds, false, false);
-        }
+        _loaToken.transfer(msg.sender, stakedAmount);
+    }
+
+    function fetchStakedCapsules(address owner) public view returns (uint256[] memory) {
+        return _user_capsules[owner];
     }
 
     function withdraw(address tokenAddress) validAdmin public {

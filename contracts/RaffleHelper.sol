@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import "./IAdmin.sol";
 // import "hardhat/console.sol";
 
 interface IERC20Contract {
@@ -9,12 +10,6 @@ interface IERC20Contract {
     function balanceOf(address tokenOwner) external view returns (uint256);
 }
 
-interface Admin {
-    function isValidAdmin(address adminAddress) external pure returns (bool);
-    function getTreasury() external view returns (address);
-    function isValidRaffleAddress(address addr) external view returns (bool);
-    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
-}
 
 contract RaffleHelper {
 
@@ -23,20 +18,16 @@ contract RaffleHelper {
     address public _raffle;
     uint64[] public _reward_amount;
     uint256[] public _reward_range;
-    Admin _admin;
+    IAdmin _admin;
 
     constructor(address adminContractAddress) {
-        _admin = Admin(adminContractAddress);
+        _admin = IAdmin(adminContractAddress);
     }
 
     // Modifier
     modifier validAdmin() {
         require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
         _;
-    }
-
-    function isValidAdmin(address adminAddress) public view returns (bool) {
-        return _admin.isValidAdmin(adminAddress);
     }
 
     function setRaffle(address raffle) public validAdmin {
@@ -105,7 +96,6 @@ contract RaffleHelper {
             price = _raffle_price_range.length > 0 ? _raffle_price_range[_raffle_price_range.length - 1] : 0;
             amount += price * remaining;
         }
-        // console.log(amount);
         return amount;
     }
 

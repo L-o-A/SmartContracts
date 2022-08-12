@@ -1,31 +1,36 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
+
+
+interface ILOAUtil {
+    function random(uint256 limit, uint256 randNonce) external view returns (uint64);
+}
 
 contract MultiSigAdmin {
 
     mapping(address=> uint8) public _admins;
     address _treasury;
     mapping(address => uint8) _raffleAddresses; // Raffale Contract
-    address[] public _contractAddresses;
     address[] public _adminList;
     address _capsuleStakingAddress;
+    address _capsuleDataAddress;
     address _capsuleAddress;
     address _nftAddress;
     address _marketAddress;
     address _nftFusionAddress;
     address _axionAddress;
-    address _nftAttributeAddress;
+    address _nftDataAddress;
+    address _util_address;
+
+    // constructor() {
+    //     _admins[msg.sender] = 1;
+    //     _adminList.push(msg.sender);
+    // }
 
 
-    constructor() {
-        _admins[msg.sender] = 1;
-        _adminList.push(msg.sender);
-    }
-
-
-    function initialize() public {
+    function init() public {
         _admins[msg.sender] = 1;
         _adminList.push(msg.sender);
     }
@@ -99,12 +104,28 @@ contract MultiSigAdmin {
         return _capsuleStakingAddress;
     }
 
-    function setNFTAttributeAddress(address nftAttributeAddress) public validAdmin {
-        _nftAttributeAddress = nftAttributeAddress;
+    function setCapsuleDataAddress(address capsuleDataAddress) public validAdmin {
+        _capsuleDataAddress = capsuleDataAddress;
     }
 
-    function getNFTAttributeAddress() public view returns (address) {
-        return _nftAttributeAddress;
+    function getCapsuleDataAddress() public view returns (address) {
+        return _capsuleDataAddress;
+    }
+
+    function setNFTDataAddress(address nftDataAddress) public validAdmin {
+        _nftDataAddress = nftDataAddress;
+    }
+
+    function getNFTDataAddress() public view returns (address) {
+        return _nftDataAddress;
+    }
+
+    function setUtilAddress(address utilAddress) public validAdmin {
+        _util_address = utilAddress;
+    }
+
+    function getUtilAddress() public view returns (address) {
+        return _util_address;
     }
 
     function modifyAdmin(address adminAddress, bool add) validAdmin public {
@@ -131,24 +152,32 @@ contract MultiSigAdmin {
             delete _raffleAddresses[raffleAddress];
     }
 
-    function updateContractAddresses(address[] memory contractAddresses) public validAdmin {
-        delete _contractAddresses;
-        _contractAddresses = contractAddresses;
-    }
-
     function isValidMarketPlaceContract(address sender) public view returns (bool) {
-        for(uint256 i = 0; i < _contractAddresses.length; i++) {
-            if(sender == _contractAddresses[i])
-                return true;
-        }
+        if(_raffleAddresses[sender] == 1)
+            return true;
+
+        if(_capsuleStakingAddress == sender 
+                || _capsuleAddress == sender 
+                || _capsuleDataAddress == sender 
+                || _nftAddress == sender 
+                || _marketAddress == sender 
+                || _nftFusionAddress == sender 
+                || _axionAddress == sender 
+                || _nftDataAddress == sender)
+            return true;
+
         return false;
     }
 
     function isValidCapsuleTransfer(address sender, address from, address to) public view returns (bool) {
-        for(uint256 i = 0; i < _contractAddresses.length; i++) {
-            if(sender == _contractAddresses[i] || from == _contractAddresses[i] || to == _contractAddresses[i])
-                return true;
-        }
+        if(isValidMarketPlaceContract(sender)
+                || isValidMarketPlaceContract(from)
+                || isValidMarketPlaceContract(to))
+            return true;
         return false;
+    }
+
+    function random(uint256 limit, uint256 randNonce) public view returns (uint64) {
+        return ILOAUtil(_util_address).random(limit, randNonce);
     }
 }

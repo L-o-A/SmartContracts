@@ -4,6 +4,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "./IAdmin.sol";
 
 interface IERC20Contract {
     function transfer(address recipient, uint256 amount)
@@ -22,16 +23,10 @@ interface IERC20Contract {
 interface IERC1155Contract {
     function balanceOf(address tokenOwner, uint256 id) external view returns (uint256);
     function burn(address tokenOwner, uint256 id) external;
-    function getNFTDetail(uint256 id) external view returns (uint8, uint8, address, uint8) ;
+    function getNFTDetail(uint256 id) external view returns (uint8, uint8, address, uint8, string memory) ;
     function fusion(address owner, uint256[] memory ids, uint8 fusionLevel, uint256 price) external;
 }
 
-interface Admin {
-    function isValidAdmin(address adminAddress) external pure returns (bool);
-    function getTreasury() external view returns (address);
-    function isValidRaffleAddress(address addr) external view returns (bool);
-    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
-}
 
 contract LoANFTFusion {
 
@@ -51,7 +46,7 @@ contract LoANFTFusion {
     mapping(uint256 => uint256) public _fusion_rule_price;
     mapping(uint256 => uint8) public _fusion_rule_result;
     mapping(uint256 => uint8[]) public _fusion_rule_levels;
-    Admin _admin;
+    IAdmin _admin;
     
 
     event NFTMinted(
@@ -64,7 +59,7 @@ contract LoANFTFusion {
     constructor(address loaContract, address loaNFTContract, address adminContractAddress) {
         _loaToken = IERC20Contract(loaContract);
         _nftContract = IERC1155Contract(loaNFTContract);
-        _admin = Admin(adminContractAddress);
+        _admin = IAdmin(adminContractAddress);
     }
 
     // Modifier
@@ -100,7 +95,7 @@ contract LoANFTFusion {
         uint256 nft_prev_hero = 0;
 
         for (uint256 i = 0; i < ids.length; i++) {
-             (uint8 nft_hero, uint8 nft_level, address nft_owner, uint8 nft_status) = _nftContract.getNFTDetail(ids[i]);
+             (uint8 nft_hero, uint8 nft_level, address nft_owner, uint8 nft_status, ) = _nftContract.getNFTDetail(ids[i]);
 
             require(msg.sender == nft_owner && nft_status == 2, "Token doesnt belong to sender.");
             require(nft_level == _fusion_rule_levels[ruleId][i], "Level type not matching.");
@@ -111,7 +106,7 @@ contract LoANFTFusion {
             nft_prev_hero = nft_hero;
         }
 
-        _loaToken.transferFrom(msg.sender, address(this), _fusion_rule_price[ruleId]);
+        _loaToken.transferFrom(msg.sender, _admin.getTreasury(), _fusion_rule_price[ruleId]);
         _nftContract.fusion(msg.sender, ids, _fusion_rule_result[ruleId], _fusion_rule_price[ruleId]);
     }
 

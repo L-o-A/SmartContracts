@@ -3,6 +3,7 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./IAdmin.sol";
 // import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 // import "hardhat/console.sol";
@@ -38,25 +39,17 @@ interface IERC20Contract {
     ) external returns (bool);
 }
 
-interface IERC1155Contract {
+interface IRaffle {
     function balanceOf(address tokenOwner, uint256 id) external view returns (uint256);
     function burn(address tokenOwner, uint256 id) external;
     function getTicketDetail(uint256 id) external view returns (uint8 , uint256, address, uint8);
 }
 
-interface Admin {
-    function isValidAdmin(address adminAddress) external pure returns (bool);
-    function getTreasury() external view returns (address);
-    function isValidRaffleAddress(address addr) external view returns (bool);
-    function isValidCapsuleTransfer(address sender, address from, address to) external view returns (bool);
-    function isValidMarketPlaceContract(address sender) external view returns (bool);
-    function getCapsuleStakingAddress() external view returns (address) ;
-    function getNFTAddress() external view returns (address) ;
-    function getMarketAddress() external view returns (address) ;
-}
 
-interface ICapsuleStaking {
-    function getCapsuleStakeInfo(uint256 id) external view returns (address, uint256, uint256);
+interface ICapsuleData {
+    function getNewCapsuleIdByType(uint8 kind, address owner) external returns (uint256);
+    function doBurn(uint256 id, address owner) external;
+    function doTransfer(uint256 id, address owner, address to) external;
 }
 
 /**
@@ -66,24 +59,7 @@ interface ICapsuleStaking {
  */
 contract Capsule is ERC1155, Ownable {
 
-    /**
-     * Status values
-     */
-    // 0 : unpublished
-    // 1 : published
-    // 2 : owned
-    // 3 : staked
-    // 4 : unlocked
-    // 5 : minted
-    // 6 : burned
-    mapping(uint256 => uint8) public _capsule_status; //keeps mapping of status of each capsule
-    mapping(uint256 => uint8) public _capsule_types; //keeps mapping of type value of each capsule. It is defined while adding data
-    mapping(uint256 => uint8) _capsule_level; // keeps mapping of level of each capsule
-    mapping(uint8 => uint256[]) _capsule_type_to_ids; // keeps mapping of id list of capsule ids by their type
-    mapping(address => uint256[]) _user_holdings;
-
-    Admin _admin;
-
+    IAdmin _admin;
 
     event CapsuleMinted(
         uint256[] indexed itemId,
@@ -92,7 +68,7 @@ contract Capsule is ERC1155, Ownable {
     );
 
     constructor(address adminContractAddress) ERC1155("https://capsule.leagueofancients.com/api/capsule/{id}.json") {
-        _admin = Admin(adminContractAddress);
+        _admin = IAdmin(adminContractAddress);
     }
 
     // Modifier
@@ -101,95 +77,19 @@ contract Capsule is ERC1155, Ownable {
         _;
     }
 
-
     function burn(address owner, uint256 id) public {
         require(msg.sender == _admin.getNFTAddress(), "You are not authorized to burn");
-        _capsule_status[id] = 6;
         _burn(owner, id, 1);
-        for(uint256 j = 0; j <= _user_holdings[owner].length; j++) {
-            if(_user_holdings[owner][j] == id) {
-                _user_holdings[owner][j] = _user_holdings[owner][_user_holdings[owner].length - 1];
-                _user_holdings[owner].pop();
-                break;
-            }
-        }
-    }
-
-    function getCapsuleDetail(uint256 id) public view returns (uint8, uint8, uint8, address, uint256, uint256) {
-        uint8 level = 0;
-        if(_admin.isValidMarketPlaceContract(msg.sender)) 
-            level = _capsule_level[id];
-
-        (address owner, uint256 endtime, uint256 amount) = ICapsuleStaking(_admin.getCapsuleStakingAddress()).getCapsuleStakeInfo(id);
-        return (_capsule_types[id], level, _capsule_status[id], owner, endtime, amount);
-    }
-
-    function getUserCapsules(address owner) public view returns (uint256[] memory) {
-        return _user_holdings[owner];
-    }
-
-    /*
-     * Put Capsule details which can be minted later.
-     * User cant mint a capsule if not added to inventory.
-     * It consumes of array of values which provides various attributes of a capsule diffentiated via index.
-     */
-    function modifyCapsules(
-        bool add,
-        uint256[] memory ids,
-        uint8[] memory levels,
-        uint8[] memory types
-    ) public {
-        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
-        if(add) {
-            require(ids.length ==  levels.length && levels.length == types.length , "Args length not matching");
-            
-            for (uint256 i = 0; i < ids.length; i++) {
-                require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
-                if(_capsule_status[ids[i]] == 0) {
-                    _capsule_type_to_ids[types[i]].push(ids[i]);
-                }
-                _capsule_status[ids[i]] = 1;
-                _capsule_level[ids[i]] = levels[i];
-                _capsule_types[ids[i]] = types[i];
-            }
-        } else {
-
-            for (uint256 i = 0; i < ids.length; i++) {
-                require(_capsule_status[ids[i]] < 2, "Id is already consumed.");
-                if(_capsule_status[ids[i]] == 0) {
-                    uint256[] storage cids = _capsule_type_to_ids[_capsule_types[ids[i]]];
-                    for(uint256 j = 0; j < cids.length; j++) {
-                        if(cids[j] == ids[i]) {
-                            cids[j] = cids[cids.length -1];
-                            cids.pop();
-                            break;
-                        }
-                    }
-                }
-                delete _capsule_status[ids[i]];
-                delete _capsule_level[ids[i]];
-                delete _capsule_types[ids[i]];
-            }
-        }
+        ICapsuleData(_admin.getCapsuleDataAddress()).doBurn(id, owner);
     }
 
     function airdrop(uint8 capsuleType, address dropTo, uint8 units) public {
         require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
-
-        require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
-
         uint256[] memory capsuleIdsMinted = new uint256[](units);
 
         for(uint8 i =0; i < units; i++) {
-            uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
-
-            // require(_capsule_status[capsuleId] == 1, "Capsule is not available");
-
-            _capsule_status[capsuleId] = 2;
+            uint256 capsuleId = ICapsuleData(_admin.getCapsuleDataAddress()).getNewCapsuleIdByType(capsuleType, dropTo); 
             _mint(dropTo, capsuleId, 1, "");
-            _user_holdings[dropTo].push(capsuleId);
-            
-            _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
             capsuleIdsMinted[i] = capsuleId;
         }
         emit CapsuleMinted(capsuleIdsMinted, msg.sender, 0);
@@ -197,49 +97,26 @@ contract Capsule is ERC1155, Ownable {
 
     function claim(uint256[] memory ticketIds, address raffleAddress, address owner) public {
         require(_admin.isValidRaffleAddress(raffleAddress), "Invalid Raffle contract");
-        IERC1155Contract _raffleContract = IERC1155Contract(raffleAddress);
+        IRaffle _raffleContract = IRaffle(raffleAddress);
 
         uint256[] memory capsuleIdsMinted = new uint256[](ticketIds.length);
 
         for(uint256 i = 0; i < ticketIds.length; i++) {
             uint256 ticketId = ticketIds[i];
-            
             require(_raffleContract.balanceOf(owner, ticketId) > 0, "Ticket doesn't belong to you");
 
             (uint8 status, , , uint8 capsuleType) = _raffleContract.getTicketDetail(ticketId);
             require(status == 3, "Ticket is not a winner");
 
-            require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
-            uint256 capsuleId = _capsule_type_to_ids[capsuleType][_capsule_type_to_ids[capsuleType].length -1];
-
-            require(_capsule_status[capsuleId] == 1, "id is not available");
-
-            _capsule_status[capsuleId] = 2;
+            // require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
+            uint256 capsuleId = ICapsuleData(_admin.getCapsuleDataAddress()).getNewCapsuleIdByType(capsuleType, owner);
 
             _mint(owner, capsuleId, 1, "");
-            _user_holdings[owner].push(capsuleId);
             _raffleContract.burn(owner, ticketId);
             
-            _capsule_type_to_ids[_capsule_types[capsuleId]].pop();
             capsuleIdsMinted[i] = capsuleId;
         }
         emit CapsuleMinted(capsuleIdsMinted, msg.sender, 0);
-    }
-
-    function markStatus(uint256 capsuleId, bool vested, bool unlocked, bool unstaked) public  {
-        require(_admin.getCapsuleStakingAddress() == msg.sender, "You are not authorized.");
-        if(vested) {
-            require(_capsule_status[capsuleId] == 2, "Token is not allocated.");
-            _capsule_status[capsuleId] = 3;
-        }
-        else if(unlocked) {
-            require(_capsule_status[capsuleId] == 3, "Token is not vested.");
-            _capsule_status[capsuleId] = 4;
-        }
-        else if(unstaked) {
-            require(_capsule_status[capsuleId] == 3, "Token is not vested.");
-            _capsule_status[capsuleId] = 2;
-        }
     }
 
     function safeTransferFrom(
@@ -250,6 +127,8 @@ contract Capsule is ERC1155, Ownable {
         bytes memory data
     ) public virtual override {
         require(_admin.isValidCapsuleTransfer(msg.sender, from, to), "Not permitted to transfer");
+        ICapsuleData(_admin.getCapsuleDataAddress()).doTransfer(id, from, to);
+
         return super.safeTransferFrom(from, to, id, amount, data);
     }
 
@@ -261,6 +140,12 @@ contract Capsule is ERC1155, Ownable {
         bytes memory data
     ) public virtual override {
         require(_admin.isValidCapsuleTransfer(msg.sender, from, to), "Not permitted to transfer");
+
+        for(uint256 i =0; i < ids.length; i++){
+            uint256 id = ids[i];
+            ICapsuleData(_admin.getCapsuleDataAddress()).doTransfer(id, from, to);
+        }
+
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }
 
