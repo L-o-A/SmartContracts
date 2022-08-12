@@ -29,8 +29,9 @@ contract MultiSigAdmin {
     //     _adminList.push(msg.sender);
     // }
 
-
+    // Proxy initialization method
     function init() public {
+        require(_adminList.length == 0, "Already initialized");
         _admins[msg.sender] = 1;
         _adminList.push(msg.sender);
     }

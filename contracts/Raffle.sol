@@ -121,7 +121,7 @@ contract Raffle {
         return _user_ticket_balance[tokenOwner][id];
     }
 
-    function burn(address owner, uint256 id) public payable {
+    function burn(address owner, uint256 id) public {
         
         require(msg.sender == _admin.getCapsuleAddress(), "You are not authorized to burn");
         require(_raffle_status != 4, "Raffle is terminated");
@@ -164,7 +164,7 @@ contract Raffle {
     }
 
     // User can buy raffle ticket by providing raffileType and no of units
-    function buyTicket(uint32 units) public payable {
+    function buyTicket(uint32 units) public {
 
         require(_raffle_status == 1, "Raffle is not open." );
         require(_raffle_start_time < block.timestamp, "Raffle is not open." );
