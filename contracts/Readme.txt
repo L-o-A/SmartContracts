@@ -389,6 +389,128 @@ withdraw(tokenAddress)
 
 //#############################################################################################################################################################################################
 
+
+MultiSigAdmin Contract
+
+
+init()
+    - sets request sender as admin
+
+validAdmin()
+    - validates if request sender is valid Admin
+
+isValidAdmin(address)
+    - requires contract address
+    - checks if provided address is present as admin
+
+isValidRaffleAddress(address)
+    - requires contract address
+    - checks if provided address is present as raffle address
+
+setTreasury(address)
+    - requires contract address
+    - only admin can access
+    - sets address as treasury
+
+getTreasury()
+    - gets address of treasury
+
+setAxionAddress(address)
+    - requires contract address
+    - only admin can access
+    - sets address as axion address
+
+getAxionAddress()
+    - gets address of axion
+
+setFusionAddress(address)
+    - requires contract address
+    - only admin can access
+    - sets address as fusion address
+
+getFusionAddress()
+    - gets address of fusion
+
+setMarketAddress(address)
+    - requires contract address
+    - only admin can access
+    - sets address as market address
+
+getMarketAddress()
+    - gets address of market
+
+setNFTAddress(address)
+    - requires contract address
+    - only admin can access
+    - sets address as nft address
+
+getNFTAddress()
+    - gets address of nft
+
+setCapsuleAddress(address)
+    - requires contract address
+    - only admin can access
+    - sets address as capsule address
+
+getCapsuleAddress()
+    - gets address of capsule
+
+setCapsuleStakingAddress(address)
+    - requires contract address
+    - only admin can access
+    - sets address as capsule staking address
+
+getCapsuleStakingAddress()
+    - gets address of capsule staking
+
+setCapsuleDataAddress(address)
+    - requires contract address
+    - only admin can access
+    - sets address as capsule data address
+
+getCapsuleDataAddress()
+    - gets address of capsule data staking
+
+setNFTDataAddress(address)
+    - requires contract address
+    - only admin can access
+    - sets address as nft data address
+
+getNFTDataAddress()
+    - gets address of nft data
+
+setUtilAddress(address)
+    - requires contract address
+    - only admin can access
+    - sets address as util address
+
+getUtilAddress()
+    - gets address of util
+
+modifyAdmin(adminAddress, add)
+    - requires admin address, action type
+    - only admin can access
+    - if action type is true, then admin address is added else it removes address
+
+modifyRaffleAddress(raffleAddress, add)
+    - requires raffle address, action type
+    - only admin can access
+    - if action type is true, then raffle address is added else it removes address
+
+modifyRaffleAddress(sender)
+    - requires sender address
+    - checks if sender is equals to any contract address present
+
+isValidCapsuleTransfer(sender, from, to)
+    - requires sender address, from, to
+    - checks if passed parameters are valid
+
+random(limit, randNonce)
+    - requires limit, randNonce
+    - return random number
+
+//#############################################################################################################################################################################################
+
 ZAP 
 
 This is based on Pancakeswap. 
