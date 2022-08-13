@@ -102,7 +102,7 @@ safeTransferFrom(from, to, id, amount, data)
     - requires Transfer From, Transfer To, ID, Transfer Amount, Tranfer Data
     - user to transfer amount and data from a address to a another address
 
-safeTransferFrom(from, to, ids, amounts, data)
+safeBatchTransferFrom(from, to, ids, amounts, data)
     - requires Transfer From, Transfer To, IDs, Transfer Amounts, Tranfer Data
     - user to transfer amount and data from a address to another address
 
@@ -203,31 +203,59 @@ This contract is for Capsule Staking
 Logic: LOA capsules needs to be staked along with LOA tokens to be eligible for revelaing the underneath NFT.
 User in order to have an NFT, needs to have a capusule. Stake the capsule. Then he can open the capsule via NFT contract to get NFT.
 
-constructor(loaContract)
-    requrires address or LOA token
+constructor(loaContract, adminContract)
+    - requrires LOA address, admin address
 
+validAdmin()
+    - validates if request sender is valid Admin
 
-addAdmin()
-    Add a admin for this contract
+getCapsuleStakeInfo(uint256 id)
+    - requires capsule id
+    - returns (owner, endtime, amount) of staked capsule
 
-removeAdmin()
-    Add a admin for this contract
-
-setTresury()
-    Sets the admin treasury address
-
-
-setCapsuleContract(capsuleContract)
-    Only admin set capsule contract.
-
-setCapsuleStakingRule(capsuleType, stakingDays, loaTokens)
-    Only admin can set capsule staking rules
+setCapsuleStakingRule(capsuleType, stakingSecs, loaTokens)
+    - requires capsule type, staking time, tokens to stake
+    - accessed by admin only
+    - sets capsule staking duration and staking amount for one capsule of a psrticular type
 
 stake(capsuleIds)
-    User can stake multiple capsule tokens
+    - requires capsule ids
+    - used to stake(vest) capsules
 
-reclaim(capsuleIds)
-    User can reclaim can capsule tokens after the staking period is over.
+reclaim(capsuleIds, forced)
+    - requires capsule ids, action type
+    - used to reclaim staked capsules
+    - if forced is true, it won't check if staking period is over or not
+
+
+fetchStakedCapsules(owner)
+    - requires owner address
+    - returns (ids) of capsules staked by owner
+
+
+withdraw(tokenAddress)
+    - requires token address
+    - transfers the amount of loa tokens staked from treasury to recipient
+
+
+
+ //#############################################################################################################################################################################################
+
+LOA Util Contract
+
+
+This contract is for Capsule Staking
+Logic: LOA capsules needs to be staked along with LOA tokens to be eligible for revelaing the underneath NFT.
+User in order to have an NFT, needs to have a capusule. Stake the capsule. Then he can open the capsule via NFT contract to get NFT.
+
+random(limit, randNonce)
+    - return random number
+
+randomNumber(nonce)
+    - return random number
+
+sudoRandom(randomValue, slot)
+    - return random number
 
 
 //#############################################################################################################################################################################################
@@ -239,28 +267,115 @@ This is contract that creates LOA NFTs
 In order to mint an LOA NFT user need to submit an 
 
 
-constructor(loaContract)
-    requrires address of LOA token
+constructor(loaContract, adminContract, nftDataContract)
+    - requrires LOA token address, Admin Address, NFT Data address
 
-updateAccessAddressAndFees(capsuleContract, nftMarketAddress, fusion_address, capsuleTypes, fees)
-    Only admin can set capsule contract address, NFT martket address, fusion contract address.
-    Also it sets capsule minting fees for each capsule type.
+validAdmin()
+    - validates if request sender is valid Admin
+
+safeTransferFrom(from, to, id, amount, data)
+    - requires Transfer From, Transfer To, ID, Transfer Amount, Tranfer Data
+    - user to transfer amount and data from a address to a another address
+
+fusion(owner, ids, fusionLevel, price)
+    - requires owner address, nft ids, fusion level, price of nft
+    - merge/fuse multiples nfts to a single nft of provided level
+
+mint(capsuleIds)
+    - requires capsule ids
+    - mint nfts using capsules
+
+withdraw(tokenAddress)
+    - requires token address
+    - Admin can withdraw fee collected from minting fees.
+
+
+
+
+//#############################################################################################################################################################################################
+
+
+LoANFT Data Contract
+
+The responsibility of this contract is to merge multiple NFTs to a single more valuable NFT.
+
+constructor(adminContract)
+    - requrires Admin Contract Address
+
+addNFTAttributeLimits(level, hero, optionalAttributes, maxValues, minValues, defaultAttributes, defaultMaxValues, defaultMinValues, totalOptionalAttributes)
+    - requires level, hero, optional attributes, maximum values of optional attribute, default attributes, maximum values of default attribute, minimum values of default attribute, total optional attributes
+    - contract admin can access this method
+    - sets different nft attributes
+
+populateAttribute(id, level, hero)
+    - requires nft id, nft level, nft hero
+    - populates NFT afftibutes after minting
+
+getNFTAttrLimit(level, hero)
+    - requires nft level, nft hero
+    - returns (attributes, default attributes, total attributes)
+    - used to get different attributes for a particular level and hero
+
+addNFTSupply(level, heroes, supply)
+    - requires nft level, nft heroes, nft suppplies
+    - only admin can access
+    - sets supply of different heros for a particular level nft
+
+pickNFTHero(level)
+    - requires nft level
+    - returns nft hero
+    - picks nft hero for a particular level randomly
+
+getNewNFTByLevel(level)
+    - requires nft level
+    - returns nft id
+    - creates a new nft
+
+updateFees(capsuleTypes, fees)
+    - requires capsules types
+    - only admin can access
+    - updates fee of nft minting from capsule of particular types
+
+validAdmin()
+    - validates if request sender is valid Admin
 
 getNFTDetail(id)
-    this returns the nft detail.
+    - requires nft id
+    - returns nft details (id, status, owner, level, hero, attributes)
 
-modifyNFTs(bool adding, ids, levels, heroes, startTimes)
-    Only Admin can set/remove NFT details and its attributes to be minted.
+getUserNFTs(sender)
+    - requires sender
+    - returns nft ids
 
+doTransferFrom(from, to, id)
+    - requires Transfer From, Transfer To, NFT ID
+    - used to transfer nft from a address to another address
 
-mint(capsuleId)
-    User can mint an NFT by providing capsule token that they own.
-    They also have to pay minting fee along with capsule token.
+doBatchTransfer(from, to, ids)
+    - requires Transfer From, Transfer To, NFT IDs
+    - user to transfer nfts from a address to another address
 
-withdraw()
-    Admin can withdraw fee collected from minting fees.
+doFusion(owner, ids, fusionLevel)
+    - requires owner address, nft ids, fusion level
+    - return nft id
+    - merge/fuse provided nfts to a single nft of provided level
 
+doMint(capsuleType, capsuleLevel, owner)
+    - requires capsule type, capsule level, owner address
+    - makes a nft nft of a particular type and level
 
+putNFTAttributeNames(nft_attribute_names) 
+    - requires attribute names
+    - sets attribut names
+
+withdraw(tokenAddress)
+    - requires token address
+    - only admin can access
+    - transfers token from treasury's contract to recipient's contract
+
+randomSubList(list, units, randomValue, startCount)
+    - requires list of attributes, no. of attributes, random value, total attribute count
+    - returns optional attributes
 
 //#############################################################################################################################################################################################
 
