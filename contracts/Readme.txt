@@ -5,20 +5,8 @@ This is property of Realm Stack.
 
 Capsule Contract :
 
-LOA Capsule is a ERC-1155 standard NFT.
-Standard Raffle: No. of LOA Capsules per draw is shown in table above (this amount is subjected to change). 
-No limit on the number of wallets that can participate, each wallet can purchase any amount of raffle tickets.
-Each wallet can win more than 1 LOA Capsule, depending on how many raffle tickets owned by that specific wallet are selected as a winner.
-Standard Raffle price starts from $30 BUSD worth of $LOA Tokens for the first 5,000 raffle entries (the price may change seeing current marketplace conditions). As the raffle entries increases, the price of the raffle entries increases according to the tier which is based on the table above.
-Once you participate, your $LOA Tokens will be staked/frozen, at the end of the Raffle if you did not get a LOA Capsule you can redeem your $LOA Tokens.
-At the end of the raffle period, random raffle numbers will be drawn to identify the winners for the LOA Capsules. 
-Once you participate, your $LOA Tokens will be staked/held. At the end of the Raffle Event, you are able to redeem your $LOA Tokens if you did not get a LOA Capsule.
-The amount of $LOA Tokens staking requirements may change at a later time if deemed necessary by the team.
-All $LOA Tokens used to win the LOA Capsules will be sent to the Treasury Pool.
-Using Smart Contracts for the raffle is strictly prohibited.
-$LOA Token Holders will have the opportunity to vote on the Raffle Event rules in the future.
-Unclaimed LOA Capsules are stored in the Marketplace Storage for a period of time. After that time exceeds, the LOA Capsules will be forfeited and the $LOA Tokens staked will be returned to the respective wallets.
-
+A Capsule is minted from Raffle Ticket
+Capsule Contract contains information of all the capsules claimed using raffle tickets
 
 #Functions
 
@@ -59,6 +47,9 @@ extract(tokenAddress)
  //#############################################################################################################################################################################################
 
 Capsule Data Contract :
+
+contains information of all the capsules claimed, minted and yet to be claimed
+yet to be claimed capsules are stored as supply
 
 #Functions
 
@@ -127,10 +118,11 @@ markStaked(capsuleId, forced)
 
 Capsule Staking Contract
 
-
 This contract is for Capsule Staking
 Logic: LOA capsules needs to be staked along with LOA tokens to be eligible for revelaing the underneath NFT.
 User in order to have an NFT, needs to have a capusule. Stake the capsule. Then he can open the capsule via NFT contract to get NFT.
+
+#Functions
 
 constructor(loaContract, adminContract)
     - requrires LOA address, admin address
@@ -173,6 +165,9 @@ withdraw(tokenAddress)
 
 LOA NFT Contract
 
+A NFT is made when a unlocked capsule is minted which uses LOA tokens as transaction fee
+
+#Functions
 
 constructor(loaContract, adminContract, nftDataContract)
     - requrires LOA token address, Admin Address, NFT Data address
@@ -204,6 +199,10 @@ withdraw(tokenAddress)
 
 LoANFT Data Contract
 
+contains information of all NFTs available which are not yet listed in the marketplace
+it also comtains information of supply of NFTs and it's attributes
+
+#Functions
 
 constructor(adminContract)
     - requrires Admin Contract Address
@@ -290,6 +289,8 @@ LoA NFT Fusion Contract
 
 The responsibility of this contract is to merge multiple NFTs to a single more valuable NFT.
 
+#Functions
+
 constructor(loaContract, loaNFTContract, adminContract)
     - requrires LOA token Contract and LOA NFT Contract
 
@@ -321,6 +322,9 @@ withdraw(tokenAddress)
 
 MultiSigAdmin Contract
 
+This contract contains all the contracts available and also validates user request
+
+#Functions
 
 init()
     - sets request sender as admin
@@ -445,6 +449,11 @@ random(limit, randNonce)
 
 NFTMarket Contract
 
+contains NFTs/Capsules listed in the marketplace
+it's purpose is to list & unlist NFTs/capsules in marketplace
+
+#Functions
+
 constructor(loaAddress, adminContractAddress)
     - requires loa contract adddress, admin address
 
@@ -550,6 +559,8 @@ cleanup()
 
 Raffle Helper Contract
 
+Raffle helper contains information of raffle tickets like - buying price, rewards after raffle is closed, supply
+
 #Functions
 
 constructor():
@@ -587,7 +598,11 @@ extract(tokenAddress)
 //#############################################################################################################################################################################################
 
 IAdmin Contract
+
+Interface class which implements MultiSigAdmin to verify SmartContracts
     
+#Functions
+
 isValidAdmin(adminAddress)
     - checks if admin address is valid
 
@@ -639,6 +654,10 @@ random()
 
 IUtil Contract
 
+Interface class which implements LOAUtil which contains random value generation
+
+#Functions
+
 random(limit, randNonce)
     - return random number
 
@@ -656,6 +675,8 @@ ZAP
 
 This is based on Pancakeswap. 
 User can can provide single type of token to participate in (BUSD-LOA) Liquidity Pool.
+
+#Functions
 
 constructor( busdAddress, loaAdddress,  wBNBAddress, pancakeRouterAddress)
     required BUSD token address, LOA token address, Wrapped BNB token address, Pancakeswap Router Address
@@ -685,6 +706,8 @@ swapTokens(_from,  amount, _to, amountOutMin, receiver, deadline)
 
 
 LPStaking
+
+#Functions
 
 This contract is used to stake BUSD-LOA Liqidity Pool tokens or LOA tokens to earn rewards 
 
