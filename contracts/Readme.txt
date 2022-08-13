@@ -26,39 +26,33 @@ Unclaimed LOA Capsules are stored in the Marketplace Storage for a period of tim
 #Functions
 
 constructor():
-    requrires address or LOA token
+    - requrires LOA address, Raffle Helper address, Admin address
 
-modifyAdmin(adminAddress, bool add)
-    Add/delete a admin for this contract
+validAdmin()
+    - validates if request sender is valid Admin
 
-removeAdmin()
-    Add a admin for this contract
+getTicketDetail()
+    - requires Raffle ticket ID and returns (ticket status, ticket price, ticket owner, raffle type)
+    - gets ticket details
 
-setTresury()
-    Sets the admin treasury address
+buyTicket()
+    - requires no. of units
+    - to buy no. tickets requested by request sender
 
-putRaffle():
-    requires Admin to add Raffle ticket before it can be bought or minted
-    Admin needs to provide 1) price, 2) category, 3) capsuleCount, 4) startTime, 5) endTime
+pickWinner():
+    - requires no. of winning tickets
+    - used to pick winning raffle tickets
+    - only admin can access this method
 
-removeRaffle(id):
-    remove raffle tickets for correction purpose before its bought or minted
-
-buyTicket(raffleId, units)
-    User can buy raffle ticket by providing raffileType and no of units
-
-pickWinner()
-    Picks winners for a raffle event
+terminate():
+    - used to terminate raffle event if raffle is not closed
 
 withdraw()
-    Admin can withdraw fee collected from sale of tickets
+    - requires LOA contract address
+    - request sent by ticket owner to pick winning tickets and claim those raffle tickets to capsules
 
-isWinner(id)
-    Returns if provided id is a winner or not
-
-getType(id)
-    Returns the type of Raffle ticket
-
+cleanup()
+    - if winners are declared, then ticket are flushed if tickets are already claimed
 
 
 
@@ -84,52 +78,120 @@ Unclaimed LOA Capsules are stored in the Marketplace Storage for a period of tim
 
 #Functions
 
+constructor(adminAddress)
+    - requires admin address
 
-modifyAdmin(adminAddress, bool add)
-    Add/delete a admin for this contract
+validAdmin()
+    - validates if request sender is valid Admin
 
-setTresury()
-    Sets the admin treasury address
+burn(owner, id)
+    - requires owner address and Id
+    - This burns the capsule token when its minted as LOA NFT
+    - Can only be called from LOA NFT smart contract
 
-setAddresses(treasuryAddress, loaNFTAddress, nftMarketAddress, capsuleStakingAddress)
-    Admin sets the Contract address of treasuryAddress, loaNFTAddress, nftMarketAddress, capsuleStakingAddress
+airdrop(capsuleType, dropTo, units)
+    - requires Capsule Type, Address of user to assign capsule, Units to capsule to assign
+    - used to assign no. of capsules of a particular type to a specific recipient
+    - Only admin call this function
 
-setCapsuleStakingAddress(capsuleStakingAddress)
-    Admin sets the Capsule Contract Address.
+claim(ticketIds, raffleAddress, owner)
+    - requires Raffle Ticket Ids, Raffle Address, Owner of tickets
+    - used to assign capsules to user for a particular ticket and remove that ticket from user after it is claimed
+
+safeTransferFrom(from, to, id, amount, data)
+    - requires Transfer From, Transfer To, ID, Transfer Amount, Tranfer Data
+    - user to transfer amount and data from a address to a another address
+
+safeBatchTransferFrom(from, to, ids, amounts, data)
+    - requires Transfer From, Transfer To, IDs, Transfer Amounts, Tranfer Data
+    - user to transfer amount and data from a address to another address
+
+extract(tokenAddress)
+    - requires token address
+    - transfer the amount of tokens of a particular contract from treasury contract to recipient contract
 
 
-burn (owner, id)
-    This burns the capsule token when its minted as LOA NFT.
-    Can only be called from LOA NFT smart contract
+
+ //#############################################################################################################################################################################################
+
+Capsule Data Contract :
+
+LOA Capsule is a ERC-1155 standard NFT.
+Standard Raffle: No. of LOA Capsules per draw is shown in table above (this amount is subjected to change). 
+No limit on the number of wallets that can participate, each wallet can purchase any amount of raffle tickets.
+Each wallet can win more than 1 LOA Capsule, depending on how many raffle tickets owned by that specific wallet are selected as a winner.
+Standard Raffle price starts from $30 BUSD worth of $LOA Tokens for the first 5,000 raffle entries (the price may change seeing current marketplace conditions). As the raffle entries increases, the price of the raffle entries increases according to the tier which is based on the table above.
+Once you participate, your $LOA Tokens will be staked/frozen, at the end of the Raffle if you did not get a LOA Capsule you can redeem your $LOA Tokens.
+At the end of the raffle period, random raffle numbers will be drawn to identify the winners for the LOA Capsules. 
+Once you participate, your $LOA Tokens will be staked/held. At the end of the Raffle Event, you are able to redeem your $LOA Tokens if you did not get a LOA Capsule.
+The amount of $LOA Tokens staking requirements may change at a later time if deemed necessary by the team.
+All $LOA Tokens used to win the LOA Capsules will be sent to the Treasury Pool.
+Using Smart Contracts for the raffle is strictly prohibited.
+$LOA Token Holders will have the opportunity to vote on the Raffle Event rules in the future.
+Unclaimed LOA Capsules are stored in the Marketplace Storage for a period of time. After that time exceeds, the LOA Capsules will be forfeited and the $LOA Tokens staked will be returned to the respective wallets.
+
+
+#Functions
+
+constructor(adminAddress)
+    - requires admin address
+
+validAdmin()
+    - validates if request sender is valid Admin
+
+validCapsule()
+    - validates if request sender is valid Capsule Address
+
+getNewCapsuleIdByType(capsuleType, owner)
+    - requires Capsule Type, Owner address
+    - return Capusule Id
+    - used to get a Capsule id after assigning a capsule to owner address
+
+addCapsuleSupply(capsuleType, levels, supply)
+    - requires Capsule Type, Capsule Levels, Capsule Supplies
+    - can be accessed by admin only
+    - used to assign Capsule of a particular type of different level with it's supply
+
+pickCapsuleLevel(capsuleType)
+    - requires Capsule Type
+    - returns capusle level
+    - used to get a capsule level picked randomly of a particular type
+
+extract(tokenAddress)
+    - requires token address
+    - transfer the amount of tokens of a particular contract from treasury contract to recipient contract
+
+getUserCapsules(owner)
+    - requires owner address
+    - return list of owner capsules
+    - used to get list of capsules owned
+
+doBurn(id, owner)
+    - requires id, owner address
+    - only Capsule can access this method
+    - used to burn capsules to NFT
+
+doTransfer(capsuleId, owner, dropTo)
+    - requires Capsule Id, Owner address, Drop To addess
+    - only Capsule can access this method
+    - used to transfer a Capsule from it's current owner to a recipient
 
 getCapsuleDetail(id)
-    Returns the (type, level, status) of Capsule Token
-    status of the capsule in interger. Here is the meaning of integer value.
-        0 : unpublished
-        1 : published
-        2 : owned
-        3 : staked
-        4 : unlocked
-        5 : minted
-        6 : burned 
+    - requires Capsule Id
+    - returns (type, level, status, owner, endTime, amount) of capsule
 
-modifyCapsules(isAdding, ids, levels, types, startTimes)
-    Admin adds/removes the Capusule tokens before it can be minted.
+getCapsuleSupply(capsuleType)
+    - requires capsule type
+    - return (capsule total supply, capsule total consuled) of a particular type
 
-airdrop(capsuleType, receiver)
-    Only admin call this funciton to airdrop some capsules to specific recipient
+markUnstaked(capsuleId, forced)
+    - requires capsule id, action type
+    - used to unstake a capsule
+    - if request id forced then capsule is marked as locked else unlocked
 
-mintFromTicket(ticketId)
-    User will provide the raffle token to mint a Capsule token.
-    The raffle token is burned
-
-markStatus(capsuleId, bool vested, bool unlocked, bool unstaked)
-    Mark the capusule status as vested/unlocked/unstaked.
-    Capsule vesting is required before it can be minted to an NFT.
-
-
-
- 
+markStaked(capsuleId, forced)
+    - requires capsule id
+    - used to stake a Capsule
 
 
  //#############################################################################################################################################################################################
@@ -141,31 +203,59 @@ This contract is for Capsule Staking
 Logic: LOA capsules needs to be staked along with LOA tokens to be eligible for revelaing the underneath NFT.
 User in order to have an NFT, needs to have a capusule. Stake the capsule. Then he can open the capsule via NFT contract to get NFT.
 
-constructor(loaContract)
-    requrires address or LOA token
+constructor(loaContract, adminContract)
+    - requrires LOA address, admin address
 
+validAdmin()
+    - validates if request sender is valid Admin
 
-addAdmin()
-    Add a admin for this contract
+getCapsuleStakeInfo(uint256 id)
+    - requires capsule id
+    - returns (owner, endtime, amount) of staked capsule
 
-removeAdmin()
-    Add a admin for this contract
-
-setTresury()
-    Sets the admin treasury address
-
-
-setCapsuleContract(capsuleContract)
-    Only admin set capsule contract.
-
-setCapsuleStakingRule(capsuleType, stakingDays, loaTokens)
-    Only admin can set capsule staking rules
+setCapsuleStakingRule(capsuleType, stakingSecs, loaTokens)
+    - requires capsule type, staking time, tokens to stake
+    - accessed by admin only
+    - sets capsule staking duration and staking amount for one capsule of a psrticular type
 
 stake(capsuleIds)
-    User can stake multiple capsule tokens
+    - requires capsule ids
+    - used to stake(vest) capsules
 
-reclaim(capsuleIds)
-    User can reclaim can capsule tokens after the staking period is over.
+reclaim(capsuleIds, forced)
+    - requires capsule ids, action type
+    - used to reclaim staked capsules
+    - if forced is true, it won't check if staking period is over or not
+
+
+fetchStakedCapsules(owner)
+    - requires owner address
+    - returns (ids) of capsules staked by owner
+
+
+withdraw(tokenAddress)
+    - requires token address
+    - transfers the amount of loa tokens staked from treasury to recipient
+
+
+
+ //#############################################################################################################################################################################################
+
+LOA Util Contract
+
+
+This contract is for Capsule Staking
+Logic: LOA capsules needs to be staked along with LOA tokens to be eligible for revelaing the underneath NFT.
+User in order to have an NFT, needs to have a capusule. Stake the capsule. Then he can open the capsule via NFT contract to get NFT.
+
+random(limit, randNonce)
+    - return random number
+
+randomNumber(nonce)
+    - return random number
+
+sudoRandom(randomValue, slot)
+    - return random number
 
 
 //#############################################################################################################################################################################################
@@ -177,28 +267,115 @@ This is contract that creates LOA NFTs
 In order to mint an LOA NFT user need to submit an 
 
 
-constructor(loaContract)
-    requrires address of LOA token
+constructor(loaContract, adminContract, nftDataContract)
+    - requrires LOA token address, Admin Address, NFT Data address
 
-updateAccessAddressAndFees(capsuleContract, nftMarketAddress, fusion_address, capsuleTypes, fees)
-    Only admin can set capsule contract address, NFT martket address, fusion contract address.
-    Also it sets capsule minting fees for each capsule type.
+validAdmin()
+    - validates if request sender is valid Admin
+
+safeTransferFrom(from, to, id, amount, data)
+    - requires Transfer From, Transfer To, ID, Transfer Amount, Tranfer Data
+    - user to transfer amount and data from a address to a another address
+
+fusion(owner, ids, fusionLevel, price)
+    - requires owner address, nft ids, fusion level, price of nft
+    - merge/fuse multiples nfts to a single nft of provided level
+
+mint(capsuleIds)
+    - requires capsule ids
+    - mint nfts using capsules
+
+withdraw(tokenAddress)
+    - requires token address
+    - Admin can withdraw fee collected from minting fees.
+
+
+
+
+//#############################################################################################################################################################################################
+
+
+LoANFT Data Contract
+
+The responsibility of this contract is to merge multiple NFTs to a single more valuable NFT.
+
+constructor(adminContract)
+    - requrires Admin Contract Address
+
+addNFTAttributeLimits(level, hero, optionalAttributes, maxValues, minValues, defaultAttributes, defaultMaxValues, defaultMinValues, totalOptionalAttributes)
+    - requires level, hero, optional attributes, maximum values of optional attribute, default attributes, maximum values of default attribute, minimum values of default attribute, total optional attributes
+    - contract admin can access this method
+    - sets different nft attributes
+
+populateAttribute(id, level, hero)
+    - requires nft id, nft level, nft hero
+    - populates NFT afftibutes after minting
+
+getNFTAttrLimit(level, hero)
+    - requires nft level, nft hero
+    - returns (attributes, default attributes, total attributes)
+    - used to get different attributes for a particular level and hero
+
+addNFTSupply(level, heroes, supply)
+    - requires nft level, nft heroes, nft suppplies
+    - only admin can access
+    - sets supply of different heros for a particular level nft
+
+pickNFTHero(level)
+    - requires nft level
+    - returns nft hero
+    - picks nft hero for a particular level randomly
+
+getNewNFTByLevel(level)
+    - requires nft level
+    - returns nft id
+    - creates a new nft
+
+updateFees(capsuleTypes, fees)
+    - requires capsules types
+    - only admin can access
+    - updates fee of nft minting from capsule of particular types
+
+validAdmin()
+    - validates if request sender is valid Admin
 
 getNFTDetail(id)
-    this returns the nft detail.
+    - requires nft id
+    - returns nft details (id, status, owner, level, hero, attributes)
 
-modifyNFTs(bool adding, ids, levels, heroes, startTimes)
-    Only Admin can set/remove NFT details and its attributes to be minted.
+getUserNFTs(sender)
+    - requires sender
+    - returns nft ids
 
+doTransferFrom(from, to, id)
+    - requires Transfer From, Transfer To, NFT ID
+    - used to transfer nft from a address to another address
 
-mint(capsuleId)
-    User can mint an NFT by providing capsule token that they own.
-    They also have to pay minting fee along with capsule token.
+doBatchTransfer(from, to, ids)
+    - requires Transfer From, Transfer To, NFT IDs
+    - user to transfer nfts from a address to another address
 
-withdraw()
-    Admin can withdraw fee collected from minting fees.
+doFusion(owner, ids, fusionLevel)
+    - requires owner address, nft ids, fusion level
+    - return nft id
+    - merge/fuse provided nfts to a single nft of provided level
 
+doMint(capsuleType, capsuleLevel, owner)
+    - requires capsule type, capsule level, owner address
+    - makes a nft nft of a particular type and level
 
+putNFTAttributeNames(nft_attribute_names) 
+    - requires attribute names
+    - sets attribut names
+
+withdraw(tokenAddress)
+    - requires token address
+    - only admin can access
+    - transfers token from treasury's contract to recipient's contract
+
+randomSubList(list, units, randomValue, startCount)
+    - requires list of attributes, no. of attributes, random value, total attribute count
+    - returns optional attributes
 
 //#############################################################################################################################################################################################
 
