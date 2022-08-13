@@ -168,21 +168,6 @@ withdraw(tokenAddress)
 
 
 
- //#############################################################################################################################################################################################
-
-LOA Util Contract
-
-
-random(limit, randNonce)
-    - return random number
-
-randomNumber(nonce)
-    - return random number
-
-sudoRandom(randomValue, slot)
-    - return random number
-
-
 //#############################################################################################################################################################################################
 
 
@@ -599,6 +584,71 @@ extract(tokenAddress)
     - transfer the amount of tokens of a particular contract from treasury contract to admin contract
 
 
+//#############################################################################################################################################################################################
+
+IAdmin Contract
+    
+isValidAdmin(adminAddress)
+    - checks if admin address is valid
+
+getTreasury()
+    - returns treasury address
+
+isValidRaffleAddress(raffleAddress)
+    - checks if raffle address is valid
+
+isValidCapsuleTransfer(sender, from,  to)
+    - checks if capsule transfer is valid
+
+isValidMarketPlaceContract(marketAddress)
+    - checks if market address is valid
+
+getCapsuleAddress()
+    - returns capsule address
+
+getCapsuleStakingAddress()
+    - returns capsule staking address
+
+getCapsuleDataAddress()
+    - returns capsule data address
+
+getNFTAddress()
+    - returns loa nft address
+
+getMarketAddress()
+    - returns market address
+
+getNFTDataAddress()
+    - returns nft data address
+
+getFusionAddress()
+    - returns nft fusion address
+
+getAxionAddress()
+    - returns axion address
+
+getUtilAddress()
+    - returns util address
+
+random()
+    - returns random number
+
+
+
+//#############################################################################################################################################################################################
+
+IUtil Contract
+
+random(limit, randNonce)
+    - return random number
+
+randomNumber(nonce)
+    - return random number
+
+sudoRandom(randomValue, slot)
+    - return random number
+
+    
 
 //#############################################################################################################################################################################################
 
