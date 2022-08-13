@@ -5,7 +5,7 @@ This is property of Realm Stack.
 Raffle Contract :
 
 Raffale contract is kind of lottery contract, where user can stake LOA token for one or multiple Raffle tickets.
-After tickets are allocated, then user can open those tickets to find if they have own capsule token or not. Anyone who doesnt won capsule after opening ticket, will get his staked LOA in his account.
+After tickets are allocated, then user can open those tickets to find if they have own capsule token or not. Anyone who doesn't won capsule after opening ticket, will get his staked LOA in his account.
 User can open capsule token to mint LOA NFT.
 
 Rules:
@@ -138,7 +138,7 @@ Capsule Staking Contract
 
 
 This contract is for Capsule Staking
-Logic: LOA casules needs to be staked along with LOA tokens to be eligible for revelaing the underneath NFT.
+Logic: LOA capsules needs to be staked along with LOA tokens to be eligible for revelaing the underneath NFT.
 User in order to have an NFT, needs to have a capusule. Stake the capsule. Then he can open the capsule via NFT contract to get NFT.
 
 constructor(loaContract)
