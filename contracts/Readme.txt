@@ -509,6 +509,57 @@ random(limit, randNonce)
     - requires limit, randNonce
     - return random number
 
+
+
+//#############################################################################################################################################################################################
+
+
+NFTMarket Contract
+
+constructor(loaAddress, adminContractAddress)
+    - requires loa contract adddress, admin address
+
+updateGifting(gifting)
+    - requires gifting(boolean)
+    - only admin can address
+    - sets if gifting is enables in contract
+
+updateFees(contractAddresses, listingFees, trasactionFees)
+    - requires contract addresses, listing fees, transaction fees
+    - sets listing fees and transaction fees of when nft is to be listed in the marketplace
+
+getMarketItem(marketItemId)
+    - requires market Item Id
+    - returns details of listed items in market via id
+
+list(nftContract, tokenId, price)
+    - requires contract address, token id, price
+    - list nft/capsule of provided id in market at provided price
+
+unlist(itemId)
+    - requires item id
+    - unlist/remove nft/capsule of provided id
+
+updatePrice(itemId, price)
+    - requires item id, price
+    - updates price of listed nft in marketplace
+
+giftNFT(to, itemId)
+    - requires recipient address, item id
+    - transfer nft provided to recipient
+
+buy(itemId)
+    - requires item id
+    - buy a nft from marketplace
+
+fetchMarketItems()
+    - returns all items listed in marketplace
+
+extract(tokenAddress)
+    - requires token address
+    - transfer the amount of tokens of a particular contract from treasury contract to admin contract
+
+
 //#############################################################################################################################################################################################
 
 ZAP 
