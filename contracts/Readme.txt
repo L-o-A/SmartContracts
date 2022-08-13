@@ -364,30 +364,27 @@ The responsibility of this contract is to merge multiple NFTs to a single more v
 constructor(loaContract, loaNFTContract, adminContract)
     - requrires LOA token Contract and LOA NFT Contract
 
+validAdmin()
+    - validates if request sender is valid Admin
 
-addAdmin()
-    Add a admin for this contract
-
-removeAdmin()
-    Add a admin for this contract
-
-setTresury()
-    Sets the admin treasury address
-
-withdraw()
-    Admin can withdraw fee collected from minting fees.
-
-createFusionRule(id, price,  resultLevel, levelValues)
-    Admin can add fusion rule.
-    Fusion rule contains the fees and type of nfts to be merged and resultant nft type.
+createFusionRule(id, price, resultLevel, levelValues)
+    - requrires fusion id, price, level, lvel values
+    - only admin can access
+    - Fusion rule contains the fees and type of nfts to be merged and resultant nft type
 
 removeFusionRule(id)
-    Admin can removes a fusion for correction.
+    - requrires nft id
+    - only admin can access
+    - Admin can removes a fusion for correction.
 
 fusion(ruleId, ids)
-    User can call fusion with NFTs and rule id against which the NFTs to be merged into a new NFT.
+    - requires rule id, nft ids
+    - User can call fusion with NFTs and rule id against which the NFTs to be merged into a new NFT
 
 
+withdraw(tokenAddress)
+    - requires token address
+    - Admin can withdraw fee collected from minting fees.
 
 
 //#############################################################################################################################################################################################
