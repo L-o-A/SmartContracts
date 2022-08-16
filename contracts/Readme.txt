@@ -17,18 +17,22 @@ validAdmin()
     - validates if request sender is valid Admin
 
 burn(owner, id)
-    - requires owner address and Id
-    - This burns the capsule token when its minted as LOA NFT
+    - requires owner address and Id of capsule
     - Can only be called from LOA NFT smart contract
+    - This burns the capsule token when its minted as LOA NFT
+    - this method internally calls doBurn method of capsule data which burns capsules when minted
 
 airdrop(capsuleType, dropTo, units)
     - requires Capsule Type, Address of user to assign capsule, Units to capsule to assign
+    - Only admin can call this function
     - used to assign no. of capsules of a particular type to a specific recipient
-    - Only admin call this function
+    - a maximum of 5 capsules can be dropped at a time
+    - it internally calls getNewCapsuleIdByType() method in capsule data to make a new capsule and return Id of capsule
 
 claim(ticketIds, raffleAddress, owner)
     - requires Raffle Ticket Ids, Raffle Address, Owner of tickets
     - used to assign capsules to user for a particular ticket and remove that ticket from user after it is claimed
+    - checks if ticket is a winner, if ticket is a winner then passed ticket is burned and a new capsule is minted
 
 safeTransferFrom(from, to, id, amount, data)
     - requires Transfer From, Transfer To, ID, Transfer Amount, Tranfer Data
@@ -40,7 +44,7 @@ safeBatchTransferFrom(from, to, ids, amounts, data)
 
 extract(tokenAddress)
     - requires token address
-    - transfer the amount of tokens of a particular contract from treasury contract to recipient contract
+    - transfer the amount of tokens of a particular contract from token to treasury contract
 
 
 
@@ -65,7 +69,7 @@ validCapsule()
 getNewCapsuleIdByType(capsuleType, owner)
     - requires Capsule Type, Owner address
     - return Capusule Id
-    - used to get a Capsule id after assigning a capsule to owner address
+    - used to mint a capsule for the owner
 
 addCapsuleSupply(capsuleType, levels, supply)
     - requires Capsule Type, Capsule Levels, Capsule Supplies
@@ -79,7 +83,7 @@ pickCapsuleLevel(capsuleType)
 
 extract(tokenAddress)
     - requires token address
-    - transfer the amount of tokens of a particular contract from treasury contract to recipient contract
+    - transfer the amount of tokens of a particular contract from token to treasury contract
 
 getUserCapsules(owner)
     - requires owner address
@@ -89,7 +93,7 @@ getUserCapsules(owner)
 doBurn(id, owner)
     - requires id, owner address
     - only Capsule can access this method
-    - used to burn capsules to NFT
+    - used to burn capsules after capsule is minted
 
 doTransfer(capsuleId, owner, dropTo)
     - requires Capsule Id, Owner address, Drop To addess
@@ -102,16 +106,18 @@ getCapsuleDetail(id)
 
 getCapsuleSupply(capsuleType)
     - requires capsule type
+    - it checks if request sender is from any marketplace contract, then capsule level is set else it sets level to be 0. this is done to ensure user cannot predict NFT minted using same capsule
     - return (capsule total supply, capsule total consuled) of a particular type
 
 markUnstaked(capsuleId, forced)
     - requires capsule id, action type
     - used to unstake a capsule
-    - if request id forced then capsule is marked as locked else unlocked
+    - if request is forced then capsule is marked as locked else unlocked
 
-markStaked(capsuleId, forced)
+markStaked(capsuleId)
     - requires capsule id
-    - used to stake a Capsule
+    - only Capsule staking contract is authorized to access and also check is capsule is locked
+    - used to stake a Capsule bu changing it's status
 
 
  //#############################################################################################################################################################################################
@@ -524,34 +530,70 @@ Unclaimed LOA Capsules are stored in the Marketplace Storage for a period of tim
 
 #Functions
 
-constructor():
+constructor(loaContract, raffleHelper, admin):
     - requrires LOA address, Raffle Helper address, Admin address
 
 validAdmin()
     - validates if request sender is valid Admin
 
-getTicketDetail()
+getTicketDetail(id)
     - requires Raffle ticket ID and returns (ticket status, ticket price, ticket owner, raffle type)
     - gets ticket details
 
-buyTicket()
-    - requires no. of units
-    - to buy no. tickets requested by request sender
+getUserTickets(userAddress)
+    - requires user address
+    - gets user tickets owned
 
-pickWinner():
+getUserWinningTickets(userAddress)
+    - requires user address
+    - gets user tickets won
+
+getUserWinningTickets(userAddress)
+    - requires user address
+    - gets user tickets won
+
+balanceOf(tokenOwner, id)
+    - requires user address/token owner, id of ticket
+    - gets units od token owner by that user for a particular (value is either 1 or 0)
+
+burn(tokenOwner, id)
+    - requires user address/token owner, id of ticket
+    - only capsule contract can access this method
+    - can only be used if raffle is not terminated
+    - used to burn raffle tickets
+
+setRaffleInfo(category, start_time, end_time, closure_time)
+    - requires type of raffle, start time of raffle, endtime of raffle, closure time fo raffle
+    - can se used if raffle is not closed, start time should be less than end time, end time should be less than closure time
+    - sets above mentioned values to a new raffle
+
+buyTicket(units)
+    - requires no. of tickets to buy
+    - can only be used if raffle is open, start time is less than current time and raffle end time is not passed
+    - used to buy tickets
+    - maximum 150 tickets can be bought at a time
+
+pickWinner(count)
     - requires no. of winning tickets
-    - used to pick winning raffle tickets
+    - checks if raffle event is not passsed and winners are not declared yet
     - only admin can access this method
+    - used to pick winning raffle tickets
+    - maximum of 100 tickets can be picked as winners at a time, and if winners are greater than 100 then method needs to be called multiple times will all winners are picked
+        this is done to make sure not high gas ee error comes because of loop present in method
 
-terminate():
+terminate()
+    - only admin can access this method
     - used to terminate raffle event if raffle is not closed
+    - when a raffle event is terminated, balance is transfered from LOA contract to treasury
 
-withdraw()
+withdraw(tokenAddress)
     - requires LOA contract address
     - request sent by ticket owner to pick winning tickets and claim those raffle tickets to capsules
+    - after tickets are claimed/withdrawn, remaining balance is transfered from LOA contract to treasury
 
 cleanup()
     - if winners are declared, then ticket are flushed if tickets are already claimed
+    - this method does cleanup in loop of 50s to avoid gas fee error
 
 
 
@@ -563,7 +605,7 @@ Raffle helper contains information of raffle tickets like - buying price, reward
 
 #Functions
 
-constructor():
+constructor(admin):
     - requires Admin address
 
 validAdmin()
@@ -577,6 +619,7 @@ putRafflePrices(supply, prices, reward_amount, reward_range)
     - requires supply of raffle in units, price of price of supply range, reward amount range, reward range
     - only admin can access
     - sets sets supply and reward range of raffle tickets
+    - checks if all the values mentioned are in ascending order
 
 calcPrice(units, currentSupply)
     - requires units and supply
@@ -592,7 +635,7 @@ getCurrentRewards(raffle_supply)
 
 extract(tokenAddress)
     - requires token address
-    - transfer the amount of tokens of a particular contract from treasury contract to admin contract
+    - transfer the amount of tokens of a particular contract from token to treasury contract
 
 
 //#############################################################################################################################################################################################
