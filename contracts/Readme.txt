@@ -148,21 +148,22 @@ setCapsuleStakingRule(capsuleType, stakingSecs, loaTokens)
 stake(capsuleIds)
     - requires capsule ids
     - used to stake(vest) capsules
+    - maximum of 50 capsules can be staked at a time to avoid high gas fee error
+    - staked tokens are transfered from user contract to to Capsule staking contract
 
 reclaim(capsuleIds, forced)
     - requires capsule ids, action type
     - used to reclaim staked capsules
     - if forced is true, it won't check if staking period is over or not
-
+    - when reclaim is completed, staked loa tokens is transfered from capsule staking loa contract to user
 
 fetchStakedCapsules(owner)
     - requires owner address
     - returns (ids) of capsules staked by owner
 
-
 withdraw(tokenAddress)
     - requires token address
-    - transfers the amount of loa tokens staked from treasury to recipient
+    - transfers the amount of loa tokens to treasury
 
 
 
@@ -185,6 +186,10 @@ safeTransferFrom(from, to, id, amount, data)
     - requires Transfer From, Transfer To, ID, Transfer Amount, Tranfer Data
     - user to transfer amount and data from a address to a another address
 
+safeBatchTransferFrom(from, to, ids, amounts, data)
+    - requires Transfer From, Transfer To, IDs, Transfer Amounts, Tranfer Data
+    - user to transfer amount and data from a address to another address
+
 fusion(owner, ids, fusionLevel, price)
     - requires owner address, nft ids, fusion level, price of nft
     - merge/fuse multiples nfts to a single nft of provided level
@@ -192,10 +197,14 @@ fusion(owner, ids, fusionLevel, price)
 mint(capsuleIds)
     - requires capsule ids
     - mint nfts using capsules
+    - checks if capsule is owned by request sender
+    - minting is only possible if capsule is unlocked
+    - internally calls burn method of Capsule to burn that capsule and mint NFT
+    - when minting is complete, LOA balance is transfered from request sender to treasury
 
 withdraw(tokenAddress)
     - requires token address
-    - Admin can withdraw fee collected from minting fees.
+    - token balance is transfered to treasury
 
 
 
@@ -210,17 +219,19 @@ it also comtains information of supply of NFTs and it's attributes
 
 #Functions
 
-constructor(adminContract)
-    - requrires Admin Contract Address
+init(adminContract)
+    - requires Admin Contract Address
 
 addNFTAttributeLimits(level, hero, optionalAttributes, maxValues, minValues, defaultAttributes, defaultMaxValues, defaultMinValues, totalOptionalAttributes)
     - requires level, hero, optional attributes, maximum values of optional attribute, default attributes, maximum values of default attribute, minimum values of default attribute, total optional attributes
-    - contract admin can access this method
+    - only contract admin can access this method
     - sets different nft attributes
+    - check if max value is greater than minimum value of provided index
 
 populateAttribute(id, level, hero)
     - requires nft id, nft level, nft hero
     - populates NFT afftibutes after minting
+    - primary attributes are set using level and hero, and other optional attributes are set randomly
 
 getNFTAttrLimit(level, hero)
     - requires nft level, nft hero
@@ -230,21 +241,31 @@ getNFTAttrLimit(level, hero)
 addNFTSupply(level, heroes, supply)
     - requires nft level, nft heroes, nft suppplies
     - only admin can access
+    - arguments supply and heros needs to be of equal length
     - sets supply of different heros for a particular level nft
+
+getNFTSupply(level)
+    - requires nft level
+    - returns (total supply, total consumed, heroes)
 
 pickNFTHero(level)
     - requires nft level
     - returns nft hero
     - picks nft hero for a particular level randomly
+    - this method is used during minting
 
 getNewNFTByLevel(level)
     - requires nft level
     - returns nft id
+    - check is supply is greater than consumed
     - creates a new nft
+    - it also populated attributes simultaneously
+    - this method is used during minting
 
 updateFees(capsuleTypes, fees)
     - requires capsules types
     - only admin can access
+    - checks arguments length are same
     - updates fee of nft minting from capsule of particular types
 
 validAdmin()
@@ -256,15 +277,15 @@ getNFTDetail(id)
 
 getUserNFTs(sender)
     - requires sender
-    - returns nft ids
+    - returns nft ids owned by sender
 
 doTransferFrom(from, to, id)
     - requires Transfer From, Transfer To, NFT ID
-    - used to transfer nft from a address to another address
+    - used to transfer nft from a address to recipient address
 
 doBatchTransfer(from, to, ids)
     - requires Transfer From, Transfer To, NFT IDs
-    - user to transfer nfts from a address to another address
+    - user to transfer nfts from a address to recipient address
 
 doFusion(owner, ids, fusionLevel)
     - requires owner address, nft ids, fusion level
@@ -273,7 +294,7 @@ doFusion(owner, ids, fusionLevel)
 
 doMint(capsuleType, capsuleLevel, owner)
     - requires capsule type, capsule level, owner address
-    - makes a nft nft of a particular type and level
+    - mint a new nft of a particular type and level
 
 putNFTAttributeNames(nft_attribute_names) 
     - requires attribute names
@@ -282,11 +303,12 @@ putNFTAttributeNames(nft_attribute_names)
 withdraw(tokenAddress)
     - requires token address
     - only admin can access
-    - transfers token from treasury's contract to recipient's contract
+    - token balance is transfered to treasury
 
 randomSubList(list, units, randomValue, startCount)
     - requires list of attributes, no. of attributes, random value, total attribute count
-    - returns optional attributes
+    - returns optional attributes of no. of attributes passed
+    - attributes are generated randomly
 
 //#############################################################################################################################################################################################
 
@@ -315,12 +337,14 @@ removeFusionRule(id)
 
 fusion(ruleId, ids)
     - requires rule id, nft ids
+    - checks if nft belonged to user
+    - checks if nft level is same as fusion level
+    - fusion price is transfered from user contract to treasury
     - User can call fusion with NFTs and rule id against which the NFTs to be merged into a new NFT
-
 
 withdraw(tokenAddress)
     - requires token address
-    - Admin can withdraw fee collected from minting fees.
+    - Admin can withdraw fee collected to treasury
 
 
 //#############################################################################################################################################################################################
@@ -478,6 +502,8 @@ getMarketItem(marketItemId)
 
 list(nftContract, tokenId, price)
     - requires contract address, token id, price
+    - checks if price provided is atleast 1 wei and listing fee is greater than 0
+    - checks if balance of tokens is greater than listing fee
     - list nft/capsule of provided id in market at provided price
 
 unlist(itemId)
@@ -486,6 +512,8 @@ unlist(itemId)
 
 updatePrice(itemId, price)
     - requires item id, price
+    - price should be greater than 0
+    - checks if request sent for provided item to update price is same as user listed the NFT
     - updates price of listed nft in marketplace
 
 giftNFT(to, itemId)
@@ -494,14 +522,19 @@ giftNFT(to, itemId)
 
 buy(itemId)
     - requires item id
+    - checks if provided item is listed as NFT and also check if token balance is greater then buying price
     - buy a nft from marketplace
+    - transfers nft to buyer
+    - transfers listed price to seller
+    - transfers transaction fee to treasury
 
 fetchMarketItems()
     - returns all items listed in marketplace
 
 extract(tokenAddress)
     - requires token address
-    - transfer the amount of tokens of a particular contract from treasury contract to admin contract
+    - only admin can access
+    - transfer token balance to treasury
 
 
 //#############################################################################################################################################################################################
