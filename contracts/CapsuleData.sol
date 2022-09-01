@@ -81,7 +81,7 @@ contract CapsuleData {
         require(level > 0, "No capsule available");
         CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
 
-        require(capsuleSupply._supply[level] - capsuleSupply._consumed[level] > 0, "No capsule available");
+        require(capsuleSupply._supply[level] > capsuleSupply._consumed[level], "No capsule available");
 
         capsuleSupply._consumed[level] +=1;
         capsuleSupply._total_consumed +=1;

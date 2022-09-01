@@ -741,7 +741,7 @@ contract LoANFTData {
         //set default values
         for(uint8 i = 0; i < nftAttribLimit._default_attributes.length; i++) {
             attributes[nftAttribLimit._default_attributes[i]] = nftAttribLimit._min[nftAttribLimit._default_attributes[i]]  + 
-            ((nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]]) * IUtil(_admin.getUtilAddress()).sudoRandom(randomValue, randomCount ++) / 100 );
+            ((nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]] + 1) * IUtil(_admin.getUtilAddress()).sudoRandom(randomValue, randomCount ++) / 100 );
         }
 
         uint8[] memory otherAttributes = randomSubList(nftAttribLimit._attributes, nftAttribLimit._total_attributes, randomValue, randomCount);
@@ -749,7 +749,7 @@ contract LoANFTData {
 
         for(uint8 i = 0; i < otherAttributes.length; i++) {
             attributes[otherAttributes[i]] = nftAttribLimit._min[otherAttributes[i]] + 
-                ((nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]]) * IUtil(_admin.getUtilAddress()).sudoRandom(randomValue, randomCount ++) / 100);
+                ((nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]] + 1) * IUtil(_admin.getUtilAddress()).sudoRandom(randomValue, randomCount ++) / 100);
         }
 
         nft.attributes = attributes;
@@ -768,7 +768,7 @@ contract LoANFTData {
         delete nftSupply.heroes;
 
         for(uint32 i = 0; i < heroes.length; i++) {
-            require(nftSupply._consumed[heroes[i]] < supply[i], "Supply cant be less than consumed");
+            require(nftSupply._consumed[heroes[i]] < supply[i], "Consumed cant be less than supply");
             nftSupply._supply[heroes[i]] = supply[i];
             nftSupply._total_supply += supply[i];
         }
@@ -801,11 +801,11 @@ contract LoANFTData {
     function getNewNFTByLevel(uint8 level) public returns (uint256) {
 
         NFTSupply storage nftSupply = _nft_level_supply[level];
-        require(nftSupply._total_supply - nftSupply._total_consumed > 0, "Supply error");
+        require(nftSupply._total_supply > nftSupply._total_consumed, "Supply error");
 
         uint8 hero = pickNFTHero(level);
         require(hero > 0, "Hero not found");
-        require(nftSupply._supply[hero] - nftSupply._consumed[hero] > 0, "No Hero NFT available");
+        require(nftSupply._supply[hero] > nftSupply._consumed[hero], "No Hero NFT available");
 
         nftSupply._consumed[hero] +=1;
         nftSupply._total_consumed +=1;
