@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract LOAUtil {
 
@@ -50,8 +50,8 @@ contract LOAUtil {
         }
     }
 
-    function fullfillRandom(address requestor, uint32[] memory randoms) public {
-        for(uint i = 0; i < randoms.length; i++) {
+    function fullfillRandom(address requestor, uint256[] memory randoms) public {
+        for(uint256 i = 0; i < randoms.length; i++) {
             _random_nos[requestor].push(randoms[i]);
         }
     }
