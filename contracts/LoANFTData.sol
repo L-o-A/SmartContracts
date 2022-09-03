@@ -607,7 +607,7 @@ pragma solidity ^0.8.7;
 
 interface IUtil {
     function random(uint256 limit, uint randNonce) external pure returns (uint32);
-    function randomNumber(uint256 nonce) external view returns (uint256);
+    function randomNumber(address owner) external returns (uint256);
     function sudoRandom(uint256 randomValue, uint32 slot) external pure returns(uint8);
 }
 
@@ -723,7 +723,7 @@ contract LoANFTData {
         nftAttribLimit._total_attributes = totalOptionalAttributes;
     }
 
-    function populateAttribute(uint256 id, uint8 level, uint8 hero) public {
+    function populateAttribute(uint256 id, uint8 level, uint8 hero, address owner) public {
         NFT storage nft = _nfts[id];
 
         nft.id = id;
@@ -733,7 +733,7 @@ contract LoANFTData {
         NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
         require(nftAttribLimit._total_attributes > 0, "Attribute not set hero level");
 
-        uint256 randomValue = IUtil(_admin.getUtilAddress()).randomNumber(id);
+        uint256 randomValue = IUtil(_admin.getUtilAddress()).randomNumber(owner);
         uint8 randomCount = 0;
 
         uint64[] memory attributes = new uint64[](_nft_attribute_names.length + 1);
@@ -798,7 +798,7 @@ contract LoANFTData {
         });
     }
 
-    function getNewNFTByLevel(uint8 level) public returns (uint256) {
+    function getNewNFTByLevel(uint8 level, address owner) public returns (uint256) {
 
         NFTSupply storage nftSupply = _nft_level_supply[level];
         require(nftSupply._total_supply > nftSupply._total_consumed, "Supply error");
@@ -812,7 +812,7 @@ contract LoANFTData {
 
         _nftCounter.increment();
         uint256 id = _nftCounter.current();
-        populateAttribute(id, level, hero);
+        populateAttribute(id, level, hero, owner);
         _nfts[id].status = 2;
 
         return id;
@@ -872,7 +872,7 @@ contract LoANFTData {
             delete _user_holdings_id_index[owner][ids[i]];
         }
 
-        uint256 id = getNewNFTByLevel(fusionLevel);
+        uint256 id = getNewNFTByLevel(fusionLevel, owner);
 
         _nfts[id].owner = owner;
         _user_holdings[owner].push(id);
@@ -885,7 +885,7 @@ contract LoANFTData {
         require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
         require(capsuleLevel > 0, "Invalid level");
 
-        uint256 id = getNewNFTByLevel(capsuleLevel);
+        uint256 id = getNewNFTByLevel(capsuleLevel, owner);
         uint256 fee = _minting_fee[capsuleType];
        
         _nfts[id].owner = owner;
@@ -894,11 +894,6 @@ contract LoANFTData {
         _lastCall = block.timestamp;
         return (id, fee);
     }
-
-    // function repopulateProperty(uint256 id) public {
-    //     require(msg.sender == _admin.getAxionAddress(), "Not authorized axion");
-    //     populateAttribute(id, _nfts[id].level, _nfts[id].hero);
-    // }
 
     function putNFTAttributeNames (string[] memory nft_attribute_names) public validAdmin {
         _nft_attribute_names = nft_attribute_names;
