@@ -12,7 +12,7 @@ async function main() {
    const admin2 = "0x36Ee9c4520F9E7C15A0Cba1e032627eDc2B4C50D";
    const admin3 = "0xf68DF34af420c751D1c0d0B7F0292E89Fa1Ec3Da";
 
-    const multiSigAdmin_addr = "0x66A86D15849f39E461Ae4B23e9CF1aa8ED66D1Fc";
+    const multiSigAdmin_addr = "0xe598AB555aB7a5f1d42b50C6fed487271AA7f039"; //"0x66A86D15849f39E461Ae4B23e9CF1aa8ED66D1Fc";
     const raffleHelper_addr = "0x4C5fDd8e946a08B6840C9f1AcE27e03196b2A525";
     const raffle_addr = "0xBd93589b1Bd9071dc72bAF29869a529Cc369EAdc";
     const capsule_addr = "0x0583A78979CD8F12Eb5B1B1F55a957D5Cefe7567";
@@ -22,7 +22,7 @@ async function main() {
     const _LoANFT_addr = "0x36758d17FBd8E8bB55e9A2bFc560064173827Ee6"; //"0x142AdBb712C9e152038B338207b641eb697720CD";
     const _LoANFTFusion_addr = "0x48228b1B789F583fbf48E1569e8c9ED51F5Db889";
     const _NFTMarket_addr = "0xf20ea5b68f03E05dcFbf85Ee3E6B6ff0362c0Edc";
-    const _UTIL_addr = "0xA12520B403fc73EFd40A25e7D7DB3c0da486e168" ; //"0x906d1A7c29D5Ff3aFC92A9a27284bDc6BD79c13e"; //"0xFD165685A4D42028e83ad1067eE0D404d0AC8fA6";
+    const _UTIL_addr = null; //"0x906d1A7c29D5Ff3aFC92A9a27284bDc6BD79c13e"; //"0xFD165685A4D42028e83ad1067eE0D404d0AC8fA6";
 
    loa = await (await ethers.getContractFactory("MYERC20")).attach("0xD0C2eB52D221ADE2897e78264E457777032744ce");
 
@@ -43,7 +43,6 @@ async function main() {
        await multiSigAdmin.modifyAdmin(treasury, true);
        await multiSigAdmin.setTreasury(treasury);
    }
-
 
    let raffleHelper;
    if(raffleHelper_addr  == null) {
@@ -175,6 +174,8 @@ async function main() {
     }
 
     console.log(1);
+
+    return;
 
     await multiSigAdmin.setUtilAddress(_LOAUtil.address);
     await multiSigAdmin.setFusionAddress(_LoANFTFusion.address);
