@@ -596,7 +596,6 @@ interface IAdmin {
     function getFusionAddress() external view returns (address);
     function getAxionAddress() external view returns (address);
     function getUtilAddress() external view returns (address);
-    function random(uint256 limit, uint randNonce) external view returns (uint32);
 }
 
 
@@ -606,9 +605,9 @@ interface IAdmin {
 pragma solidity ^0.8.7;
 
 interface IUtil {
-    function random(uint256 limit, uint randNonce) external pure returns (uint32);
-    function randomNumber(address owner) external returns (uint256);
-    function sudoRandom(uint256 randomValue, uint32 slot) external pure returns(uint8);
+    function random(uint256 limit, uint randNonce) external returns (uint32);
+    function randomNumber(address requestor) external returns (uint256);
+    function sudoRandom(uint256 randomValue, uint32 slot) external returns(uint8);
 }
 
 
@@ -779,9 +778,10 @@ contract LoANFTData {
         return (_nft_level_supply[level]._total_supply, _nft_level_supply[level]._total_consumed, _nft_level_supply[level].heroes);
     }
 
-    function pickNFTHero(uint8 level) public view returns (uint8) {
+    function pickNFTHero(uint8 level, address owner) public returns (uint8) {
         NFTSupply storage nftSupply = _nft_level_supply[level];
-        uint32 selected = uint32(_admin.random(nftSupply._total_supply - nftSupply._total_consumed, _nftCounter.current())) + 1;
+        uint32 selected = uint32( IUtil(_admin.getUtilAddress()).randomNumber(owner) % (nftSupply._total_supply - nftSupply._total_consumed)) + 1;
+
         uint32 total = 0;
         for(uint i = 0; i < nftSupply.heroes.length; i ++) {
             if(nftSupply._supply[nftSupply.heroes[i]] - nftSupply._consumed[nftSupply.heroes[i]] + total >= selected) {
@@ -803,7 +803,7 @@ contract LoANFTData {
         NFTSupply storage nftSupply = _nft_level_supply[level];
         require(nftSupply._total_supply > nftSupply._total_consumed, "Supply error");
 
-        uint8 hero = pickNFTHero(level);
+        uint8 hero = pickNFTHero(level, owner);
         require(hero > 0, "Hero not found");
         require(nftSupply._supply[hero] > nftSupply._consumed[hero], "No Hero NFT available");
 
@@ -909,13 +909,12 @@ contract LoANFTData {
         token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
     }
 
-    function randomSubList(uint8[] memory list, uint8 units, uint randomValue, uint8 startCount) public view returns (uint8[] memory) {
+    function randomSubList(uint8[] memory list, uint8 units, uint randomValue, uint8 startCount) public returns (uint8[] memory) {
         uint8[] memory subList = new uint8[](units);
         uint8 count = 0;
         // uint8 nonceIncrementor = 0;
 
         for(uint8 i = 0; i < units; ) {
-            // uint32 index = uint32(_admin.random(uint256(list.length), randNonce + nonceIncrementor++));
             uint32 index = uint32(IUtil(_admin.getUtilAddress()).sudoRandom(randomValue, startCount++) % list.length);
             if(list[index] > 0) {
                 subList[count++] = list[index];

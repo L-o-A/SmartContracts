@@ -38,6 +38,10 @@ interface CapsuleInterface {
     function claim(uint256[] memory ticketIds, address raffleAddress, address receiver) external;
 }
 
+interface ILOAUtil {
+    function randomNumber(address requestor) external returns (uint256);
+}
+
 
 contract Raffle {
 
@@ -219,7 +223,8 @@ contract Raffle {
 
         for(uint256 i = 0; i < count; i++) {
             if(ticketIds.length == 0) break;
-            uint256 selected = _helper.random(ticketIds.length);
+
+            uint256 selected = ILOAUtil(_admin.getUtilAddress()).randomNumber(msg.sender) % (ticketIds.length);
 
             winners[i] = ticketIds[selected];
             winnerFees += _ticket_price[winners[i]];

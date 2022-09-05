@@ -5,12 +5,27 @@ pragma solidity ^0.8.7;
 
 contract LOAUtil {
 
+    address _admin;
+
+    constructor() {
+        _admin = msg.sender;
+    }
+
     mapping(address => uint256[]) private _random_nos;
 
     event RequestingRandom (
         address requestor,
         uint32 units
     );
+
+    modifier validAdmin() {
+        require(msg.sender == _admin, "Unauthorized");
+        _;
+    }
+
+    function updateAdmin(address admin) public validAdmin {
+        _admin = admin;
+    }
 
     function random(uint256 limit, uint256 randNonce) public view returns (uint64) {
         if(limit == 0) return 0;
@@ -50,7 +65,7 @@ contract LOAUtil {
         }
     }
 
-    function fullfillRandom(address requestor, uint256[] memory randoms) public {
+    function fullfillRandom(address requestor, uint256[] memory randoms) public validAdmin {
         for(uint256 i = 0; i < randoms.length; i++) {
             _random_nos[requestor].push(randoms[i]);
         }

@@ -1,7 +1,9 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-
+function getRandomNumber() {
+    return parseInt(Math.random() * 10**10) + "" + parseInt(Math.random() * 10**10) + "" +parseInt(Math.random() * 10**10) + "" +parseInt(Math.random() * 10**10) + "" +parseInt(Math.random() * 10**10) + "" +parseInt(Math.random() * 10**10) + "" + parseInt(Math.random() * 10**10) + "";
+}
 
 describe("LIVE MP Test ", function () {
     it("LIVE MP Test", async function () {
@@ -374,6 +376,12 @@ describe("LIVE MP Test ", function () {
 
         await raffle.setRaffleInfo(1, 10, 100, 102);
 
+
+        await _LOAUtil.requestRandom(400);
+        let randoms = [];
+        for(let i =0; i < 400; i++) randoms.push(getRandomNumber());
+        await _LOAUtil.fullfillRandom(owner.address, randoms);
+
         try {
             console.log(17.1);
             await raffle.pickWinner(100);
@@ -413,6 +421,20 @@ describe("LIVE MP Test ", function () {
 
         let winn_tickets = await raffle.connect(addr1).getUserTickets(addr1.address);
         console.log("add1 tickets count", winn_tickets.length);
+
+        
+        await _LOAUtil.connect(addr1).requestRandom(winn_tickets.length);
+
+        let counts = await _LOAUtil.connect(addr1).randomCount();
+        console.log(counts);
+        while(counts < 300) {
+            let randoms = [];
+            for(let i =0; i < 30; i++) randoms.push(getRandomNumber());
+            await _LOAUtil.fullfillRandom(addr1.address, randoms);
+            counts = await _LOAUtil.connect(addr1).randomCount();
+            console.log(counts);
+        }
+
         do {
             if(winn_tickets.length > 0) {
                 await raffle.connect(addr1).withdraw(loa.address);
@@ -423,10 +445,15 @@ describe("LIVE MP Test ", function () {
         
         console.log("add1 tickets count", (await raffle.getUserTickets(addr1.address)).length);
 
+
+        await _LOAUtil.connect(addr2).requestRandom(winn_tickets.length);
+        randoms = [];
+        for(let i =0; i < 200; i++) randoms.push(getRandomNumber());
+        await _LOAUtil.fullfillRandom(addr2.address, randoms);
         await raffle.connect(addr2).withdraw(loa.address);
         console.log("------------------- 3 withdraw --------------------");
-
-
+        
+        
         
         
         let capsules_data = await capsuleData.getUserCapsules(addr1.address);
@@ -455,13 +482,22 @@ describe("LIVE MP Test ", function () {
 
         capsules_data = await capsuleData.getUserCapsules(addr1.address);
         console.log("addr1 capsule count :", capsules_data.length);
+
+        
         do {
-            console.log("minting capsule", capsules_data[0]);
+            // console.log("minting capsule", capsules_data[0]);
             if(capsules_data.length > 4) {
+
+                await _LOAUtil.connect(addr1).requestRandom(10);
+                let randoms = [];
+                for(let i =0; i < 10; i++) randoms.push(getRandomNumber());
+                await _LOAUtil.fullfillRandom(addr1.address, randoms);
+
+
                 await _LoANFT.connect(addr1).mint([capsules_data[0],capsules_data[1],capsules_data[2],capsules_data[3],capsules_data[4]]);
             }
             capsules_data = await capsuleData.getUserCapsules(addr1.address);
-            console.log("add1 capsule count", capsules_data.length);
+            // console.log("add1 capsule count", capsules_data.length);
         } while(capsules_data.length > 4)
 
 

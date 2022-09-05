@@ -25,6 +25,10 @@ interface IERC20Contract {
     ) external returns (bool);
 }
 
+interface ILOAUtil {
+    function randomNumber(address requestor) external returns (uint256);
+}
+
 contract CapsuleData {
 
     using Counters for Counters.Counter;
@@ -77,7 +81,7 @@ contract CapsuleData {
     }
 
     function getNewCapsuleIdByType(uint8 capsuleType, address owner) public validCapsule returns (uint256) {
-        uint8 level = pickCapsuleLevel(capsuleType);
+        uint8 level = pickCapsuleLevel(capsuleType, owner);
         require(level > 0, "No capsule available");
         CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
 
@@ -114,9 +118,10 @@ contract CapsuleData {
         capsuleSupply.levels = levels;
     }
 
-    function pickCapsuleLevel(uint8 capsuleType) public view returns (uint8) {
+    function pickCapsuleLevel(uint8 capsuleType, address owner) public returns (uint8) {
         CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
-        uint32 selected = _admin.random(capsuleSupply._total_supply - capsuleSupply._total_consumed, capsuleSupply._total_consumed) + 1;
+        uint32 selected = uint32(ILOAUtil(_admin.getUtilAddress()).randomNumber(owner) % (capsuleSupply._total_supply - capsuleSupply._total_consumed)) + 1;
+
         uint32 total = 0;
         for(uint i = 0; i < capsuleSupply.levels.length; i ++) {
             if(capsuleSupply._supply[capsuleSupply.levels[i]] - capsuleSupply._consumed[capsuleSupply.levels[i]] + total >= selected) {
@@ -195,9 +200,4 @@ contract CapsuleData {
         _capsule_status[capsuleId] = 3;
     }
 
-    // function random(uint256 limit, uint32 randNonce) public view returns (uint32) {
-    //     if(limit == 0) return 0;
-    //     // return uint32(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
-    //     return uint32((block.timestamp + randNonce * randNonce) % limit);
-    // }
 }
