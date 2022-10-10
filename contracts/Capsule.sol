@@ -106,13 +106,13 @@ contract Capsule is ERC1155, Ownable {
             require(_raffleContract.balanceOf(owner, ticketId) > 0, "Ticket doesn't belong to you");
 
             (uint8 status, , , uint8 capsuleType) = _raffleContract.getTicketDetail(ticketId);
-            require(status == 3, "Ticket is not a winner");
+            if(status != 3) continue;
 
             // require(_capsule_type_to_ids[capsuleType].length > 0, "Capsule not available.");
             uint256 capsuleId = ICapsuleData(_admin.getCapsuleDataAddress()).getNewCapsuleIdByType(capsuleType, owner);
 
-            _mint(owner, capsuleId, 1, "");
             _raffleContract.burn(owner, ticketId);
+            _mint(owner, capsuleId, 1, "");
             
             capsuleIdsMinted[i] = capsuleId;
         }
