@@ -16,5 +16,4 @@ interface IAdmin {
     function getFusionAddress() external view returns (address);
     function getAxionAddress() external view returns (address);
     function getUtilAddress() external view returns (address);
-    function random(uint256 limit, uint randNonce) external view returns (uint32);
 }
