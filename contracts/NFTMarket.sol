@@ -106,7 +106,7 @@ contract NFTMarket is ERC1155Holder {
     //     address to
     // );
 
-    constructor(address erc20Contract, address adminContractAddress) {
+    constructor(address erc20Contract, address adminContractAddress) payable {
         _erc20Token = IERC20Contract(erc20Contract);
         _admin = IAdmin(adminContractAddress);
         //adding empty index
@@ -289,10 +289,15 @@ contract NFTMarket is ERC1155Holder {
 
         IERC1155(_admin.getNFTAddress()).safeTransferFrom(msg.sender, address(this), id, 1, "");
         IERC1155(_admin.getNFTAddress()).safeTransferFrom(address(this), to, id, 1, "");
+
+        // emit NFTTransferred(id, msg.sender, to);
     }
     
 
-    function buy(uint256 itemId) external {
+    function buy(uint256 itemId)
+        external
+        payable
+    {
         uint256 index = _listed_items_to_index[itemId];
         require(index != 0, "Item not present");
 
