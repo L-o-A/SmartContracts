@@ -38,6 +38,10 @@ interface CapsuleInterface {
     function claim(uint256[] memory ticketIds, address raffleAddress, address receiver) external;
 }
 
+interface ILOAUtil {
+    function randomNumber(address requestor) external returns (uint256);
+}
+
 
 contract Raffle {
 
@@ -121,7 +125,7 @@ contract Raffle {
         return _user_ticket_balance[tokenOwner][id];
     }
 
-    function burn(address owner, uint256 id) public {
+    function burn(address owner, uint256 id) public payable {
         
         require(msg.sender == _admin.getCapsuleAddress(), "You are not authorized to burn");
         require(_raffle_status != 4, "Raffle is terminated");
@@ -164,7 +168,7 @@ contract Raffle {
     }
 
     // User can buy raffle ticket by providing raffileType and no of units
-    function buyTicket(uint32 units) public {
+    function buyTicket(uint32 units) public payable {
 
         require(_raffle_status == 1, "Raffle is not open." );
         require(_raffle_start_time < block.timestamp, "Raffle is not open." );
@@ -219,7 +223,8 @@ contract Raffle {
 
         for(uint256 i = 0; i < count; i++) {
             if(ticketIds.length == 0) break;
-            uint256 selected = _helper.random(ticketIds.length);
+
+            uint256 selected = ILOAUtil(_admin.getUtilAddress()).randomNumber(msg.sender) % (ticketIds.length);
 
             winners[i] = ticketIds[selected];
             winnerFees += _ticket_price[winners[i]];
