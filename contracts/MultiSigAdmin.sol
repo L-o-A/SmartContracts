@@ -177,8 +177,4 @@ contract MultiSigAdmin {
             return true;
         return false;
     }
-
-    function random(uint256 limit, uint256 randNonce) public view returns (uint64) {
-        return ILOAUtil(_util_address).random(limit, randNonce);
-    }
 }
