@@ -24,10 +24,10 @@ contract MultiSigAdmin {
     address _nftDataAddress;
     address _util_address;
 
-    constructor() {
-        _admins[msg.sender] = 1;
-        _adminList.push(msg.sender);
-    }
+    // constructor() {
+    //     _admins[msg.sender] = 1;
+    //     _adminList.push(msg.sender);
+    // }
 
 
     function init() public {
