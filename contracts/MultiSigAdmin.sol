@@ -29,8 +29,9 @@ contract MultiSigAdmin {
     //     _adminList.push(msg.sender);
     // }
 
-
+    // Proxy initialization method
     function init() public {
+        require(_adminList.length == 0, "Already initialized");
         _admins[msg.sender] = 1;
         _adminList.push(msg.sender);
     }
@@ -57,6 +58,7 @@ contract MultiSigAdmin {
     }
 
     function setAxionAddress(address axionAddress) public validAdmin {
+        require(_axionAddress == address(0), "axionAddress aleady initialized");
         _axionAddress = axionAddress;
     }
 
@@ -65,6 +67,7 @@ contract MultiSigAdmin {
     }
 
     function setFusionAddress(address nftFusionAddress) public validAdmin {
+        require(_nftFusionAddress == address(0), "nftFusionAddress aleady initialized");
         _nftFusionAddress = nftFusionAddress;
     }
 
@@ -73,6 +76,7 @@ contract MultiSigAdmin {
     }
 
     function setMarketAddress(address marketAddress) public validAdmin {
+        require(_marketAddress == address(0), "marketAddress aleady initialized");
         _marketAddress = marketAddress;
     }
 
@@ -81,6 +85,7 @@ contract MultiSigAdmin {
     }
 
     function setNFTAddress(address nftAddress) public validAdmin {
+        require(_nftAddress == address(0), "nftAddress aleady initialized");
         _nftAddress = nftAddress;
     }
 
@@ -89,6 +94,7 @@ contract MultiSigAdmin {
     }
 
     function setCapsuleAddress(address capsuleAddress) public validAdmin {
+        require(_capsuleAddress == address(0), "capsuleAddress aleady initialized");
         _capsuleAddress = capsuleAddress;
     }
 
@@ -97,6 +103,7 @@ contract MultiSigAdmin {
     }
 
     function setCapsuleStakingAddress(address capsuleStakingAddress) public validAdmin {
+        require(_capsuleStakingAddress == address(0), "capsuleStakingAddress aleady initialized");
         _capsuleStakingAddress = capsuleStakingAddress;
     }
 
@@ -105,6 +112,7 @@ contract MultiSigAdmin {
     }
 
     function setCapsuleDataAddress(address capsuleDataAddress) public validAdmin {
+        require(_capsuleDataAddress == address(0), "capsuleDataAddress aleady initialized");
         _capsuleDataAddress = capsuleDataAddress;
     }
 
@@ -113,6 +121,7 @@ contract MultiSigAdmin {
     }
 
     function setNFTDataAddress(address nftDataAddress) public validAdmin {
+        require(_nftDataAddress == address(0), "nftDataAddress aleady initialized");
         _nftDataAddress = nftDataAddress;
     }
 
@@ -121,6 +130,7 @@ contract MultiSigAdmin {
     }
 
     function setUtilAddress(address utilAddress) public validAdmin {
+        require(_util_address == address(0), "util_address aleady initialized");
         _util_address = utilAddress;
     }
 
