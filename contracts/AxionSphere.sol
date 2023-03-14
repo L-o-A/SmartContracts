@@ -32,6 +32,7 @@ contract AxionSphere is ERC1155, Ownable {
     address _loaNFTAttributeAddress;
     mapping(address => uint8) _admins;
     address _treasury;
+    string _uri;
 
     uint256 public _minting_fee;
 
@@ -40,11 +41,16 @@ contract AxionSphere is ERC1155, Ownable {
         address indexed owner
     );
 
-    constructor(address loaAddress)
+    constructor(address loaAddress, string memory url)
         ERC1155("https://nft.leagueofancients.com/api/nft/{id}.json")
     {
         _loaAddress = loaAddress;
         _admins[msg.sender] = 1;
+        _uri = url;
+    }
+
+    function uri(uint256 id) public override view returns (string memory) {
+        return _uri;
     }
 
     function updateAccessAddressAndFees (

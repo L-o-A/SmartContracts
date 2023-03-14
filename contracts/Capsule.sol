@@ -50,6 +50,7 @@ interface ICapsuleData {
     function getNewCapsuleIdByType(uint8 kind, address owner) external returns (uint256);
     function doBurn(uint256 id, address owner) external;
     function doTransfer(uint256 id, address owner, address to) external;
+    function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
 }
 
 /**
@@ -60,6 +61,8 @@ interface ICapsuleData {
 contract Capsule is ERC1155, Ownable {
 
     IAdmin _admin;
+
+    mapping(uint8 => string) _capsuleTypeURI;
 
     event CapsuleMinted(
         uint256[] indexed itemId,
@@ -81,6 +84,15 @@ contract Capsule is ERC1155, Ownable {
         require(msg.sender == _admin.getNFTAddress(), "You are not authorized to burn");
         _burn(owner, id, 1);
         ICapsuleData(_admin.getCapsuleDataAddress()).doBurn(id, owner);
+    }
+
+    function putURI(uint8 capsuleType, string memory url) public validAdmin {
+        _capsuleTypeURI[capsuleType] = url;
+    }
+
+    function uri(uint256 id) public override view returns (string memory) {
+        (uint8 capsuleType, , , , ,) = ICapsuleData(_admin.getCapsuleDataAddress()).getCapsuleDetail(id);
+        return _capsuleTypeURI[capsuleType];
     }
 
     function airdrop(uint8 capsuleType, address dropTo, uint8 units) public {

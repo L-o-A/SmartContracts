@@ -45,6 +45,7 @@ interface ILoANFTData {
     function doBatchTransfer(address from, address to, uint256[] memory ids) external;
     function doFusion(address owner, uint256[] memory ids, uint8 fusionLevel ) external returns (uint256);
     function doMint(uint8 capsuleType, uint8 capsuleLevel, address owner) external returns (uint256, uint256);
+    function getNFTDetail(uint256 id) external view returns ( uint256, uint8, address, uint8, uint8, uint64[] memory);
 }
 
 contract LoANFT is ERC1155, Ownable {
@@ -52,6 +53,7 @@ contract LoANFT is ERC1155, Ownable {
     address _loaAddress;
     IAdmin _admin;
     ILoANFTData _nftData;
+    mapping(uint8 => string) _nftHeroURI;
 
     event NFTMinted(
         uint256 indexed itemIds,
@@ -74,6 +76,15 @@ contract LoANFT is ERC1155, Ownable {
     modifier validAdmin() {
         require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
         _;
+    }
+
+    function putURI(uint8 nft_hero, string memory url) public validAdmin {
+        _nftHeroURI[nft_hero] = url;
+    }
+
+    function uri(uint256 id) public override view returns (string memory) {
+        (, , , , uint8 hero, ) = _nftData.getNFTDetail(id);
+        return _nftHeroURI[hero];
     }
 
     function safeTransferFrom(
