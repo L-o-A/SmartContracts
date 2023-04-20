@@ -26,7 +26,7 @@ airdrop(capsuleType, dropTo, units)
     - requires Capsule Type, Address of user to assign capsule, Units to capsule to assign
     - Only admin can call this function
     - used to assign no. of capsules of a particular type to a specific recipient
-    - a maximum of 5 capsules can be dropped at a time
+    - a maximum of 10 capsules can be dropped at a time
     - it internally calls getNewCapsuleIdByType() method in capsule data to make a new capsule and return Id of capsule
 
 claim(ticketIds, raffleAddress, owner)
@@ -243,6 +243,8 @@ addNFTSupply(level, heroes, supply)
     - only admin can access
     - arguments supply and heros needs to be of equal length
     - sets supply of different heros for a particular level nft
+    - We are settting supply of all hereos at a time. 
+    - Even if you can update the supply after some have been minted, we are ensuring total_supply calculation remains correct and supply of any hero is not less than consumed.
 
 getNFTSupply(level)
     - requires nft level

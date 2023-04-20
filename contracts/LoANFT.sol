@@ -5,7 +5,6 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IAdmin.sol";
 
 // import "hardhat/console.sol";
@@ -48,7 +47,7 @@ interface ILoANFTData {
     function getNFTDetail(uint256 id) external view returns ( uint256, uint8, address, uint8, uint8, uint64[] memory);
 }
 
-contract LoANFT is ERC1155, Ownable {
+contract LoANFT is ERC1155 {
 
     address _loaAddress;
     IAdmin _admin;

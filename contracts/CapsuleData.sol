@@ -102,7 +102,7 @@ contract CapsuleData {
         return id;
     }
 
-    function addCapsuleSupply(uint8 capsuleType, uint8[] memory levels, uint32[] memory supply) public {
+    function addCapsuleSupply(uint8 capsuleType, uint8[] memory levels, uint32[] memory supply) public validAdmin {
         require(supply.length ==  levels.length, "Args length not matching");
 
         CapsuleSupply storage capsuleSupply = _capsule_type_supply[capsuleType];
@@ -179,7 +179,7 @@ contract CapsuleData {
         return (_capsule_types[id], level, _capsule_status[id], owner, endtime, amount);
     }
 
-    function getCapsuleSupply(uint8 capsuleType) public view validAdmin returns(uint256, uint256) {
+    function getCapsuleSupply(uint8 capsuleType) public view returns(uint256, uint256) {
         return (_capsule_type_supply[capsuleType]._total_supply, _capsule_type_supply[capsuleType]._total_consumed);
     }
 

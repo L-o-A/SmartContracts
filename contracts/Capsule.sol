@@ -2,7 +2,6 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IAdmin.sol";
 // import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
@@ -58,7 +57,7 @@ interface ICapsuleData {
  * It follow ERC1155 standard
  * It mints only 1 instance of 1 NFT type. Each capusule will have uniquie no allocated to it.
  */
-contract Capsule is ERC1155, Ownable {
+contract Capsule is ERC1155 {
 
     IAdmin _admin;
 
@@ -97,6 +96,7 @@ contract Capsule is ERC1155, Ownable {
 
     function airdrop(uint8 capsuleType, address dropTo, uint8 units) public {
         require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
+        require(units <= 10, "Maximum 10 capsules can be airdroped at a time");
         uint256[] memory capsuleIdsMinted = new uint256[](units);
 
         for(uint8 i =0; i < units; i++) {

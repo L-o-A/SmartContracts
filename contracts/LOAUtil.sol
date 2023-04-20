@@ -3,12 +3,22 @@ pragma solidity ^0.8.7;
 
 // import "hardhat/console.sol";
 
+interface IAdmin {
+    function isValidMarketPlaceContract(address sender) external view returns (bool);
+    function isValidAdmin(address adminAddress) external pure returns (bool);
+}
+
 contract LOAUtil {
 
-    address _admin;
+    address public _admin;
 
-    constructor() {
-        _admin = msg.sender;
+    // constructor() {
+    //     _admin = msg.sender;
+    // }
+
+    function init(address adminContractAddress) public {
+        require(_admin == address(0), "Already initalized");
+        _admin = adminContractAddress;
     }
 
     mapping(address => uint256[]) private _random_nos;
@@ -19,7 +29,7 @@ contract LOAUtil {
     );
 
     modifier validAdmin() {
-        require(msg.sender == _admin, "Unauthorized");
+        require(IAdmin(_admin).isValidAdmin(msg.sender), "Unauthorized");
         _;
     }
 
@@ -27,14 +37,11 @@ contract LOAUtil {
         _admin = admin;
     }
 
-    function random(uint256 limit, uint256 randNonce) public view returns (uint64) {
-        if(limit == 0) return 0;
-        unchecked {
-            return uint64(uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % limit);
-        }
-    }
-
+    //When owner wants to mint an NFT or Capsule our backend contract will first push random nos using fullfillRandom() function.
+    //There should be 
     function randomNumber(address owner) public returns (uint256) {
+        require(IAdmin(_admin).isValidMarketPlaceContract(msg.sender), "Unauthorized");
+        
         unchecked {
             // uint256 num = uint256(keccak256(abi.encodePacked(block.timestamp + nonce, msg.sender, block.difficulty)));
             require(_random_nos[owner].length > 0, "No random no available");

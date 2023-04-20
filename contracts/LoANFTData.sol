@@ -605,7 +605,6 @@ interface IAdmin {
 pragma solidity ^0.8.7;
 
 interface IUtil {
-    function random(uint256 limit, uint randNonce) external returns (uint32);
     function randomNumber(address requestor) external returns (uint256);
     function sudoRandom(uint256 randomValue, uint32 slot) external returns(uint8);
 }
@@ -615,7 +614,6 @@ interface IUtil {
 
 
 pragma solidity ^0.8.7;
-
 
 
 // import "hardhat/console.sol";
@@ -637,7 +635,7 @@ contract LoANFTData {
     mapping(uint8 => mapping(uint8 => uint64[][])) _attributes_reserve_by_level_hero;
     uint256 _lastCall;
 
-    IAdmin _admin;
+    address _admin;
 
     struct NFTSupply {
         mapping(uint8 => uint32) _supply;
@@ -678,13 +676,8 @@ contract LoANFTData {
 
     error NFTUnavailable(uint8 level, uint32 supply, uint32 consumed, uint32 selected);
 
-    // constructor(address adminContractAddress) {
-    //     _admin = IAdmin(adminContractAddress);
-    //     _lastCall = block.timestamp;
-    // }
-
-    function init(address adminContractAddress) public {
-        _admin = IAdmin(adminContractAddress);
+    constructor(address adminContractAddress) {
+        _admin = adminContractAddress;
         _lastCall = block.timestamp;
     }
 
@@ -708,12 +701,12 @@ contract LoANFTData {
         NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
 
         for(uint8 i = 0; i < optionalAttributes.length; i++) {
-            require(maxValues[i] > minValues[i], "Max < Min");
+            require(maxValues[i] > minValues[i], "Max <= Min");
             nftAttribLimit._max[optionalAttributes[i]] = maxValues[i];
             nftAttribLimit._min[optionalAttributes[i]] = minValues[i];
         }
         for(uint8 i = 0; i < defaultAttributes.length; i++) {
-            require(defaultMaxValues[i] > defaultMinValues[i], "Max < Min");
+            require(defaultMaxValues[i] > defaultMinValues[i], "Max <= Min");
             nftAttribLimit._max[defaultAttributes[i]] = defaultMaxValues[i];
             nftAttribLimit._min[defaultAttributes[i]] = defaultMinValues[i];
         }
@@ -732,7 +725,7 @@ contract LoANFTData {
         NFTAttribLimit storage nftAttribLimit = _nft_attrib_by_level_hero[level][hero];
         require(nftAttribLimit._total_attributes > 0, "Attribute not set hero level");
 
-        uint256 randomValue = IUtil(_admin.getUtilAddress()).randomNumber(owner);
+        uint256 randomValue = IUtil(IAdmin(_admin).getUtilAddress()).randomNumber(owner);
         uint8 randomCount = 0;
 
         uint64[] memory attributes = new uint64[](_nft_attribute_names.length + 1);
@@ -740,7 +733,7 @@ contract LoANFTData {
         //set default values
         for(uint8 i = 0; i < nftAttribLimit._default_attributes.length; i++) {
             attributes[nftAttribLimit._default_attributes[i]] = nftAttribLimit._min[nftAttribLimit._default_attributes[i]]  + 
-            ((nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]] + 1) * IUtil(_admin.getUtilAddress()).sudoRandom(randomValue, randomCount ++) / 100 );
+            ((nftAttribLimit._max[nftAttribLimit._default_attributes[i]] - nftAttribLimit._min[nftAttribLimit._default_attributes[i]] + 1) * IUtil(IAdmin(_admin).getUtilAddress()).sudoRandom(randomValue, randomCount ++) / 100 );
         }
 
         uint8[] memory otherAttributes = randomSubList(nftAttribLimit._attributes, nftAttribLimit._total_attributes, randomValue, randomCount);
@@ -748,7 +741,7 @@ contract LoANFTData {
 
         for(uint8 i = 0; i < otherAttributes.length; i++) {
             attributes[otherAttributes[i]] = nftAttribLimit._min[otherAttributes[i]] + 
-                ((nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]] + 1) * IUtil(_admin.getUtilAddress()).sudoRandom(randomValue, randomCount ++) / 100);
+                ((nftAttribLimit._max[otherAttributes[i]] - nftAttribLimit._min[otherAttributes[i]] + 1) * IUtil(IAdmin(_admin).getUtilAddress()).sudoRandom(randomValue, randomCount ++) / 100);
         }
 
         nft.attributes = attributes;
@@ -780,7 +773,7 @@ contract LoANFTData {
 
     function pickNFTHero(uint8 level, address owner) public returns (uint8) {
         NFTSupply storage nftSupply = _nft_level_supply[level];
-        uint32 selected = uint32( IUtil(_admin.getUtilAddress()).randomNumber(owner) % (nftSupply._total_supply - nftSupply._total_consumed)) + 1;
+        uint32 selected = uint32( IUtil(IAdmin(_admin).getUtilAddress()).randomNumber(owner) % (nftSupply._total_supply - nftSupply._total_consumed)) + 1;
 
         uint32 total = 0;
         for(uint i = 0; i < nftSupply.heroes.length; i ++) {
@@ -828,7 +821,7 @@ contract LoANFTData {
 
     // Modifier
     modifier validAdmin() {
-        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
+        require(IAdmin(_admin).isValidAdmin(msg.sender), "You are not authorized.");
         _;
     }
 
@@ -842,7 +835,7 @@ contract LoANFTData {
     }
 
     function doTransferFrom( address from, address to, uint256 id) public {
-        require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
+        require(msg.sender == IAdmin(_admin).getNFTAddress(), "Not authorized to transfer");
         
         uint256 index = _user_holdings_id_index[from][id];
         _user_holdings[from][index] = _user_holdings[from][_user_holdings[from].length -1];
@@ -855,14 +848,14 @@ contract LoANFTData {
     }
 
     function doBatchTransfer(address from, address to, uint256[] memory ids) public {
-        require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
+        require(msg.sender == IAdmin(_admin).getNFTAddress(), "Not authorized to transfer");
         for(uint256 i = 0; i < ids.length; i++){
             doTransferFrom(from, to, ids[i]);
         }
     }
 
     function doFusion(address owner, uint256[] memory ids, uint8 fusionLevel ) public returns (uint256) {
-        require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
+        require(msg.sender == IAdmin(_admin).getNFTAddress(), "Not authorized to transfer");
 
         for (uint8 i = 0; i < ids.length; i++) {
                 uint256 index = _user_holdings_id_index[owner][ids[i]];
@@ -882,7 +875,7 @@ contract LoANFTData {
     }
 
     function doMint(uint8 capsuleType, uint8 capsuleLevel, address owner) public returns (uint256, uint256) {
-        require(msg.sender == _admin.getNFTAddress(), "Not authorized to transfer");
+        require(msg.sender == IAdmin(_admin).getNFTAddress(), "Not authorized to transfer");
         require(capsuleLevel > 0, "Invalid level");
 
         uint256 id = getNewNFTByLevel(capsuleLevel, owner);
@@ -901,12 +894,12 @@ contract LoANFTData {
 
     function withdraw(address tokenAddress) public validAdmin {
         if (tokenAddress == address(0)) {
-            payable(_admin.getTreasury()).transfer(address(this).balance);
+            payable(IAdmin(_admin).getTreasury()).transfer(address(this).balance);
             return;
         }
 
         ERC20 token = ERC20(tokenAddress);
-        token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
+        token.transfer(IAdmin(_admin).getTreasury(), token.balanceOf(address(this)));
     }
 
     function randomSubList(uint8[] memory list, uint8 units, uint randomValue, uint8 startCount) public returns (uint8[] memory) {
@@ -915,7 +908,7 @@ contract LoANFTData {
         // uint8 nonceIncrementor = 0;
 
         for(uint8 i = 0; i < units; ) {
-            uint32 index = uint32(IUtil(_admin.getUtilAddress()).sudoRandom(randomValue, startCount++) % list.length);
+            uint32 index = uint32(IUtil(IAdmin(_admin).getUtilAddress()).sudoRandom(randomValue, startCount++) % list.length);
             if(list[index] > 0) {
                 subList[count++] = list[index];
                 list[index] = 0;

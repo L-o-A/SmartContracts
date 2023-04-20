@@ -99,10 +99,6 @@ contract RaffleHelper {
         return amount;
     }
 
-    function random(uint256 limit) public view returns (uint16) {
-        return uint16(uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, limit)))% limit);
-    }
-
     function getCurrentRewards(uint256 _raffle_supply) public view returns (uint256) {
         uint256 rewards = _reward_amount[_reward_amount.length -1];
         for(uint i = 0; i < _reward_range.length; i++) {

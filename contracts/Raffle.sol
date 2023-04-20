@@ -30,7 +30,6 @@ interface IERC1155Contract {
 
 interface Helper {
     function calcPrice(uint32 units, uint256 currentSupply) external view returns (uint256);
-    function random(uint256 limit) external view returns (uint16);
     function getCurrentRewards(uint256 _raffle_supply) external pure returns (uint64);
 }
 
@@ -149,7 +148,7 @@ contract Raffle {
     }
     
 
-    //Admin need to add Raffle ticket before it can be bought or minted
+    //Admin need to add Raffle ticket before it can be bought or minted, even when its open
     function setRaffleInfo(
         uint8 category,
         uint256 start_time,

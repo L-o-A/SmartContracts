@@ -4,11 +4,6 @@ pragma solidity ^0.8.7;
 import "hardhat/console.sol";
 
 
-interface ILOAUtil {
-    function random(uint256 limit, uint256 randNonce) external view returns (uint64);
-}
-
-contract MultiSigAdmin {
 
     mapping(address=> uint8) public _admins;
     address _treasury;
@@ -24,17 +19,17 @@ contract MultiSigAdmin {
     address _nftDataAddress;
     address _util_address;
 
-    // constructor() {
-    //     _admins[msg.sender] = 1;
-    //     _adminList.push(msg.sender);
-    // }
-
-    // Proxy initialization method
-    function init() public {
-        require(_adminList.length == 0, "Already initialized");
+    constructor() {
         _admins[msg.sender] = 1;
         _adminList.push(msg.sender);
     }
+
+    // // Proxy initialization method
+    // function initialize () public initializer {
+    //     require(_adminList.length == 0, "Already initialized");
+    //     _admins[msg.sender] = 1;
+    //     _adminList.push(msg.sender);
+    // }
 
     modifier validAdmin() {
         require(_admins[msg.sender] == 1, "You are not authorized.");
@@ -140,6 +135,7 @@ contract MultiSigAdmin {
 
     function modifyAdmin(address adminAddress, bool add) validAdmin public {
         if(add) {
+            require(_admins[adminAddress] != 1, "Admin already added");
             _admins[adminAddress] = 1;
             _adminList.push(adminAddress);
         } else {

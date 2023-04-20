@@ -60,7 +60,7 @@ contract NFTMarket is ERC1155Holder {
 
     using Counters for Counters.Counter;
     Counters.Counter _itemIds;
-    Counters.Counter _itemsSold;
+    Counters.Counter public _itemsSold;
     IERC20Contract _erc20Token; // External BUSD contract
 
     MarketItem[] _listed_items;
@@ -146,12 +146,12 @@ contract NFTMarket is ERC1155Holder {
     }
 
     function list( address nftContract, uint256 tokenId, uint256 price) public {
-        require(price > 1_000_000_000_000_000_000, "Price must be at least 1 wei");
+        require(price > 1e18, "Price must be at least 1 USD");
         require(_listingFee[nftContract] > 0, "This NFT is not permitted to be listed.");
 
         IERC1155 erc1155 = IERC1155(nftContract);
 
-        require(erc1155.balanceOf(msg.sender, tokenId) == 1, "User doesn't have enough NFT Units.");
+        require(erc1155.balanceOf(msg.sender, tokenId) > 0, "User doesn't have enough NFT Units.");
         require(_erc20Token.balanceOf(msg.sender) >= _listingFee[nftContract], "User doesn't have enough listing fee balance.");
 
         _itemIds.increment();
@@ -234,9 +234,7 @@ contract NFTMarket is ERC1155Holder {
         require( msg.sender == _listed_items[index].seller,  "Only NFT owner can unlist" );
 
         IERC1155 erc1155 = IERC1155(_listed_items[index].nftContract);
-        require( erc1155.balanceOf(address(this), tokenId) == 1, "Contract doesn't have enought NFT Units.");
-
-        erc1155.safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
+        require( erc1155.balanceOf(address(this), tokenId) >= 1, "Contract doesn't have enough NFT Units.");
 
         emit MarketItemAction(
             itemId,
@@ -258,6 +256,8 @@ contract NFTMarket is ERC1155Holder {
         _listed_items_to_index[_listed_items[index].itemId] = index;
         _listed_items.pop();
         delete _listed_items_to_index[itemId];
+
+        erc1155.safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
     }
 
     function updatePrice(uint256 itemId, uint256 price) public {
@@ -285,7 +285,7 @@ contract NFTMarket is ERC1155Holder {
 
     function giftNFT(address to, uint256 id) public {
         require(_giftingEnabled, "Gifting is not enabled");
-        require(IERC1155(_admin.getNFTAddress()).balanceOf(msg.sender, id) == 1, "NFT doest belong to you");
+        require(IERC1155(_admin.getNFTAddress()).balanceOf(msg.sender, id) > 0, "NFT doest belong to you");
 
         IERC1155(_admin.getNFTAddress()).safeTransferFrom(msg.sender, address(this), id, 1, "");
         IERC1155(_admin.getNFTAddress()).safeTransferFrom(address(this), to, id, 1, "");
@@ -294,10 +294,7 @@ contract NFTMarket is ERC1155Holder {
     }
     
 
-    function buy(uint256 itemId)
-        external
-        payable
-    {
+    function buy(uint256 itemId) external {
         uint256 index = _listed_items_to_index[itemId];
         require(index != 0, "Item not present");
 
@@ -309,7 +306,7 @@ contract NFTMarket is ERC1155Holder {
 
         require(
             _erc20Token.balanceOf(msg.sender) >= price,
-            "Required LOA balance is not available."
+            "Required USD balance is not available."
         );
         
         //transfer seller amount
@@ -318,7 +315,7 @@ contract NFTMarket is ERC1155Holder {
         _erc20Token.transfer(marketItem.seller, price - transFee);
         _erc20Token.transfer(_admin.getTreasury(), transFee);
 
-        IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
+        
 
         if(marketItem.nftContract == _admin.getNFTAddress()) {
             (, , , uint8 level, uint8 hero, uint64[] memory attributes) = INFTData(_admin.getNFTDataAddress()).getNFTDetail(tokenId);
@@ -359,6 +356,9 @@ contract NFTMarket is ERC1155Holder {
         _listed_items_to_index[marketItem.itemId] = index;
         _listed_items.pop();
         delete _listed_items_to_index[itemId];
+
+        _itemsSold.increment();
+        IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, 1, "0x00");
     }
 
     function fetchMarketItems() public view returns (MarketItem[] memory) {

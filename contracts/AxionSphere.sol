@@ -2,8 +2,6 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-// import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 interface IERC20Contract {
     function transfer(address recipient, uint256 amount)
@@ -25,7 +23,7 @@ interface IERC1155Contract {
     function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
 }
 
-contract AxionSphere is ERC1155, Ownable {
+contract AxionSphere is ERC1155 {
 
     address _loaAddress;
     address _nftMarketAddress;
