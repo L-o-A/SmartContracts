@@ -3,7 +3,7 @@ pragma solidity ^0.8.7;
 
 import "hardhat/console.sol";
 
-
+contract MultiSigAdmin {
 
     mapping(address=> uint8) public _admins;
     address _treasury;
