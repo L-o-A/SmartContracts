@@ -112,8 +112,16 @@ contract Raffle {
         return (_ticket_status[id], _ticket_price[id], _ticket_owner[id], _raffle_type);
     }
 
-    function getUserTickets(address userAddress) public view returns (uint256[] memory) {
-        return _user_tickets[userAddress];
+    // function getUserTickets(address userAddress) public view returns (uint256[] memory) {
+    //     return _user_tickets[userAddress];
+    // }
+
+    function getUserTicketsAtIndex(address userAddress, uint256 index) public view returns (uint256) {
+        return _user_tickets[userAddress][index];
+    }
+
+    function getUserTicketsBalance(address userAddress) public view returns (uint256) {
+        return _user_tickets[userAddress].length;
     }
 
     function getUserWinningTickets(address userAddress) public view returns (uint256[] memory) {
@@ -260,10 +268,12 @@ contract Raffle {
     }
 
     function withdraw(address tokenAddress) public {
+
         if (tokenAddress == address(0)) {
             payable(_admin.getTreasury()).transfer(address(this).balance);
             return;
         }
+
         if(_raffle_status == 3){
             if(_user_winning_tickets[msg.sender].length == 0){
                 cleanup();
@@ -277,12 +287,14 @@ contract Raffle {
                 CapsuleInterface(_admin.getCapsuleAddress()).claim(_user_winning_tickets[msg.sender], address(this), msg.sender);
             }
         }
+
         if(_refund_address_to_amount[msg.sender] > 0) {
             require( IERC20Contract(_loaContract).balanceOf(address(this)) >= _refund_address_to_amount[msg.sender], "Low tresury balance");
             IERC20Contract(_loaContract).transfer(msg.sender, _refund_address_to_amount[msg.sender]);
             _total_loa_staked -= _refund_address_to_amount[msg.sender];
             delete _refund_address_to_amount[msg.sender];
         }
+
         if(_admin.isValidAdmin(msg.sender)) {
             IERC20Contract(tokenAddress).transfer(_admin.getTreasury(), IERC20Contract(tokenAddress).balanceOf(address(this)) - _total_loa_staked);
         }

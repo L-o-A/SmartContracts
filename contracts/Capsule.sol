@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+// import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "./IAdmin.sol";
-// import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol"; 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 // import "hardhat/console.sol";
 
@@ -57,7 +59,7 @@ interface ICapsuleData {
  * It follow ERC1155 standard
  * It mints only 1 instance of 1 NFT type. Each capusule will have uniquie no allocated to it.
  */
-contract Capsule is ERC1155 {
+contract Capsule is ERC1155Upgradeable, OwnableUpgradeable, UUPSUpgradeable {
 
     IAdmin _admin;
 
@@ -69,7 +71,14 @@ contract Capsule is ERC1155 {
         uint256 totalPrice
     );
 
-    constructor(address adminContractAddress) ERC1155("https://capsule.leagueofancients.com/api/capsule/{id}.json") {
+    // constructor(address adminContractAddress) ERC1155("https://capsule.leagueofancients.com/api/capsule/{id}.json") {
+    //     _admin = IAdmin(adminContractAddress);
+    // }
+
+    function initialize(address adminContractAddress) initializer public {
+        __ERC1155_init("https://capsule.leagueofancients.com/api/capsule/{id}.json");
+        __Ownable_init();
+        __UUPSUpgradeable_init();
         _admin = IAdmin(adminContractAddress);
     }
 
@@ -172,4 +181,6 @@ contract Capsule is ERC1155 {
         require(token.balanceOf(address(this)) > 0, "No balance available");
         token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
     }
+
+    function _authorizeUpgrade(address _newImplementation) internal override onlyOwner {}
 }

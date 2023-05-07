@@ -120,6 +120,7 @@ contract CapsuleStaking is ReentrancyGuard, ERC1155Holder {
         for (uint256 i = 0; i < capsuleIds.length; i++) {
             require(IERC1155(_admin.getCapsuleAddress()).balanceOf(msg.sender, capsuleIds[i]) > 0, "Capsule doesnt belong to user");
             (uint8 capsuleType, , uint8 capsuleStatus, , ,) = ICapsuleDataContract(_admin.getCapsuleDataAddress()).getCapsuleDetail(capsuleIds[i]);
+            // console.log("capsuleStatus:", capsuleStatus, capsuleIds[i]);
             require(capsuleStatus  == 2, "Capsule not ready for staking.");
             stakedAmount += _capsuleStakeTypeLOATokens[capsuleType];
 

@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+// import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol"; 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 interface IERC20Contract {
     function transfer(address recipient, uint256 amount)
@@ -23,7 +26,7 @@ interface IERC1155Contract {
     function getCapsuleDetail(uint256 id) external view returns (uint8, uint8, uint8, address, uint256, uint256);
 }
 
-contract AxionSphere is ERC1155 {
+contract AxionSphere is ERC1155Upgradeable, OwnableUpgradeable, UUPSUpgradeable {
 
     address _loaAddress;
     address _nftMarketAddress;
@@ -39,9 +42,10 @@ contract AxionSphere is ERC1155 {
         address indexed owner
     );
 
-    constructor(address loaAddress, string memory url)
-        ERC1155("https://nft.leagueofancients.com/api/nft/{id}.json")
-    {
+    function initialize(address loaAddress, string memory url) initializer public {
+        __ERC1155_init("https://nft.leagueofancients.com/api/nft/{id}.json");
+        __Ownable_init();
+        __UUPSUpgradeable_init();
         _loaAddress = loaAddress;
         _admins[msg.sender] = 1;
         _uri = url;
@@ -88,5 +92,5 @@ contract AxionSphere is ERC1155 {
     // }
 
 
-
+    function _authorizeUpgrade(address _newImplementation) internal override onlyOwner {}
 }

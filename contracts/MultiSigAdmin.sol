@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "hardhat/console.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+// import "hardhat/console.sol";
 
-contract MultiSigAdmin {
+contract MultiSigAdmin is OwnableUpgradeable {
 
     mapping(address=> uint8) public _admins;
     address _treasury;
@@ -19,17 +20,12 @@ contract MultiSigAdmin {
     address _nftDataAddress;
     address _util_address;
 
-    constructor() {
+
+    // Proxy initialization method
+    function initialize () public initializer {
         _admins[msg.sender] = 1;
         _adminList.push(msg.sender);
     }
-
-    // // Proxy initialization method
-    // function initialize () public initializer {
-    //     require(_adminList.length == 0, "Already initialized");
-    //     _admins[msg.sender] = 1;
-    //     _adminList.push(msg.sender);
-    // }
 
     modifier validAdmin() {
         require(_admins[msg.sender] == 1, "You are not authorized.");

@@ -3,12 +3,14 @@ pragma solidity ^0.8.7;
 
 // import "hardhat/console.sol";
 
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
 interface IAdmin {
     function isValidMarketPlaceContract(address sender) external view returns (bool);
     function isValidAdmin(address adminAddress) external pure returns (bool);
 }
 
-contract LOAUtil {
+contract LOAUtil is OwnableUpgradeable {
 
     address public _admin;
 
@@ -16,7 +18,7 @@ contract LOAUtil {
     //     _admin = msg.sender;
     // }
 
-    function init(address adminContractAddress) public {
+    function initialize(address adminContractAddress) public initializer {
         require(_admin == address(0), "Already initalized");
         _admin = adminContractAddress;
     }

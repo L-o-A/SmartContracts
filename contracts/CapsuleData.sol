@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@openzeppelin/contracts/utils/Counters.sol";
+// import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol"; 
 import "./IAdmin.sol";
 // import "hardhat/console.sol";
 
@@ -29,10 +31,10 @@ interface ILOAUtil {
     function randomNumber(address requestor) external returns (uint256);
 }
 
-contract CapsuleData {
+contract CapsuleData is OwnableUpgradeable {
 
-    using Counters for Counters.Counter;
-    Counters.Counter private _capsuleCounter;
+    using CountersUpgradeable for CountersUpgradeable.Counter;
+    CountersUpgradeable.Counter private _capsuleCounter;
 
     /**
      * Status values
@@ -64,10 +66,15 @@ contract CapsuleData {
         uint32 _total_consumed;
     }
 
-    constructor(address adminContractAddress) {
+    // constructor(address adminContractAddress) {
+    //     _admin = IAdmin(adminContractAddress);
+    // }
+
+    function initialize(address adminContractAddress) initializer public {
+        __Ownable_init();
         _admin = IAdmin(adminContractAddress);
     }
-
+    
     // Modifier
     modifier validAdmin() {
         require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
@@ -144,8 +151,12 @@ contract CapsuleData {
         token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
     }
 
-    function getUserCapsules(address owner) public view returns (uint256[] memory) {
-        return _user_holdings[owner];
+    function getUserCapsulesBalance(address owner) public view returns (uint256) {
+        return _user_holdings[owner].length;
+    }
+
+    function getUserCapsuleByIndex(address owner, uint256 index) public view returns (uint256) {
+        return _user_holdings[owner][index];
     }
 
     function doBurn(uint256 id, address owner) public  validCapsule {
