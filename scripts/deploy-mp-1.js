@@ -6,20 +6,20 @@
 //     const loa = "0xD0C2eB52D221ADE2897e78264E457777032744ce";
 //     const treasury = "0xfFc9A7cd3b88D37d705b1c1Ce8bd87b13bAA59fB";
 
-//     const MultiSigAdmin = await ethers.getContractFactory("MultiSigAdmin");
-//     const multiSigAdmin = await MultiSigAdmin.deploy();
-//     await multiSigAdmin.deployed();
-//     console.log("multiSigAdmin.address :", multiSigAdmin.address);
+//     const LOAAdmin = await ethers.getContractFactory("LOAAdmin");
+//     const loaAdmin = await LOAAdmin.deploy();
+//     await loaAdmin.deployed();
+//     console.log("loaAdmin.address :", loaAdmin.address);
 
-//     // await multiSigAdmin.initialize();
+//     // await loaAdmin.initialize();
 //     console.log(-2);
-//     await multiSigAdmin.modifyAdmin(treasury, true);
+//     await loaAdmin.modifyAdmin(treasury, true);
 //     console.log(-1);
-//     await multiSigAdmin.setTreasury(treasury);
+//     await loaAdmin.setTreasury(treasury);
 //     console.log(0);
 
 //     const RaffleHelper = await ethers.getContractFactory("RaffleHelper");
-//     const raffleHelper = await RaffleHelper.deploy(multiSigAdmin.address);
+//     const raffleHelper = await RaffleHelper.deploy(loaAdmin.address);
 //     await raffleHelper.deployed();
 //     console.log("raffleHelper.address :", raffleHelper.address);
 
@@ -41,39 +41,39 @@
 //     console.log("raffle.address :", raffle.address);
 
 //     const Capsule = await ethers.getContractFactory("Capsule");
-//     const capsule = await Capsule.deploy(multiSigAdmin.address);
+//     const capsule = await Capsule.deploy(loaAdmin.address);
 //     await capsule.deployed()
 //     console.log("capsule.address :", capsule.address);
 
 //     const CapsuleStaking = await ethers.getContractFactory("CapsuleStaking");
-//     const capsuleStaking = await CapsuleStaking.deploy(loa, multiSigAdmin.address);
+//     const capsuleStaking = await CapsuleStaking.deploy(loa, loaAdmin.address);
 //     await capsuleStaking.deployed()
 //     console.log("capsuleStaking.address :", capsuleStaking.address);
 
 //     const LoANFT = await ethers.getContractFactory("LoANFT");
-//     const _LoANFT = await LoANFT.deploy(loa, multiSigAdmin.address);
+//     const _LoANFT = await LoANFT.deploy(loa, loaAdmin.address);
 //     await _LoANFT.deployed()
 //     console.log("_LoANFT.address :", _LoANFT.address);
     
 //     const LoANFTAttributes = await ethers.getContractFactory("LoANFTAttributes");
-//     const _LoANFTAttributes = await LoANFTAttributes.deploy(multiSigAdmin.address);
+//     const _LoANFTAttributes = await LoANFTAttributes.deploy(loaAdmin.address);
 //     await _LoANFTAttributes.deployed()
 //     console.log("_LoANFTAttributes.address :", _LoANFTAttributes.address);
     
 //     const LoANFTFusion = await ethers.getContractFactory("LoANFTFusion");
-//     const _LoANFTFusion = await LoANFTFusion.deploy(loa, _LoANFT.address, multiSigAdmin.address);
+//     const _LoANFTFusion = await LoANFTFusion.deploy(loa, _LoANFT.address, loaAdmin.address);
 //     await _LoANFTFusion.deployed()
 //     console.log("_LoANFTFusion.address :", _LoANFTFusion.address);
     
 //     const NFTMarket = await ethers.getContractFactory("NFTMarket");
-//     const _NFTMarket = await NFTMarket.deploy(loa, _LoANFT.address, multiSigAdmin.address);
+//     const _NFTMarket = await NFTMarket.deploy(loa, _LoANFT.address, loaAdmin.address);
 //     await _NFTMarket.deployed()
 //     console.log("_NFTMarket.address :", _NFTMarket.address);
     
 //     console.log(1);
     
 //     // const AxionSphere = await ethers.getContractFactory("AxionSphere");
-//     // const _AxionSphere = await AxionSphere.deploy(multiSigAdmin.address);
+//     // const _AxionSphere = await AxionSphere.deploy(loaAdmin.address);
 //     // await _AxionSphere.deployed()
 //     // console.log("_AxionSphere.address :", _AxionSphere.address);
 
@@ -191,7 +191,7 @@
 //     await _NFTMarket.updateFees([_LoANFT.address], ["100000000000000000000"]);
 //     console.log(14);
     
-//     await multiSigAdmin.modifyRaffleAddress(raffle.address, true);
+//     await loaAdmin.modifyRaffleAddress(raffle.address, true);
 //     console.log(15);
 // }
 

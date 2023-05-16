@@ -240,12 +240,12 @@ contract LoANFTData is OwnableUpgradeable {
         _user_holdings_id_index[to][id] = _user_holdings[to].length -1;
     }
 
-    function doBatchTransfer(address from, address to, uint256[] memory ids) public {
-        require(msg.sender == IAdmin(_admin).getNFTAddress(), "Not authorized to transfer");
-        for(uint256 i = 0; i < ids.length; i++){
-            doTransferFrom(from, to, ids[i]);
-        }
-    }
+    // function doBatchTransfer(address from, address to, uint256[] memory ids) public {
+    //     require(msg.sender == IAdmin(_admin).getNFTAddress(), "Not authorized to transfer");
+    //     for(uint256 i = 0; i < ids.length; i++){
+    //         doTransferFrom(from, to, ids[i]);
+    //     }
+    // }
 
     function doFusion(address owner, uint256[] memory ids, uint8 fusionLevel ) public returns (uint256) {
         require(msg.sender == IAdmin(_admin).getNFTAddress(), "Not authorized to transfer");
@@ -285,17 +285,17 @@ contract LoANFTData is OwnableUpgradeable {
         _nft_attribute_names = nft_attribute_names;
     }
 
-    function withdraw(address tokenAddress) public validAdmin {
-        if (tokenAddress == address(0)) {
-            payable(IAdmin(_admin).getTreasury()).transfer(address(this).balance);
-            return;
-        }
+    // function withdraw(address tokenAddress) public validAdmin {
+    //     if (tokenAddress == address(0)) {
+    //         payable(IAdmin(_admin).getTreasury()).transfer(address(this).balance);
+    //         return;
+    //     }
 
-        ERC20 token = ERC20(tokenAddress);
-        token.transfer(IAdmin(_admin).getTreasury(), token.balanceOf(address(this)));
-    }
+    //     ERC20 token = ERC20(tokenAddress);
+    //     token.transfer(IAdmin(_admin).getTreasury(), token.balanceOf(address(this)));
+    // }
 
-    function randomSubList(uint8[] memory list, uint8 units, uint randomValue, uint8 startCount) public returns (uint8[] memory) {
+    function randomSubList(uint8[] memory list, uint8 units, uint randomValue, uint8 startCount) public view returns (uint8[] memory) {
         uint8[] memory subList = new uint8[](units);
         uint8 count = 0;
         // uint8 nonceIncrementor = 0;

@@ -41,7 +41,7 @@ interface ICapsuleDataContract {
 
 interface ILoANFTData {
     function doTransferFrom( address from, address to, uint256 id) external;
-    function doBatchTransfer(address from, address to, uint256[] memory ids) external;
+    // function doBatchTransfer(address from, address to, uint256[] memory ids) external;
     function doFusion(address owner, uint256[] memory ids, uint8 fusionLevel ) external returns (uint256);
     function doMint(uint8 capsuleType, uint8 capsuleLevel, address owner) external returns (uint256, uint256);
     function getNFTDetail(uint256 id) external view returns ( uint256, uint8, address, uint8, uint8, uint64[] memory);
@@ -117,7 +117,10 @@ contract LoANFT is ERC1155 {
             || _admin.isValidMarketPlaceContract(msg.sender),
                 "Not authorized to transfer"
         );
-        _nftData.doBatchTransfer(from, to, ids);
+
+        for(uint256 i = 0; i < ids.length; i++){
+            _nftData.doTransferFrom(from, to, ids[i]);
+        }
 
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }

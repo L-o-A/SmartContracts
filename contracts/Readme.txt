@@ -352,7 +352,7 @@ withdraw(tokenAddress)
 //#############################################################################################################################################################################################
 
 
-MultiSigAdmin Contract
+LOAAdmin Contract
 
 This contract contains all the contracts available and also validates user request
 
@@ -677,7 +677,7 @@ extract(tokenAddress)
 
 IAdmin Contract
 
-Interface class which implements MultiSigAdmin to verify SmartContracts
+Interface class which implements LOAAdmin to verify SmartContracts
     
 #Functions
 

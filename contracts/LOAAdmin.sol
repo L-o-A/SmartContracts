@@ -4,7 +4,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 // import "hardhat/console.sol";
 
-contract MultiSigAdmin is OwnableUpgradeable {
+contract LOAAdmin is OwnableUpgradeable {
 
     mapping(address=> uint8) public _admins;
     address _treasury;

@@ -24,15 +24,19 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 module.exports = {
   solidity: "0.8.7",
   networks: {
-    hardhat:{
+    hardhat: {
       forking: {
         // url: secret.ROPSTEN_ALCHEMY_URL
         url: secret.POLYGON_MUMBAI_URL
       },
-      allowUnlimitedContractSize:true
+      allowUnlimitedContractSize: true
     },
     bsctestnet: {
-      url: secret.BSC_TESTNET_URL,
+      url: secret.BSC_CHAINLINK_URL,
+      accounts: [secret.WALLET_PRI_KEY],
+    },
+    sepolia: {
+      url: secret.SEPOLIA_INFURA_URL,
       accounts: [secret.WALLET_PRI_KEY],
     },
   },
@@ -46,8 +50,12 @@ module.exports = {
   //     url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.POLYGON_MUMBAI_KEY}`,
   //     accounts: [process.env.WALLET_PRI_KEY],
   //   },
+  //   mumbai: {
+  //     url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.POLYGON_MUMBAI_KEY}`,
+  //     accounts: [process.env.WALLET_PRI_KEY],
+  //   },
   // },
-  // etherscan: {
-  //   apiKey: process.env.MUMBAI_SCAN_API_KEY,
-  // },
+  etherscan: {
+    apiKey: process.env.MUMBAI_SCAN_API_KEY,
+  },
 };

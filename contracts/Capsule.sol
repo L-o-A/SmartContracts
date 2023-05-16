@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-// import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "./IAdmin.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol"; 
@@ -82,19 +81,14 @@ contract Capsule is ERC1155Upgradeable, OwnableUpgradeable, UUPSUpgradeable {
         _admin = IAdmin(adminContractAddress);
     }
 
-    // Modifier
-    modifier validAdmin() {
-        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
-        _;
-    }
-
     function burn(address owner, uint256 id) public {
         require(msg.sender == _admin.getNFTAddress(), "You are not authorized to burn");
         _burn(owner, id, 1);
         ICapsuleData(_admin.getCapsuleDataAddress()).doBurn(id, owner);
     }
 
-    function putURI(uint8 capsuleType, string memory url) public validAdmin {
+    function putURI(uint8 capsuleType, string memory url) public {
+        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
         _capsuleTypeURI[capsuleType] = url;
     }
 
@@ -170,17 +164,17 @@ contract Capsule is ERC1155Upgradeable, OwnableUpgradeable, UUPSUpgradeable {
         return super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }
 
-    function extract(address tokenAddress) public {
-        require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
+    // function extract(address tokenAddress) public {
+    //     require(_admin.isValidAdmin(msg.sender), "You are not authorized.");
 
-        if (tokenAddress == address(0)) {
-            payable(_admin.getTreasury()).transfer(address(this).balance);
-            return;
-        }
-        IERC20Contract token = IERC20Contract(tokenAddress);
-        require(token.balanceOf(address(this)) > 0, "No balance available");
-        token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
-    }
+    //     if (tokenAddress == address(0)) {
+    //         payable(_admin.getTreasury()).transfer(address(this).balance);
+    //         return;
+    //     }
+    //     IERC20Contract token = IERC20Contract(tokenAddress);
+    //     require(token.balanceOf(address(this)) > 0, "No balance available");
+    //     token.transfer(_admin.getTreasury(), token.balanceOf(address(this)));
+    // }
 
     function _authorizeUpgrade(address _newImplementation) internal override onlyOwner {}
 }
